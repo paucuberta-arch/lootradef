@@ -4,6 +4,7 @@
 
 @section('styles')
 <style>
+    [x-cloak] { display: none !important; }
     .case-shine {
         background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.05) 45%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 55%, transparent 60%);
         background-size: 200% 100%;
@@ -50,10 +51,13 @@
          openBox(caja) {
              if (this.opening) return;
              this.selectedBox = caja;
-             this.opening = true;
              this.prize = null;
+         },
+         confirmOpen() {
+             if (this.opening || !this.selectedBox) return;
+             this.opening = true;
              setTimeout(() => {
-                 const items = caja.allItems || caja.items;
+                 const items = this.selectedBox.allItems || this.selectedBox.items;
                  this.prize = items[Math.floor(Math.random() * items.length)];
                  this.opening = false;
              }, 2000);
@@ -124,80 +128,76 @@
         @php
             $cajas = [
                 [
-                    'id' => 1, 'name' => 'Caja Starter', 'price' => '€0.99', 'rarity' => 'common',
+                    'id' => 1, 'name' => 'Caja Starter', 'price' => '€0.99', 'rarity' => 'common', 'tier' => 'low',
                     'glow' => 'glow-common', 'rarityClass' => 'rarity-common', 'accent' => 'slate-400',
                     'image' => 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&h=400&fit=crop',
                     'items' => ['Vinilo adhesivo', 'Llavero metalico', 'Sticker pack', 'Tarjeta regalo €1', 'Camiseta basica'],
                     'allItems' => ['Vinilo adhesivo', 'Llavero metalico', 'Sticker pack', 'Tarjeta regalo €1', 'Camiseta basica', 'Gorra basica', 'Taza basica'],
-                    'featured' => false, 'tag' => '',
+                    'tag' => '',
                 ],
                 [
-                    'id' => 2, 'name' => 'Caja Basica', 'price' => '€2.99', 'rarity' => 'common',
+                    'id' => 2, 'name' => 'Caja Basica', 'price' => '€2.99', 'rarity' => 'common', 'tier' => 'low',
                     'glow' => 'glow-uncommon', 'rarityClass' => 'rarity-uncommon', 'accent' => 'blue-400',
                     'image' => 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop',
                     'items' => ['Auriculares Bluetooth', 'Funda de movil', 'Estuche de auriculares', 'Tarjeta regalo €5', 'Funda portatil'],
                     'allItems' => ['Auriculares Bluetooth', 'Funda de movil', 'Estuche de auriculares', 'Tarjeta regalo €5', 'Funda portatil', 'Cable USB premium', 'Soporte movil'],
-                    'featured' => false, 'tag' => '',
+                    'tag' => '',
                 ],
                 [
-                    'id' => 3, 'name' => 'Caja Ruby', 'price' => '€14.99', 'rarity' => 'rare',
+                    'id' => 3, 'name' => 'Caja Ruby', 'price' => '€14.99', 'rarity' => 'rare', 'tier' => 'mid',
                     'glow' => 'glow-rare', 'rarityClass' => 'rarity-rare', 'accent' => 'purple-400',
                     'image' => 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop',
                     'items' => ['Zapatillas deportivas', 'Reloj clasico', 'Cartera de piel', 'Tarjeta regalo €25', 'Gafas de sol'],
                     'allItems' => ['Zapatillas deportivas', 'Reloj clasico', 'Cartera de piel', 'Tarjeta regalo €25', 'Gafas de sol', 'Bolso de piel', 'Cinturon premium'],
-                    'featured' => false, 'tag' => '',
+                    'tag' => '',
                 ],
                 [
-                    'id' => 4, 'name' => 'Caja Premium', 'price' => '€9.99', 'rarity' => 'rare',
+                    'id' => 4, 'name' => 'Caja Premium', 'price' => '€9.99', 'rarity' => 'rare', 'tier' => 'mid',
                     'glow' => 'glow-rare', 'rarityClass' => 'rarity-rare', 'accent' => 'purple-400',
                     'image' => 'https://images.unsplash.com/photo-1546868871-af0de0ae72be?w=400&h=400&fit=crop',
                     'items' => ['Smartwatch deportivo', 'Altavoz bluetooth', 'Cargador inalambrico', 'Tarjeta regalo €15', 'Funda premium'],
                     'allItems' => ['Smartwatch deportivo', 'Altavoz bluetooth', 'Cargador inalambrico', 'Tarjeta regalo €15', 'Funda premium', 'Funda iPad', 'Auriculares deportivos'],
-                    'featured' => true, 'tag' => 'Popular',
+                    'tag' => 'Popular',
                 ],
                 [
-                    'id' => 5, 'name' => 'Caja Especial', 'price' => '€4.99', 'rarity' => 'uncommon',
+                    'id' => 5, 'name' => 'Caja Especial', 'price' => '€4.99', 'rarity' => 'uncommon', 'tier' => 'low',
                     'glow' => 'glow-uncommon', 'rarityClass' => 'rarity-uncommon', 'accent' => 'blue-400',
                     'image' => 'https://images.unsplash.com/photo-1593642702821-c8da6771f0c6?w=400&h=400&fit=crop',
                     'items' => ['Auriculares gaming', 'Teclado mecanico', 'Raton gaming', 'Tarjeta regalo €10', 'Alfombrilla XL'],
                     'allItems' => ['Auriculares gaming', 'Teclado mecanico', 'Raton gaming', 'Tarjeta regalo €10', 'Alfombrilla XL', 'Webcam HD', 'Parlador USB'],
-                    'featured' => false, 'tag' => '',
+                    'tag' => '',
                 ],
                 [
-                    'id' => 6, 'name' => 'Caja Gold', 'price' => '€24.99', 'rarity' => 'epic',
+                    'id' => 6, 'name' => 'Caja Gold', 'price' => '€24.99', 'rarity' => 'epic', 'tier' => 'mid',
                     'glow' => 'glow-epic', 'rarityClass' => 'rarity-epic', 'accent' => 'amber-400',
                     'image' => 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=400&fit=crop',
                     'items' => ['Auriculares ANC', 'Tablet basica', 'Mando gaming', 'Tarjeta regalo €50', 'Smartwatch'],
                     'allItems' => ['Auriculares ANC', 'Tablet basica', 'Mando gaming', 'Tarjeta regalo €50', 'Smartwatch', 'Cargador inalambrico Pro', 'Altavoz JBL'],
-                    'featured' => true, 'tag' => '&#x2B50; Mejor valor',
+                    'tag' => 'Mejor valor',
                 ],
                 [
-                    'id' => 7, 'name' => 'Caja Diamond', 'price' => '€49.99', 'rarity' => 'legendary',
+                    'id' => 7, 'name' => 'Caja Diamond', 'price' => '€49.99', 'rarity' => 'legendary', 'tier' => 'high',
                     'glow' => 'glow-legendary', 'rarityClass' => 'rarity-legendary', 'accent' => 'red-400',
                     'image' => 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&h=400&fit=crop',
                     'items' => ['iPhone / Samsung', 'MacBook Air', 'PS5 / Xbox', 'Tarjeta regalo €200', 'iPad'],
                     'allItems' => ['iPhone / Samsung', 'MacBook Air', 'PS5 / Xbox', 'Tarjeta regalo €200', 'iPad', 'AirPods Max', 'GoPro Hero'],
-                    'featured' => true, 'tag' => '&#x1F451; Premium',
+                    'tag' => 'Premium',
                 ],
                 [
-                    'id' => 8, 'name' => 'Caja Platinum', 'price' => '€99.99', 'rarity' => 'legendary',
+                    'id' => 8, 'name' => 'Caja Platinum', 'price' => '€99.99', 'rarity' => 'legendary', 'tier' => 'high',
                     'glow' => 'glow-legendary', 'rarityClass' => 'rarity-legendary', 'accent' => 'red-400',
                     'image' => 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=400&fit=crop',
                     'items' => ['MacBook Pro', 'iPhone Pro Max', 'Tesla entrada', 'Tarjeta regalo €500', 'Viaje premium'],
                     'allItems' => ['MacBook Pro', 'iPhone Pro Max', 'Tesla entrada', 'Tarjeta regalo €500', 'Viaje premium', 'BMW entrada', 'Montblanc boligrafo'],
-                    'featured' => true, 'tag' => '&#x1F451; Exclusiva',
+                    'tag' => 'Exclusiva',
                 ],
             ];
         @endphp
 
         @foreach($cajas as $caja)
-            <div class="case-card group relative rounded-2xl bg-white/[0.03] border {{ $caja['rarityClass'] }} {{ $caja['glow'] }} overflow-hidden cursor-pointer"
-                 @click="openBox({
-                     id: {{ $caja['id'] }},
-                     name: '{{ $caja['name'] }}',
-                     items: {{ json_encode($caja['items']) }},
-                     allItems: {{ json_encode($caja['allItems']) }}
-                 })">
+            <div x-show="filter === 'all' || filter === '{{ $caja['tier'] }}' || (filter === 'special' && @js($caja['tag']) !== '')"
+                 class="case-card group relative rounded-2xl bg-white/[0.03] border {{ $caja['rarityClass'] }} {{ $caja['glow'] }} overflow-hidden cursor-pointer"
+                 @click='openBox({ id: {{ $caja['id'] }}, name: @js($caja['name']), items: @js($caja['items']), allItems: @js($caja['allItems']), rarity: @js($caja['rarity']) })'>
 
                 {{-- Shine effect --}}
                 <div class="absolute inset-0 case-shine pointer-events-none z-10"></div>
@@ -245,20 +245,21 @@
     </div>
 
     {{-- MODAL DE APERTURA --}}
-    <div x-show="selectedBox" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+    <div x-show="selectedBox" x-cloak
+         x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
          x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display: none;">
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="selectedBox = null; prize = null;"></div>
+         class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="selectedBox = null; prize = null; opening = false;"></div>
         <div class="relative z-10 w-full max-w-md rounded-3xl bg-[#14142a] border border-white/10 p-8 text-center"
-             x-show="selectedBox"
              x-transition:enter="transition ease-out duration-300 delay-100"
              x-transition:enter-start="opacity-0 scale-95"
              x-transition:enter-end="opacity-100 scale-100">
 
-            <button @click="selectedBox = null; prize = null;" class="absolute top-4 right-4 text-slate-500 hover:text-white transition">
+            <button @click="selectedBox = null; prize = null; opening = false;" class="absolute top-4 right-4 text-slate-500 hover:text-white transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
 
+            {{-- Estado inicial: listo para abrir --}}
             <template x-if="!prize && !opening">
                 <div>
                     <div class="w-24 h-24 rounded-3xl mx-auto mb-4 flex items-center justify-center text-5xl bg-white/5 border border-white/10"
@@ -267,14 +268,15 @@
                     </div>
                     <h3 class="text-xl font-extrabold text-white mb-1" x-text="selectedBox?.name"></h3>
                     <p class="text-sm text-slate-500 mb-6">Haz clic en abrir para descubrir tu premio</p>
-                    <button @click="opening = true; setTimeout(() => { const items = selectedBox.allItems || selectedBox.items; prize = items[Math.floor(Math.random() * items.length)]; opening = false; }, 2000);"
+                    <button @click="confirmOpen()"
                         class="px-8 py-3 rounded-xl bg-purple-500 hover:bg-purple-400 text-black font-bold transition shadow-lg shadow-purple-500/20">
                         Abrir caja
                     </button>
                 </div>
             </template>
 
-            <template x-if="opening">
+            {{-- Estado: abriendo --}}
+            <template x-if="opening && !prize">
                 <div>
                     <div class="w-24 h-24 rounded-3xl mx-auto mb-4 flex items-center justify-center text-5xl bg-white/5 border border-white/10 box-opening"
                          :class="'glow-' + (selectedBox?.rarity || 'common')">
@@ -287,6 +289,7 @@
                 </div>
             </template>
 
+            {{-- Estado: premio --}}
             <template x-if="prize && !opening">
                 <div class="prize-reveal">
                     <div class="text-6xl mb-4">&#x2728;</div>
