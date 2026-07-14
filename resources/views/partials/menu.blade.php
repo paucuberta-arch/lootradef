@@ -13,20 +13,6 @@
                 </span>
             </a>
 
-            {{-- SEARCH DESKTOP --}}
-            <div class="hidden md:flex flex-1 max-w-md mx-8">
-                <div class="relative w-full">
-                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                    <input
-                        type="text"
-                        placeholder="Buscar juegos..."
-                        class="w-full pl-10 pr-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-slate-500 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition"
-                    >
-                </div>
-            </div>
-
             {{-- NAV LINKS DESKTOP --}}
             <div class="hidden md:flex items-center gap-1">
 
@@ -116,14 +102,6 @@
             x-transition:leave-end="opacity-0 -translate-y-2"
             class="md:hidden pb-4 border-t border-white/5 mt-2 pt-4"
         >
-            {{-- Search movil --}}
-            <div class="relative mb-3">
-                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
-                <input type="text" placeholder="Buscar juegos..." class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-slate-500 outline-none focus:border-brand-500 transition">
-            </div>
-
             <div class="flex flex-col gap-1">
                 <a href="{{ url('/') }}" class="px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition">Inicio</a>
                 <a href="{{ url('/apuestas') }}" class="px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition">Apuestas Deportivas</a>

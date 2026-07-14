@@ -4,7 +4,18 @@
 
 @section('styles')
 <style>
-    .{{ $juego['grad'] }} { background: linear-gradient(135deg, {{ str_contains($juego['grad'], '5') ? '#f12711, #f5af19' : str_contains($juego['grad'], '2') ? '#2d1b69, #11998e' : str_contains($juego['grad'], '3') ? '#c31432, #240b36' : str_contains($juego['grad'], '4') ? '#0f0c29, #302b63' : str_contains($juego['grad'], '6') ? '#00b09b, #96c93d' : str_contains($juego['grad'], '7') ? '#7f00ff, #e100ff' : str_contains($juego['grad'], '8') ? '#fc4a1a, #f7b733' : str_contains($juego['grad'], '9') ? '#1f1c2c, #928dab' : str_contains($juego['grad'], '10') ? '#e44d26, #f16529' : str_contains($juego['grad'], '11') ? '#1a2a6c, #b21f1f' : '#0f2027, #203a43' }} 100%); }
+    .game-gradient-1 { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
+    .game-gradient-2 { background: linear-gradient(135deg, #2d1b69 0%, #11998e 100%); }
+    .game-gradient-3 { background: linear-gradient(135deg, #c31432 0%, #240b36 100%); }
+    .game-gradient-4 { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); }
+    .game-gradient-5 { background: linear-gradient(135deg, #f12711 0%, #f5af19 100%); }
+    .game-gradient-6 { background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%); }
+    .game-gradient-7 { background: linear-gradient(135deg, #7f00ff 0%, #e100ff 100%); }
+    .game-gradient-8 { background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%); }
+    .game-gradient-9 { background: linear-gradient(135deg, #1f1c2c 0%, #928dab 100%); }
+    .game-gradient-10 { background: linear-gradient(135deg, #e44d26 0%, #f16529 100%); }
+    .game-gradient-11 { background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%); }
+    .game-gradient-12 { background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); }
 </style>
 @endsection
 
