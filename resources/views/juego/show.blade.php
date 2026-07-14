@@ -38,6 +38,9 @@
             {{-- Hero del juego --}}
             <div class="rounded-2xl overflow-hidden mb-8 {{ $juego['grad'] }}" style="min-height: 350px;">
                 <div class="relative h-full min-h-[350px] flex flex-col justify-end p-6 sm:p-10">
+                    @if(!empty($juego['image']))
+                        <img src="{{ $juego['image'] }}" alt="{{ $juego['name'] }}" class="absolute inset-0 w-full h-full object-cover" loading="lazy">
+                    @endif
                     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
                     <div class="relative z-10">
                         <div class="flex items-center gap-3 mb-3">

@@ -15,11 +15,12 @@
             <div>
                 <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Juegos</h4>
                 <ul class="space-y-2.5 text-sm text-slate-500">
-                    <li><a href="#" class="hover:text-brand-400 transition">Slots</a></li>
-                    <li><a href="#" class="hover:text-brand-400 transition">Ruleta</a></li>
-                    <li><a href="#" class="hover:text-brand-400 transition">Blackjack</a></li>
-                    <li><a href="#" class="hover:text-brand-400 transition">Poker</a></li>
-                    <li><a href="#" class="hover:text-brand-400 transition">Live Casino</a></li>
+                    <li><a href="{{ url('/?cat=slots') }}" class="hover:text-brand-400 transition">Slots</a></li>
+                    <li><a href="{{ url('/?cat=ruleta') }}" class="hover:text-brand-400 transition">Ruleta</a></li>
+                    <li><a href="{{ url('/?cat=blackjack') }}" class="hover:text-brand-400 transition">Blackjack</a></li>
+                    <li><a href="{{ url('/?cat=poker') }}" class="hover:text-brand-400 transition">Poker</a></li>
+                    <li><a href="{{ url('/?cat=live') }}" class="hover:text-brand-400 transition">Live Casino</a></li>
+                    <li><a href="{{ url('/?cat=crash') }}" class="hover:text-brand-400 transition">Crash</a></li>
                     <li><a href="{{ url('/apuestas') }}" class="hover:text-brand-400 transition">Apuestas Deportivas</a></li>
                     <li><a href="{{ url('/cajas') }}" class="hover:text-brand-400 transition">Cajas de Azar</a></li>
                     <li><a href="{{ url('/feedback') }}" class="hover:text-brand-400 transition">Feedback</a></li>
@@ -30,10 +31,10 @@
             <div>
                 <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Soporte</h4>
                 <ul class="space-y-2.5 text-sm text-slate-500">
-                    <li><a href="#" class="hover:text-brand-400 transition">Centro de ayuda</a></li>
-                    <li><a href="#" class="hover:text-brand-400 transition">Contacto</a></li>
-                    <li><a href="#" class="hover:text-brand-400 transition">Terminos y condiciones</a></li>
-                    <li><a href="#" class="hover:text-brand-400 transition">Politica de privacidad</a></li>
+                    <li><a href="{{ url('/info/ayuda') }}" class="hover:text-brand-400 transition">Centro de ayuda</a></li>
+                    <li><a href="{{ url('/info/contacto') }}" class="hover:text-brand-400 transition">Contacto</a></li>
+                    <li><a href="{{ url('/info/terminos') }}" class="hover:text-brand-400 transition">Terminos y condiciones</a></li>
+                    <li><a href="{{ url('/info/privacidad') }}" class="hover:text-brand-400 transition">Politica de privacidad</a></li>
                 </ul>
             </div>
 
@@ -41,9 +42,9 @@
             <div>
                 <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Legal</h4>
                 <ul class="space-y-2.5 text-sm text-slate-500">
-                    <li><a href="#" class="hover:text-brand-400 transition">Juego responsable</a></li>
-                    <li><a href="#" class="hover:text-brand-400 transition">Verificacion de edad</a></li>
-                    <li><a href="#" class="hover:text-brand-400 transition">Autoexclusion</a></li>
+                    <li><a href="{{ url('/info/responsable') }}" class="hover:text-brand-400 transition">Juego responsable</a></li>
+                    <li><a href="{{ url('/info/verificacion') }}" class="hover:text-brand-400 transition">Verificacion de edad</a></li>
+                    <li><a href="{{ url('/info/autoexclusion') }}" class="hover:text-brand-400 transition">Autoexclusion</a></li>
                 </ul>
                 <div class="mt-4 flex items-center gap-2">
                     <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">+18</span>
