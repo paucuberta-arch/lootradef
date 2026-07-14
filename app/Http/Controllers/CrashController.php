@@ -44,6 +44,7 @@ class CrashController extends Controller
         return response()->json([
             'ok' => true,
             'saldo' => $user->cartera->saldo,
+            'crash_point' => $crashPoint,
         ]);
     }
 

@@ -166,6 +166,7 @@ function crashGame() {
         historial: @js($partidas->pluck('detalles.crash_point')->filter()->take(15)->values()->all()),
         interval: null,
         autoCashoutTriggered: false,
+        serverCrashPoint: 0,
 
         init() {},
 
@@ -194,6 +195,7 @@ function crashGame() {
                 }
 
                 this.saldo = data.saldo;
+                this.serverCrashPoint = data.crash_point;
                 this.multiplier = 1.00;
                 this.ganancia = 0;
                 this.graphPoints = '0,58';
@@ -211,8 +213,19 @@ function crashGame() {
             let pointIndex = 0;
 
             this.interval = setInterval(() => {
-                current += (Math.random() * 0.08) + 0.02;
+                const increment = Math.min(
+                    (this.serverCrashPoint - current) * 0.08,
+                    (Math.random() * 0.08) + 0.02
+                );
+                current += Math.max(0.01, increment);
                 current = Math.round(current * 100) / 100;
+
+                if (current >= this.serverCrashPoint) {
+                    clearInterval(this.interval);
+                    this.doCrash();
+                    return;
+                }
+
                 this.multiplier = current;
 
                 pointIndex++;
@@ -231,6 +244,49 @@ function crashGame() {
             if (this.fase !== 'subiendo') return;
             clearInterval(this.interval);
             await this.doCashout(this.multiplier);
+        },
+
+        async doCrash() {
+            try {
+                const res = await fetch('{{ route("crash.crash") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                    },
+                });
+                const data = await res.json();
+
+                this.crashAt = data.crash_point;
+                this.ganancia = 0;
+                this.saldo = data.saldo;
+                this.fase = 'crashed';
+
+                this.graphPoints = '0,58';
+                let c = 1.00;
+                let pi = 0;
+                const crashAnim = setInterval(() => {
+                    c += (Math.random() * 0.15) + 0.05;
+                    c = Math.round(c * 100) / 100;
+                    if (c >= data.crash_point) {
+                        clearInterval(crashAnim);
+                        this.multiplier = data.crash_point;
+                    } else {
+                        this.multiplier = c;
+                        pi++;
+                        const x = Math.min(95, pi * 1.5);
+                        const y = Math.max(5, 58 - (c - 1) * 8);
+                        this.graphPoints += ` ${x},${y}`;
+                    }
+                }, 30);
+
+                this.historial.unshift(data.crash_point);
+                if (this.historial.length > 15) this.historial.pop();
+            } catch (e) {
+                this.error = 'Error de conexion.';
+                this.fase = 'esperando';
+            }
         },
 
         async doCashout(mult) {
