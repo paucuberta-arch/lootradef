@@ -1,305 +1,54 @@
 @extends('layouts.app')
 
-
-@section('menu')
-
-
-@endsection
-
-
+@section('title', 'Casino Lootra — Próximamente')
 
 @section('contenido')
 
+    <section class="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
+        {{-- Background --}}
+        <div class="absolute inset-0 bg-gradient-to-br from-slate-950 via-gray-950 to-amber-950/20"></div>
 
-    <div class="
-relative
-min-h-[calc(100vh-180px)]
-w-full
-overflow-hidden
-flex
-items-center
-justify-center
-px-3
-sm:px-6
-lg:px-10
-py-6
-sm:py-10
-bg-gradient-to-br
-from-black
-via-gray-950
-to-yellow-950
-rounded-3xl
-">
+        {{-- Glow effects --}}
+        <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none animate-casino"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-brand-500/5 rounded-full blur-[100px] pointer-events-none animate-casino-delay"></div>
 
+        {{-- Floating emojis (desktop only) --}}
+        <div class="hidden lg:block absolute top-20 left-16 text-[100px] opacity-[0.04] blur-[1px] animate-casino">&#x1F3B0;</div>
+        <div class="hidden lg:block absolute top-32 right-20 text-[80px] opacity-[0.04] blur-[1px] animate-casino-delay">&#x1F3B2;</div>
+        <div class="hidden lg:block absolute bottom-32 left-20 text-[90px] opacity-[0.04] blur-[1px] animate-casino-slow">&#x1F0CF;</div>
+        <div class="hidden lg:block absolute bottom-20 right-16 text-[110px] opacity-[0.04] blur-[1px] animate-casino">&#x1F4B0;</div>
 
+        {{-- Content --}}
+        <div class="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 text-center">
 
-        {{-- ELEMENTOS CASINO FONDO --}}
-
-
-        <div class="
-    hidden
-    sm:block
-    absolute
-    top-10
-    left-10
-    text-[120px]
-    md:text-[180px]
-    opacity-10
-    blur-sm
-    animate-casino
-    ">
-            🎰
-        </div>
-
-
-
-        <div class="
-    hidden
-    sm:block
-    absolute
-    top-20
-    right-10
-    text-[100px]
-    md:text-[150px]
-    opacity-10
-    blur-md
-    animate-casino-delay
-    ">
-            🎲
-        </div>
-
-
-
-
-        <div class="
-    hidden
-    sm:block
-    absolute
-    bottom-20
-    left-10
-    text-[120px]
-    md:text-[170px]
-    opacity-10
-    blur-sm
-    animate-casino-slow
-    ">
-            🃏
-        </div>
-
-
-
-
-        <div class="
-    hidden
-    sm:block
-    absolute
-    bottom-10
-    right-10
-    text-[150px]
-    md:text-[220px]
-    opacity-10
-    blur-md
-    animate-casino
-    ">
-            💰
-        </div>
-
-
-
-
-
-        {{-- LUZ DE FONDO --}}
-
-        <div class="
-    absolute
-    inset-0
-    z-0
-    pointer-events-none
-    bg-gradient-to-r
-    from-yellow-400/10
-    via-transparent
-    to-yellow-400/10
-    animate-pulse
-    ">
-        </div>
-
-
-
-
-
-
-        {{-- TARJETA PRINCIPAL --}}
-
-
-        <div class="
-casino-card
-relative
-z-10
-w-full
-max-w-5xl
-min-h-[420px]
-sm:min-h-[520px]
-lg:min-h-[600px]
-flex
-flex-col
-justify-center
-items-center
-text-center
-rounded-3xl
-bg-black/50
-backdrop-blur-xl
-border
-border-yellow-400/30
-shadow-2xl
-px-4
-sm:px-10
-py-8
-">
-
-
-
-
-            <h1 class="
-        text-3xl
-        xs:text-4xl
-        sm:text-5xl
-        md:text-6xl
-        lg:text-7xl
-        tracking-wide
-        break-words
-        font-black
-        text-yellow-400
-        drop-shadow-lg
-        animate-pulse
-        ">
-
-                🎰 PRÓXIMAMENTE
-
-            </h1>
-
-
-
-
-            <h2 class="
-        mt-8
-        text-2xl
-        sm:text-3xl
-        lg:text-5xl
-        font-bold
-        text-white
-        ">
-
-                Casino LOOTRA
-
-            </h2>
-
-
-
-
-            <p class="
-        mt-6
-        max-w-3xl
-        text-base
-        sm:text-lg
-        lg:text-xl
-        text-gray-300
-        leading-relaxed
-        ">
-
-                Estamos preparando una experiencia de casino completamente nueva.
-                Muy pronto podrás disfrutar de ruletas, juegos, estadísticas
-                y muchas sorpresas.
-
-            </p>
-
-
-
-
-            <div class="
-        mt-10
-        flex
-        flex-wrap
-        justify-center
-        gap-3
-        ">
-
-
-            <span class="
-            px-4
-            py-2
-            rounded-xl
-            bg-yellow-400/20
-            border
-            border-yellow-400/30
-            text-yellow-300
-            ">
-                🎲 Juegos
-            </span>
-
-
-
-                <span class="
-            px-4
-            py-2
-            rounded-xl
-            bg-yellow-400/20
-            border
-            border-yellow-400/30
-            text-yellow-300
-            ">
-                🎰 Ruletas
-            </span>
-
-
-
-                <span class="
-            px-4
-            py-2
-            rounded-xl
-            bg-yellow-400/20
-            border
-            border-yellow-400/30
-            text-yellow-300
-            ">
-                🃏 Cartas
-            </span>
-
-
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm font-medium mb-8">
+                <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                Próximamente
             </div>
 
+            <h1 class="text-4xl sm:text-5xl lg:text-7xl font-black tracking-tight mb-6">
+                <span class="text-white">Casino</span>
+                <span class="bg-gradient-to-r from-amber-400 to-amber-200 bg-clip-text text-transparent"> Lootra</span>
+            </h1>
 
+            <p class="text-lg sm:text-xl text-slate-400 leading-relaxed mb-10 max-w-2xl mx-auto">
+                Estamos preparando una experiencia de casino completamente nueva.
+                Juegos, ruletas, estadísticas y muchas sorpresas te esperan.
+            </p>
 
-
+            <div class="flex flex-wrap justify-center gap-3 mb-12">
+                <span class="px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm font-medium">&#x1F3B2; Juegos</span>
+                <span class="px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm font-medium">&#x1F3B0; Ruletas</span>
+                <span class="px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm font-medium">&#x1F0CF; Cartas</span>
+                <span class="px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm font-medium">&#x1F3C6; Torneos</span>
+            </div>
 
             <a href="{{ url('/') }}"
-               class="
-           relative
-           z-20
-           mt-10
-           px-6
-           py-3
-           sm:px-10
-           sm:py-4
-           rounded-xl
-           bg-yellow-400
-           text-gray-900
-           font-bold
-           hover:bg-yellow-300
-           hover:scale-105
-           transition
-           shadow-lg
-           ">
-
-                ← Volver al inicio
-
+               class="inline-flex items-center px-8 py-4 rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold text-lg border border-white/10 hover:border-white/20 transition-all">
+                &larr; Volver al inicio
             </a>
 
-
-
         </div>
-
-
-    </div>
-
+    </section>
 
 @endsection

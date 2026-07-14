@@ -17,7 +17,7 @@ return new class extends Migration
 
             $table->string('tipo');
 
-            $table->integer('resultado');
+            $table->decimal('resultado', 12, 6);
 
             $table->timestamps();
 

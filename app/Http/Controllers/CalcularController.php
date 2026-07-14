@@ -79,7 +79,7 @@ class CalcularController extends Controller
 
                         return back()
                             ->withErrors([
-                                'No se puede dividir entre cero.',
+                                'numeros' => 'No se puede dividir entre cero.',
                             ])
                             ->withInput();
 

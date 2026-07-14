@@ -1,649 +1,157 @@
 @extends('layouts.app')
 
+@section('title', 'Calculadora de ' . $nombre . ' — Lootra')
 
 @section('menu')
-
-    @include('partials.menu', [
-        'operacion' => $tipo
-    ])
-
+    @include('partials.menu')
 @endsection
-
-
-
-
 
 @section('contenido')
 
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
 
-    <div class="w-full max-w-3xl mx-auto">
+        {{-- Header --}}
+        <div class="text-center mb-10">
+            <h1 class="text-3xl sm:text-4xl font-bold text-white mb-2">
+                Calculadora de <span class="text-brand-400">{{ $nombre }}</span>
+            </h1>
+            <p class="text-slate-500">Introduce los números y obtén el resultado al instante.</p>
+        </div>
 
-
-
-        <h1 class="
-        text-4xl
-        sm:text-5xl
-        font-bold
-        text-center
-        mb-8
-    ">
-
-            Calculadora de {{ $nombre }}
-
-        </h1>
-
-
-
-
-
-        <div class="
-        bg-white
-        rounded-3xl
-        shadow-xl
-        p-6
-        sm:p-10
-    ">
-
-
+        {{-- Form Card --}}
+        <div class="glass-card rounded-2xl p-6 sm:p-8">
 
             <form action="{{ route('calcular') }}" method="POST">
-
-
                 @csrf
-
-
-
-                {{-- TIPO DE OPERACIÓN --}}
-
-
-                <input
-
-                        type="hidden"
-
-                        name="tipo"
-
-                        value="{{ $tipo }}"
-
-                >
-
-
-
-
-
-                {{-- ERRORES BACKEND --}}
-
+                <input type="hidden" name="tipo" value="{{ $tipo }}">
 
                 @if($errors->any())
-
-
-                    <div class="
-                    mb-6
-                    rounded-xl
-                    border
-                    border-red-300
-                    bg-red-50
-                    text-red-700
-                    p-4
-                ">
-
-
-                        <ul class="list-disc list-inside">
-
-
+                    <div class="mb-6 rounded-xl bg-red-500/10 border border-red-500/20 p-4">
+                        <ul class="list-disc list-inside space-y-1">
                             @foreach($errors->all() as $error)
-
-
-                                <li>
-
-                                    {{ $error }}
-
-                                </li>
-
-
+                                <li class="text-red-400 text-sm">{{ $error }}</li>
                             @endforeach
-
-
                         </ul>
-
-
                     </div>
-
-
                 @endif
 
-
-
-
-
-                {{-- INPUTS --}}
-
-
-                <div id="numeros-container">
-
-
+                {{-- Inputs --}}
+                <div id="numeros-container" class="space-y-3">
                     @php
-
                         $numeros = old('numeros', ['', '']);
-
                     @endphp
 
-
-
-
                     @foreach($numeros as $numero)
-
-
-                        <div class="mb-4">
-
-
-                            <input
-
-                                    type="number"
-
-                                    name="numeros[]"
-
-                                    value="{{ $numero }}"
-
-                                    placeholder="Introduce un número"
-
-                                    required
-
-
-                                    class="
-                            numero-input
-                            w-full
-                            rounded-xl
-                            border-2
-                            border-gray-300
-                            p-3
-                            text-center
-                            focus:border-blue-500
-                            focus:ring-2
-                            focus:ring-blue-200
-                            outline-none
-                            transition
-                            "
-
-
-                            >
-
-
-                        </div>
-
-
+                        <input
+                            type="number"
+                            name="numeros[]"
+                            value="{{ $numero }}"
+                            placeholder="Introduce un número"
+                            required
+                            class="numero-input w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white text-center text-lg placeholder-slate-600 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition font-mono"
+                        >
                     @endforeach
-
-
                 </div>
 
-
-
-
-
-
-                {{-- BOTÓN CALCULAR --}}
-
-
-
+                {{-- Submit --}}
                 <button
-
-                        type="submit"
-
-
-                        class="
-                w-full
-                mt-6
-                bg-green-600
-                hover:bg-green-700
-                text-white
-                font-bold
-                py-3
-                rounded-xl
-                transition
-                shadow-lg
-                "
-
-
+                    type="submit"
+                    class="w-full mt-6 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold py-3.5 transition-all shadow-lg shadow-brand-600/25 hover:shadow-brand-500/40 hover:-translate-y-0.5"
                 >
-
-
                     Calcular {{ $nombre }}
-
-
                 </button>
-
-
-
             </form>
 
-
-
-
-
-
-
-            {{-- BOTONES AÑADIR / ELIMINAR --}}
-
-
-
-            <div class="
-            flex
-            flex-col
-            sm:flex-row
-            justify-center
-            gap-4
-            mt-8
-        ">
-
-
-
+            {{-- Add/Remove buttons --}}
+            <div class="flex justify-center gap-3 mt-6 pt-6 border-t border-white/5">
                 <button
-
-                        type="button"
-
-                        onclick="anadirNumero()"
-
-
-                        class="
-                bg-blue-600
-                hover:bg-blue-700
-                text-white
-                font-bold
-                px-5
-                py-3
-                rounded-xl
-                transition
-                shadow
-                "
-
+                    type="button"
+                    onclick="anadirNumero()"
+                    class="px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-sm font-medium border border-white/10 hover:border-white/20 transition-all"
                 >
-
-
-                    + Añadir número
-
-
+                    <span class="mr-1">+</span> Añadir
                 </button>
-
-
-
-
-
-
                 <button
-
-                        type="button"
-
-                        onclick="borrarNumero()"
-
-
-                        class="
-                bg-red-600
-                hover:bg-red-700
-                text-white
-                font-bold
-                px-5
-                py-3
-                rounded-xl
-                transition
-                shadow
-                "
-
-
+                    type="button"
+                    onclick="borrarNumero()"
+                    class="px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-sm font-medium border border-white/10 hover:border-white/20 transition-all"
                 >
-
-
-                    − Eliminar número
-
-
+                    <span class="mr-1">&minus;</span> Quitar
                 </button>
-
-
-
             </div>
-
-
 
         </div>
 
-
-
-
-
-
-
-        {{-- RESULTADO --}}
-
-
-
+        {{-- Resultado --}}
         @if(session('resultado'))
-
-
-
-            <div class="
-            resultado
-            mt-10
-            bg-green-600
-            text-white
-            rounded-3xl
-            p-8
-            text-center
-            shadow-xl
-        ">
-
-
-
-                <h2 class="text-2xl font-bold mb-4">
-
-
-                    Resultado
-
-
-                </h2>
-
-
-
-
-                <strong class="text-5xl">
-
-
+            <div class="resultado mt-8 glass-card rounded-2xl p-8 text-center glow-brand">
+                <p class="text-sm font-medium text-slate-500 uppercase tracking-wider mb-3">Resultado</p>
+                <p class="text-5xl sm:text-6xl font-black text-white">
                     {{ session('resultado') }}
-
-
-                </strong>
-
-
-
+                </p>
             </div>
-
-
-
         @endif
 
-
-
-
-
-
-
-        {{-- HISTORIAL --}}
-
-
-
-        <div class="
-        mt-16
-        mb-20
-        overflow-x-auto
-        rounded-3xl
-        shadow-xl
-        bg-white
-    ">
-
-
-
-            <table class="
-            w-full
-            min-w-[450px]
-            text-center
-            text-sm
-            md:text-base
-        ">
-
-
-
-                <thead class="
-                bg-gradient-to-r
-                from-blue-600
-                to-indigo-600
-                text-white
-            ">
-
-
-
-                <tr>
-
-
-                    <th class="px-4 py-4">
-
-                        Operación
-
-                    </th>
-
-
-
-                    <th class="px-4 py-4">
-
-                        Resultado
-
-                    </th>
-
-
-                </tr>
-
-
-
-                </thead>
-
-
-
-
-
-
-                <tbody>
-
-
-
-
-                @forelse($operaciones as $op)
-
-
-
-                    <tr class="
-                    border-b
-                    hover:bg-blue-50
-                    transition
-                ">
-
-
-
-                        <td class="
-                        px-4
-                        py-4
-                        font-semibold
-                        whitespace-nowrap
-                    ">
-
-
-                            {{ $op->operacion }}
-
-
-                        </td>
-
-
-
-
-
-                        <td class="
-                        px-4
-                        py-4
-                        font-bold
-                        text-green-600
-                    ">
-
-
-                            {{ $op->resultado }}
-
-
-                        </td>
-
-
-
-
-                    </tr>
-
-
-
-                @empty
-
-
-
-                    <tr>
-
-
-                        <td colspan="2"
-
-                            class="
-                        py-8
-                        text-gray-500
-                        ">
-
-                            Todavía no hay operaciones.
-
-
-                        </td>
-
-
-                    </tr>
-
-
-
-                @endforelse
-
-
-
-
-                </tbody>
-
-
-
-            </table>
-
-
-
+        {{-- Historial --}}
+        <div class="mt-12 glass-card rounded-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-white/5">
+                <h2 class="text-lg font-bold text-white">Últimas operaciones</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full min-w-[400px]">
+                    <thead>
+                        <tr class="border-b border-white/5">
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Operación</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Resultado</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        @forelse($operaciones as $op)
+                            <tr class="hover:bg-white/[0.02] transition-colors">
+                                <td class="px-6 py-4 text-sm font-medium text-slate-300 whitespace-nowrap">
+                                    {{ $op->operacion }}
+                                </td>
+                                <td class="px-6 py-4 text-sm font-bold text-brand-400 text-right">
+                                    {{ $op->resultado }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="2" class="px-6 py-10 text-center text-slate-600 text-sm">
+                                    No hay operaciones todavía.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
-
-
-
 
     </div>
 
-
-
 @endsection
 
-
-
-
-
-
-
 @push('scripts')
+<script>
+    function anadirNumero() {
+        let container = document.getElementById('numeros-container');
+        let input = document.createElement('input');
+        input.type = 'number';
+        input.name = 'numeros[]';
+        input.placeholder = 'Introduce un número';
+        input.required = true;
+        input.className = 'numero-input w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white text-center text-lg placeholder-slate-600 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition font-mono';
+        container.appendChild(input);
+        input.focus();
+    }
 
-
-    <script>
-
-
-        function anadirNumero(){
-
-
-            let container =
-                document.getElementById('numeros-container');
-
-
-
-            let div =
-                document.createElement('div');
-
-
-
-            div.className="mb-4";
-
-
-
-            div.innerHTML = `
-
-
-        <input
-
-
-        type="number"
-
-
-        name="numeros[]"
-
-
-        placeholder="Introduce un número"
-
-
-        required
-
-
-
-        class="
-        numero-input
-        w-full
-        rounded-xl
-        border-2
-        border-gray-300
-        p-3
-        text-center
-        focus:border-blue-500
-        outline-none
-        "
-
-
-        >
-
-
-    `;
-
-
-
-            container.appendChild(div);
-
-
+    function borrarNumero() {
+        let container = document.getElementById('numeros-container');
+        let inputs = container.querySelectorAll('.numero-input');
+        if (inputs.length <= 2) {
+            return;
         }
-
-
-
-
-
-
-        function borrarNumero(){
-
-
-            let container =
-                document.getElementById('numeros-container');
-
-
-
-            let inputs =
-                container.querySelectorAll('.numero-input');
-
-
-
-            if(inputs.length <= 2){
-
-
-                alert('Debe haber al menos dos números');
-
-
-                return;
-
-
-            }
-
-
-
-            inputs[inputs.length - 1]
-                .parentElement
-                .remove();
-
-
-
-        }
-
-
-    </script>
-
-
+        inputs[inputs.length - 1].remove();
+    }
+</script>
 @endpush

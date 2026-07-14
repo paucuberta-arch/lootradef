@@ -1,789 +1,130 @@
 /* ===================================
-   ANIMACIÓN RULETAS CALCULADORA
+   BASE & UTILITIES
 =================================== */
 
+html, body {
+    overflow-x: hidden;
+}
+
+img, svg {
+    max-width: 100%;
+}
+
+/* ===================================
+   CALCULATOR ANIMATIONS
+=================================== */
 
 .girando {
-
-    animation: girarRuleta .4s linear infinite;
-
+    animation: girarRuleta 0.4s linear infinite;
 }
-
-
 
 @keyframes girarRuleta {
-
-
-    from {
-
-        transform: rotate(0deg);
-
-    }
-
-
-    to {
-
-        transform: rotate(360deg);
-
-    }
-
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
-
-
-
-
-
-/* ===================================
-   RESULTADO CALCULADORA
-=================================== */
-
 
 .resultado {
-
-
-    animation:
-
-            aparecerResultado .6s ease;
-
-
+    animation: aparecerResultado 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
-
-
 
 @keyframes aparecerResultado {
-
-
     from {
-
-
-        opacity:0;
-
-        transform:scale(.5);
-
-
+        opacity: 0;
+        transform: scale(0.9) translateY(10px);
     }
-
-
     to {
-
-
-        opacity:1;
-
-        transform:scale(1);
-
-
+        opacity: 1;
+        transform: scale(1) translateY(0);
     }
-
-
-}
-
-
-
-
-
-
-
-/* ===================================
-   RULETAS DE FONDO CASINO
-=================================== */
-
-
-.ruleta-fondo {
-
-
-    position:absolute;
-
-
-    opacity:.15;
-
-
-    filter:blur(6px);
-
-
-    animation:
-
-            movimientoRuleta 8s infinite alternate;
-
-
-}
-
-
-
-
-.ruleta-izquierda {
-
-
-    top:-80px;
-
-    left:-80px;
-
-
-}
-
-
-
-.ruleta-derecha {
-
-
-    bottom:-80px;
-
-    right:-80px;
-
-
-    animation-delay:2s;
-
-
-}
-
-
-
-
-.ruleta-centro {
-
-
-    top:40%;
-
-    left:70%;
-
-
-    animation-delay:4s;
-
-
-}
-
-
-
-
-
-
-@keyframes movimientoRuleta {
-
-
-    from {
-
-
-        transform:
-
-                rotate(-15deg)
-
-                scale(1);
-
-
-    }
-
-
-    to {
-
-
-        transform:
-
-                rotate(20deg)
-
-                scale(1.1);
-
-
-    }
-
-
-}
-
-
-
-
-
-
-
-
-/* ===================================
-   PANTALLA CASINO
-=================================== */
-
-
-.fondo-casino {
-
-
-    position:absolute;
-
-
-    inset:0;
-
-
-    overflow:hidden;
-
-
-}
-
-
-
-.fondo-casino::after {
-
-
-    content:"";
-
-
-    position:absolute;
-
-
-    inset:0;
-
-
-    background:
-
-            rgba(0,0,0,.45);
-
-
-}
-
-
-
-
-
-
-
-.elemento-casino {
-
-
-    position:absolute;
-
-
-    opacity:.25;
-
-
-    filter:blur(5px);
-
-
-    animation:
-
-            movimientoRuleta 10s infinite alternate;
-
-
-}
-
-
-
-
-
-
-/* ===================================
-   LUCES CASINO
-=================================== */
-
-
-.luces-casino {
-
-
-    position:absolute;
-
-
-    inset:0;
-
-
-    background:
-
-            radial-gradient(
-
-                    circle at top,
-
-                    rgba(250,204,21,.3),
-
-                    transparent 50%
-
-            );
-
-
-    animation:
-
-            brilloCasino 5s infinite alternate;
-
-
-}
-
-
-
-
-
-@keyframes brilloCasino {
-
-
-    from {
-
-        opacity:.3;
-
-    }
-
-
-    to {
-
-        opacity:1;
-
-    }
-
-
-}
-
-
-
-
-
-
-
-/* ===================================
-   RULETAS PEQUEÑAS CALCULADORA
-=================================== */
-
-
-.ruleta {
-
-
-    width:160px;
-
-    height:160px;
-
-
-    border-radius:50%;
-
-
-    border:10px solid #facc15;
-
-
-    background:
-
-            conic-gradient(
-
-                    red 0deg 45deg,
-
-                    black 45deg 90deg,
-
-                    red 90deg 135deg,
-
-                    black 135deg 180deg,
-
-                    red 180deg 225deg,
-
-                    black 225deg 270deg,
-
-                    red 270deg 315deg,
-
-                    black 315deg 360deg
-
-            );
-
-
-    box-shadow:
-
-            0 0 0 8px #111827,
-
-            0 15px 30px rgba(0,0,0,.5);
-
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-
-    font-size:50px;
-
-
-}
-
-
-
-
-
-
-
-/* ===================================
-   TRANSICIONES GENERALES
-=================================== */
-
-
-.animacion-hover {
-
-
-    transition:.3s;
-
-
-}
-
-
-.animacion-hover:hover {
-
-
-    transform:translateY(-5px);
-
-
 }
 
 /* ===================================
-   ANIMACIÓN RULETAS CALCULADORA
+   CASINO THEME
 =================================== */
-
-
-.girando {
-
-    animation: girarRuleta .4s linear infinite;
-
-}
-
-
-@keyframes girarRuleta {
-
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
-
-}
-
-
-
-/* ===================================
-   RESULTADO CALCULADORA
-=================================== */
-
-
-.resultado {
-
-    animation: aparecerResultado .6s ease;
-
-}
-
-
-
-@keyframes aparecerResultado {
-
-    from {
-
-        opacity:0;
-
-        transform:scale(.5);
-
-    }
-
-
-    to {
-
-        opacity:1;
-
-        transform:scale(1);
-
-    }
-
-}
-
-
-
-/* ===================================
-   RULETA CALCULADORA
-=================================== */
-
-
-.ruleta {
-
-    width:160px;
-
-    height:160px;
-
-    border-radius:50%;
-
-    border:10px solid #facc15;
-
-    background:
-            conic-gradient(
-                    red 0deg 45deg,
-                    black 45deg 90deg,
-                    red 90deg 135deg,
-                    black 135deg 180deg,
-                    red 180deg 225deg,
-                    black 225deg 270deg,
-                    red 270deg 315deg,
-                    black 315deg 360deg
-            );
-
-    box-shadow:
-            0 0 0 8px #111827,
-            0 15px 30px rgba(0,0,0,.5);
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    font-size:50px;
-
-}
-
-
-
-/* ===================================
-   PANTALLA CASINO
-=================================== */
-
-
-.fondo-casino {
-
-    position:absolute;
-
-    inset:0;
-
-    overflow:hidden;
-
-}
-
-
-
-.fondo-casino::after {
-
-    content:"";
-
-    position:absolute;
-
-    inset:0;
-
-    background:rgba(0,0,0,.45);
-
-}
-
-
-
-/* ===================================
-   LUCES CASINO
-=================================== */
-
-
-.luces-casino {
-
-    position:absolute;
-
-    inset:0;
-
-    background:
-            radial-gradient(
-                    circle at top,
-                    rgba(250,204,21,.3),
-                    transparent 50%
-            );
-
-    animation:
-            brilloCasino 5s infinite alternate;
-
-}
-
-
-
-@keyframes brilloCasino {
-
-    from {
-
-        opacity:.3;
-
-    }
-
-
-    to {
-
-        opacity:1;
-
-    }
-
-}
-
-
-
-/* ===================================
-   TARJETA CASINO
-=================================== */
-
 
 .casino-card {
-
-    animation: aparecerCasino 1s ease;
-
-    position:relative;
-
+    animation: aparecerCasino 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
 }
-
-
 
 .casino-card::before {
-
-    content:"";
-
-    position:absolute;
-
-    inset:0;
-
-    border-radius:35px;
-
-    padding:2px;
-
-    background:
-            linear-gradient(
-                    135deg,
-                    #facc15,
-                    #f59e0b,
-                    #facc15
-            );
-
-
-    -webkit-mask:
-            linear-gradient(#fff 0 0) content-box,
-            linear-gradient(#fff 0 0);
-
-    -webkit-mask-composite:xor;
-
-    mask-composite:exclude;
-
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, #facc15, #f59e0b, #facc15);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
 }
-
-
 
 @keyframes aparecerCasino {
-
-
     from {
-
-        opacity:0;
-
-        transform:scale(.8) translateY(30px);
-
+        opacity: 0;
+        transform: scale(0.95) translateY(20px);
     }
-
-
     to {
-
-        opacity:1;
-
-        transform:scale(1) translateY(0);
-
+        opacity: 1;
+        transform: scale(1) translateY(0);
     }
-
 }
-
-
-
-/* ===================================
-   ELEMENTOS CASINO DE FONDO
-   (usados por Tailwind)
-=================================== */
-
 
 .animate-casino {
-
-    animation:
-            movimientoCasino 12s ease-in-out infinite alternate;
-
+    animation: movimientoCasino 12s ease-in-out infinite alternate;
 }
-
-
 
 .animate-casino-delay {
-
-    animation:
-            movimientoCasino 16s ease-in-out infinite alternate;
-
+    animation: movimientoCasino 16s ease-in-out infinite alternate;
 }
-
-
 
 .animate-casino-slow {
-
-    animation:
-            movimientoCasino 22s ease-in-out infinite alternate;
-
+    animation: movimientoCasino 22s ease-in-out infinite alternate;
 }
 
-
-
 @keyframes movimientoCasino {
-
-
-    0% {
-
-        transform:
-                translate(0,0)
-                rotate(-10deg);
-
-    }
-
-
-
-    50% {
-
-        transform:
-                translate(30px,-30px)
-                rotate(10deg);
-
-    }
-
-
-
-    100% {
-
-        transform:
-                translate(-20px,20px)
-                rotate(-5deg);
-
-    }
-
+    0% { transform: translate(0, 0) rotate(-10deg); }
+    50% { transform: translate(30px, -30px) rotate(10deg); }
+    100% { transform: translate(-20px, 20px) rotate(-5deg); }
 }
 
 /* ===================================
-   AJUSTES RESPONSIVE GENERALES
+   GLASS CARD COMPONENT
 =================================== */
 
-
-html,
-body {
-
-    overflow-x:hidden;
-
+.glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(20px);
 }
 
+/* ===================================
+   GLOW EFFECTS
+=================================== */
 
-
-img,
-svg {
-
-    max-width:100%;
-
+.glow-brand {
+    box-shadow: 0 0 60px -12px rgba(124, 58, 237, 0.3);
 }
 
+.glow-brand-lg {
+    box-shadow: 0 0 80px -20px rgba(124, 58, 237, 0.4);
+}
 
+/* ===================================
+   RESPONSIVE
+=================================== */
 
-/* Mejor adaptación de tarjetas */
-
-@media(max-width:640px){
-
-
+@media (max-width: 640px) {
     .casino-card {
-
-        border-radius:20px;
-
+        border-radius: 20px;
     }
-
-
 
     .resultado strong {
-
-        font-size:32px;
-
+        font-size: 32px;
     }
-
-
 
     table {
-
-        font-size:14px;
-
+        font-size: 14px;
     }
-
-
 }
