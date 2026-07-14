@@ -21,15 +21,61 @@
 
 @section('contenido')
 
-<div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+@php
+    $juegos = [
+        ['slug' => 'gates-of-olympus', 'name' => 'Gates of Olympus', 'provider' => 'Pragmatic Play', 'cat' => 'slots', 'grad' => 'game-gradient-5', 'badge' => 'Popular', 'badgeColor' => 'bg-brand-500/90 text-black', 'rtp' => '96.5%', 'min' => '€0.20', 'max' => '€125'],
+        ['slug' => 'crazy-time', 'name' => 'Crazy Time', 'provider' => 'Evolution', 'cat' => 'live', 'grad' => 'game-gradient-2', 'badge' => 'Nuevo', 'badgeColor' => 'bg-emerald-500/90 text-black', 'rtp' => '96.08%', 'min' => '€0.10', 'max' => '€1000'],
+        ['slug' => 'sweet-bonanza', 'name' => 'Sweet Bonanza', 'provider' => 'Pragmatic Play', 'cat' => 'slots', 'grad' => 'game-gradient-3', 'badge' => '', 'badgeColor' => '', 'rtp' => '96.48%', 'min' => '€0.20', 'max' => '€100'],
+        ['slug' => 'european-roulette', 'name' => 'European Roulette', 'provider' => 'NetEnt', 'cat' => 'ruleta', 'grad' => 'game-gradient-11', 'badge' => '', 'badgeColor' => '', 'rtp' => '97.3%', 'min' => '€0.10', 'max' => '€500'],
+        ['slug' => 'blackjack-vip', 'name' => 'Blackjack VIP', 'provider' => 'Evolution', 'cat' => 'blackjack', 'grad' => 'game-gradient-4', 'badge' => 'VIP', 'badgeColor' => 'bg-purple-500/90 text-white', 'rtp' => '99.28%', 'min' => '€5', 'max' => '€5000'],
+        ['slug' => 'book-of-dead', 'name' => 'Book of Dead', 'provider' => "Play'n GO", 'cat' => 'slots', 'grad' => 'game-gradient-1', 'badge' => '', 'badgeColor' => '', 'rtp' => '96.21%', 'min' => '€0.10', 'max' => '€100'],
+        ['slug' => 'crash-rocket', 'name' => 'Crash Rocket', 'provider' => 'Spribe', 'cat' => 'crash', 'grad' => 'game-gradient-8', 'badge' => '', 'badgeColor' => '', 'rtp' => '97.0%', 'min' => '€0.10', 'max' => '€200'],
+        ['slug' => 'texas-holdem', 'name' => "Texas Hold'em", 'provider' => 'PokerStars', 'cat' => 'poker', 'grad' => 'game-gradient-6', 'badge' => '', 'badgeColor' => '', 'rtp' => '98.5%', 'min' => '€1', 'max' => '€10000'],
+        ['slug' => 'starburst', 'name' => 'Starburst', 'provider' => 'NetEnt', 'cat' => 'slots', 'grad' => 'game-gradient-7', 'badge' => 'Clasico', 'badgeColor' => 'bg-blue-500/90 text-white', 'rtp' => '96.09%', 'min' => '€0.10', 'max' => '€100'],
+        ['slug' => 'lightning-roulette', 'name' => 'Lightning Roulette', 'provider' => 'Evolution', 'cat' => 'ruleta', 'grad' => 'game-gradient-12', 'badge' => '', 'badgeColor' => '', 'rtp' => '97.3%', 'min' => '€0.20', 'max' => '€500'],
+        ['slug' => 'big-bass-bonanza', 'name' => 'Big Bass Bonanza', 'provider' => 'Pragmatic Play', 'cat' => 'slots', 'grad' => 'game-gradient-9', 'badge' => '', 'badgeColor' => '', 'rtp' => '96.71%', 'min' => '€0.10', 'max' => '€250'],
+        ['slug' => 'blackjack-classic', 'name' => 'Blackjack Classic', 'provider' => 'Microgaming', 'cat' => 'blackjack', 'grad' => 'game-gradient-10', 'badge' => '', 'badgeColor' => '', 'rtp' => '99.91%', 'min' => '€1', 'max' => '€2000'],
+    ];
+
+    $cats = [
+        ['id' => 'todos', 'label' => 'Todos', 'icon' => '&#x1F3AE;'],
+        ['id' => 'slots', 'label' => 'Slots', 'icon' => '&#x1F3B0;'],
+        ['id' => 'ruleta', 'label' => 'Ruleta', 'icon' => '&#x1F3B2;'],
+        ['id' => 'blackjack', 'label' => 'Blackjack', 'icon' => '&#x1F0CF;'],
+        ['id' => 'poker', 'label' => 'Poker', 'icon' => '&#x1F0AD;'],
+        ['id' => 'live', 'label' => 'Live Casino', 'icon' => '&#x1F4FA;'],
+        ['id' => 'crash', 'label' => 'Crash', 'icon' => '&#x1F680;'],
+    ];
+@endphp
+
+<div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10"
+     x-data="{
+         selected: 'todos',
+         search: '',
+         sort: 'default',
+         juegos: @js($juegos),
+         get filtered() {
+             let list = this.juegos;
+             if (this.selected !== 'todos') list = list.filter(j => j.cat === this.selected);
+             if (this.search.trim() !== '') {
+                 const q = this.search.toLowerCase();
+                 list = list.filter(j => j.name.toLowerCase().includes(q) || j.provider.toLowerCase().includes(q));
+             }
+             if (this.sort === 'az') list = [...list].sort((a,b) => a.name.localeCompare(b.name));
+             if (this.sort === 'popular') list = [...list].sort((a,b) => (b.badge === 'Popular' ? 1 : 0) - (a.badge === 'Popular' ? 1 : 0));
+             if (this.sort === 'rtp') list = [...list].sort((a,b) => parseFloat(b.rtp) - parseFloat(a.rtp));
+             return list;
+         },
+         catCount(cat) {
+             if (cat === 'todos') return this.juegos.length;
+             return this.juegos.filter(j => j.cat === cat).length;
+         }
+     }">
 
     <div class="flex flex-col lg:flex-row gap-8">
 
-        {{-- ============================================= --}}
-        {{-- SIDEBAR                                       --}}
-        {{-- ============================================= --}}
-        <aside class="w-full lg:w-64 shrink-0" x-data="{ selected: 'todos' }">
-
+        {{-- SIDEBAR --}}
+        <aside class="w-full lg:w-64 shrink-0">
             <div class="lg:sticky lg:top-20 space-y-6">
 
                 {{-- Buscador movil --}}
@@ -37,54 +83,59 @@
                     <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
-                    <input type="text" placeholder="Buscar juegos..." class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-slate-500 outline-none focus:border-brand-500 transition">
+                    <input x-model="search" type="text" placeholder="Buscar juegos..."
+                        class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-slate-500 outline-none focus:border-brand-500 transition">
                 </div>
 
                 {{-- Categorias --}}
                 <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
                     <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Categorias</h3>
                     <div class="space-y-1">
-                        @php
-                            $categorias = [
-                                ['id' => 'todos', 'label' => 'Todos', 'icon' => '&#x1F3AE;', 'count' => 12],
-                                ['id' => 'slots', 'label' => 'Slots', 'icon' => '&#x1F3B0;', 'count' => 5],
-                                ['id' => 'ruleta', 'label' => 'Ruleta', 'icon' => '&#x1F3B2;', 'count' => 2],
-                                ['id' => 'blackjack', 'label' => 'Blackjack', 'icon' => '&#x1F0CF;', 'count' => 2],
-                                ['id' => 'poker', 'label' => 'Poker', 'icon' => '&#x1F0AD;', 'count' => 1],
-                                ['id' => 'live', 'label' => 'Live Casino', 'icon' => '&#x1F4FA;', 'count' => 1],
-                                ['id' => 'crash', 'label' => 'Crash', 'icon' => '&#x1F680;', 'count' => 1],
-                            ];
-                        @endphp
-
-                        @foreach($categorias as $cat)
+                        @foreach($cats as $cat)
                             <button
-                                onclick="selected = '{{ $cat['id'] }}'; filtrarJuegos('{{ $cat['id'] }}')"
-                                :class="selected === '{{ $cat['id'] }}' ? 'filter-active' : 'text-slate-400 hover:text-white hover:bg-white/5'"
-                                class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium border border-transparent transition-all"
+                                @click="selected = '{{ $cat['id'] }}'"
+                                :class="selected === '{{ $cat['id'] }}'
+                                    ? 'bg-brand-500/10 border-brand-500/30 text-brand-400'
+                                    : 'text-slate-400 hover:text-white hover:bg-white/5 border-transparent'"
+                                class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium border transition-all"
                             >
                                 <span class="flex items-center gap-2.5">
                                     <span class="text-base">{!! $cat['icon'] !!}</span>
                                     {{ $cat['label'] }}
                                 </span>
-                                <span class="text-xs text-slate-600 font-mono">{{ $cat['count'] }}</span>
+                                <span class="text-xs font-mono" :class="selected === '{{ $cat['id'] }}' ? 'text-brand-400/70' : 'text-slate-600'" x-text="catCount('{{ $cat['id'] }}')"></span>
                             </button>
                         @endforeach
                     </div>
                 </div>
 
-                {{-- Filtros --}}
+                {{-- Ordenar --}}
                 <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
                     <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Ordenar por</h3>
                     <div class="space-y-1">
-                        @foreach(['Populares', 'Nuevos', 'Alfabetico', 'Mayor RTP'] as $filtro)
-                            <button class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 border border-transparent transition-all text-left">
-                                {{ $filtro }}
+                        @php
+                            $sortOpts = [
+                                ['id' => 'default', 'label' => 'Predeterminado'],
+                                ['id' => 'popular', 'label' => 'Populares'],
+                                ['id' => 'az', 'label' => 'Alfabetico'],
+                                ['id' => 'rtp', 'label' => 'Mayor RTP'],
+                            ];
+                        @endphp
+                        @foreach($sortOpts as $opt)
+                            <button
+                                @click="sort = '{{ $opt['id'] }}'"
+                                :class="sort === '{{ $opt['id'] }}'
+                                    ? 'bg-brand-500/10 border-brand-500/30 text-brand-400'
+                                    : 'text-slate-400 hover:text-white hover:bg-white/5 border-transparent'"
+                                class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium border transition-all text-left"
+                            >
+                                {{ $opt['label'] }}
                             </button>
                         @endforeach
                     </div>
                 </div>
 
-                {{-- Promo card --}}
+                {{-- Promo --}}
                 <div class="rounded-2xl bg-gradient-to-br from-brand-500/20 to-brand-600/10 border border-brand-500/20 p-5">
                     <div class="text-2xl mb-3">&#x1F389;</div>
                     <h3 class="text-sm font-bold text-white mb-1">Bonus de bienvenida</h3>
@@ -97,25 +148,27 @@
             </div>
         </aside>
 
-        {{-- ============================================= --}}
-        {{-- CONTENIDO PRINCIPAL                           --}}
-        {{-- ============================================= --}}
+        {{-- CONTENIDO --}}
         <div class="flex-1 min-w-0">
+
+            {{-- Buscador desktop --}}
+            <div class="relative mb-6 hidden lg:block">
+                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <input x-model="search" type="text" placeholder="Buscar por nombre o proveedor..."
+                    class="w-full pl-12 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition">
+            </div>
 
             {{-- Featured 2x1 --}}
             <div class="mb-8">
                 <div class="flex items-center justify-between mb-5">
                     <h2 class="text-xl font-bold text-white">Destacados</h2>
-                    <span class="text-xs text-slate-500 font-medium">Los mas populares</span>
                 </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
-                    {{-- Featured 1 --}}
-                    <div class="featured-card game-gradient-5 aspect-[16/9] sm:aspect-[16/10] flex items-end">
+                    <a href="{{ route('juego.show', 'gates-of-olympus') }}" class="featured-card game-gradient-5 aspect-[16/9] sm:aspect-[16/10] flex items-end">
                         <div class="featured-overlay"></div>
-                        <div class="absolute top-4 left-4 z-10">
-                            <span class="px-3 py-1 rounded-lg bg-brand-500/90 text-black text-xs font-bold uppercase tracking-wider">Popular</span>
-                        </div>
+                        <div class="absolute top-4 left-4 z-10"><span class="px-3 py-1 rounded-lg bg-brand-500/90 text-black text-xs font-bold uppercase tracking-wider">Popular</span></div>
                         <div class="relative z-10 p-5 sm:p-6 w-full">
                             <div class="flex items-center gap-2 mb-2">
                                 <span class="text-xs font-semibold text-brand-300">Pragmatic Play</span>
@@ -124,22 +177,14 @@
                             </div>
                             <h3 class="text-xl sm:text-2xl font-extrabold text-white mb-3">Gates of Olympus</h3>
                             <div class="flex items-center gap-3">
-                                <a href="#" class="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-400 text-black text-sm font-bold transition shadow-lg shadow-brand-500/20">
-                                    Jugar ahora
-                                </a>
-                                <a href="#" class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-sm font-semibold transition border border-white/10">
-                                    Demo
-                                </a>
+                                <span class="px-5 py-2.5 rounded-xl bg-brand-500 text-black text-sm font-bold">Jugar ahora</span>
+                                <span class="px-5 py-2.5 rounded-xl bg-white/10 text-white text-sm font-semibold border border-white/10">Demo</span>
                             </div>
                         </div>
-                    </div>
-
-                    {{-- Featured 2 --}}
-                    <div class="featured-card game-gradient-2 aspect-[16/9] sm:aspect-[16/10] flex items-end">
+                    </a>
+                    <a href="{{ route('juego.show', 'crazy-time') }}" class="featured-card game-gradient-2 aspect-[16/9] sm:aspect-[16/10] flex items-end">
                         <div class="featured-overlay"></div>
-                        <div class="absolute top-4 left-4 z-10">
-                            <span class="px-3 py-1 rounded-lg bg-emerald-500/90 text-black text-xs font-bold uppercase tracking-wider">Nuevo</span>
-                        </div>
+                        <div class="absolute top-4 left-4 z-10"><span class="px-3 py-1 rounded-lg bg-emerald-500/90 text-black text-xs font-bold uppercase tracking-wider">Nuevo</span></div>
                         <div class="relative z-10 p-5 sm:p-6 w-full">
                             <div class="flex items-center gap-2 mb-2">
                                 <span class="text-xs font-semibold text-emerald-300">Evolution</span>
@@ -148,109 +193,53 @@
                             </div>
                             <h3 class="text-xl sm:text-2xl font-extrabold text-white mb-3">Crazy Time</h3>
                             <div class="flex items-center gap-3">
-                                <a href="#" class="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-400 text-black text-sm font-bold transition shadow-lg shadow-brand-500/20">
-                                    Jugar ahora
-                                </a>
-                                <a href="#" class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-sm font-semibold transition border border-white/10">
-                                    Demo
-                                </a>
+                                <span class="px-5 py-2.5 rounded-xl bg-brand-500 text-black text-sm font-bold">Jugar ahora</span>
+                                <span class="px-5 py-2.5 rounded-xl bg-white/10 text-white text-sm font-semibold border border-white/10">Demo</span>
                             </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
             </div>
 
-            {{-- Todos los juegos --}}
+            {{-- Grid juegos --}}
             <div>
                 <div class="flex items-center justify-between mb-5">
                     <h2 class="text-xl font-bold text-white">Todos los juegos</h2>
-                    <span class="text-xs text-slate-500 font-medium">12 juegos</span>
+                    <span class="text-sm text-slate-500 font-medium" x-text="filtered.length + ' juegos'"></span>
                 </div>
 
-                <div id="grid-juegos" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-
-                    @php
-                        $juegos = [
-                            ['name' => 'Gates of Olympus', 'provider' => 'Pragmatic Play', 'cat' => 'slots', 'grad' => 'game-gradient-5', 'badge' => '', 'badgeColor' => ''],
-                            ['name' => 'Crazy Time', 'provider' => 'Evolution', 'cat' => 'live', 'grad' => 'game-gradient-2', 'badge' => 'Nuevo', 'badgeColor' => 'bg-emerald-500/90 text-black'],
-                            ['name' => 'Sweet Bonanza', 'provider' => 'Pragmatic Play', 'cat' => 'slots', 'grad' => 'game-gradient-3', 'badge' => '', 'badgeColor' => ''],
-                            ['name' => 'European Roulette', 'provider' => 'NetEnt', 'cat' => 'ruleta', 'grad' => 'game-gradient-11', 'badge' => '', 'badgeColor' => ''],
-                            ['name' => 'Blackjack VIP', 'provider' => 'Evolution', 'cat' => 'blackjack', 'grad' => 'game-gradient-4', 'badge' => 'VIP', 'badgeColor' => 'bg-purple-500/90 text-white'],
-                            ['name' => 'Book of Dead', 'provider' => 'Play\'n GO', 'cat' => 'slots', 'grad' => 'game-gradient-1', 'badge' => '', 'badgeColor' => ''],
-                            ['name' => 'Crash Rocket', 'provider' => 'Spribe', 'cat' => 'crash', 'grad' => 'game-gradient-8', 'badge' => '', 'badgeColor' => ''],
-                            ['name' => 'Texas Hold\'em', 'provider' => 'PokerStars', 'cat' => 'poker', 'grad' => 'game-gradient-6', 'badge' => '', 'badgeColor' => ''],
-                            ['name' => 'Starburst', 'provider' => 'NetEnt', 'cat' => 'slots', 'grad' => 'game-gradient-7', 'badge' => 'Clasico', 'badgeColor' => 'bg-blue-500/90 text-white'],
-                            ['name' => 'Lightning Roulette', 'provider' => 'Evolution', 'cat' => 'ruleta', 'grad' => 'game-gradient-12', 'badge' => '', 'badgeColor' => ''],
-                            ['name' => 'Big Bass Bonanza', 'provider' => 'Pragmatic Play', 'cat' => 'slots', 'grad' => 'game-gradient-9', 'badge' => '', 'badgeColor' => ''],
-                            ['name' => ' Blackjack Classic', 'provider' => 'Microgaming', 'cat' => 'blackjack', 'grad' => 'game-gradient-10', 'badge' => '', 'badgeColor' => ''],
-                        ];
-                    @endphp
-
-                    @foreach($juegos as $juego)
-                        <div class="game-card aspect-[3/4] {{ $juego['grad'] }}" data-cat="{{ $juego['cat'] }}">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                    <template x-for="j in filtered" :key="j.slug">
+                        <a :href="'{{ url('/juego') }}/' + j.slug" class="game-card aspect-[3/4]" :class="j.grad">
                             <div class="game-overlay"></div>
 
-                            @if($juego['badge'])
+                            <template x-if="j.badge">
                                 <div class="absolute top-3 left-3 z-10">
-                                    <span class="px-2.5 py-1 rounded-lg {{ $juego['badgeColor'] }} text-[11px] font-bold uppercase tracking-wider">
-                                        {{ $juego['badge'] }}
-                                    </span>
+                                    <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider" :class="j.badgeColor" x-text="j.badge"></span>
                                 </div>
-                            @endif
-
-                            <div class="absolute inset-0 flex items-center justify-center text-5xl sm:text-6xl opacity-20 select-none pointer-events-none">
-                                @if($juego['cat'] === 'slots') &#x1F3B0;
-                                @elseif($juego['cat'] === 'ruleta') &#x1F3B2;
-                                @elseif($juego['cat'] === 'blackjack') &#x1F0CF;
-                                @elseif($juego['cat'] === 'poker') &#x1F0AD;
-                                @elseif($juego['cat'] === 'live') &#x1F4FA;
-                                @elseif($juego['cat'] === 'crash') &#x1F680;
-                                @endif
-                            </div>
+                            </template>
 
                             <div class="game-actions z-10">
-                                <a href="#" class="block w-full text-center rounded-xl bg-brand-500 hover:bg-brand-400 text-black text-sm font-bold py-2.5 transition mb-2">
-                                    Jugar
-                                </a>
-                                <a href="#" class="block w-full text-center rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold py-2 transition border border-white/10">
-                                    Demo
-                                </a>
+                                <span class="block w-full text-center rounded-xl bg-brand-500 hover:bg-brand-400 text-black text-sm font-bold py-2.5 transition mb-2">Jugar</span>
+                                <span class="block w-full text-center rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold py-2 transition border border-white/10">Demo</span>
                             </div>
 
                             <div class="absolute bottom-0 left-0 right-0 p-3 sm:p-4 z-10">
-                                <p class="text-xs text-slate-400 mb-0.5">{{ $juego['provider'] }}</p>
-                                <p class="text-sm sm:text-base font-bold text-white leading-tight">{{ $juego['name'] }}</p>
+                                <p class="text-xs text-slate-400 mb-0.5" x-text="j.provider"></p>
+                                <p class="text-sm sm:text-base font-bold text-white leading-tight" x-text="j.name"></p>
                             </div>
-                        </div>
-                    @endforeach
+                        </a>
+                    </template>
+                </div>
 
+                <div x-show="filtered.length === 0" class="text-center py-20">
+                    <div class="text-4xl mb-3">&#x1F50D;</div>
+                    <p class="text-slate-500">No se encontraron juegos.</p>
                 </div>
             </div>
 
         </div>
-
     </div>
-
 </div>
 
 @endsection
-
-@push('scripts')
-<script>
-    function filtrarJuegos(categoria) {
-        const cards = document.querySelectorAll('#grid-juegos .game-card');
-        let count = 0;
-
-        cards.forEach(card => {
-            if (categoria === 'todos' || card.dataset.cat === categoria) {
-                card.style.display = '';
-                count++;
-            } else {
-                card.style.display = 'none';
-            }
-        });
-
-        document.querySelector('#grid-juegos').closest('div').querySelector('span.text-xs').textContent = count + ' juegos';
-    }
-</script>
-@endpush

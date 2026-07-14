@@ -59,11 +59,11 @@
                     </div>
                 </div>
 
-                <a href="#" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition">
-                    Populares
+                <a href="{{ url('/apuestas') }}" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition">
+                    Apuestas
                 </a>
-                <a href="#" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition">
-                    Nuevos
+                <a href="{{ url('/cajas') }}" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition">
+                    Cajas
                 </a>
 
                 <div class="w-px h-6 bg-white/10 mx-2"></div>
@@ -125,6 +125,12 @@
             </div>
 
             <div class="flex flex-col gap-1">
+                <a href="{{ url('/') }}" class="px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition">Inicio</a>
+                <a href="{{ url('/apuestas') }}" class="px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition">Apuestas Deportivas</a>
+                <a href="{{ url('/cajas') }}" class="px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition">Cajas de Azar</a>
+
+                <div class="h-px bg-white/5 my-2"></div>
+
                 @foreach(['Slots', 'Ruleta', 'Blackjack', 'Poker', 'Live Casino'] as $cat)
                     <a href="#" class="px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition">{{ $cat }}</a>
                 @endforeach

@@ -20,6 +20,8 @@
                     <li><a href="#" class="hover:text-brand-400 transition">Blackjack</a></li>
                     <li><a href="#" class="hover:text-brand-400 transition">Poker</a></li>
                     <li><a href="#" class="hover:text-brand-400 transition">Live Casino</a></li>
+                    <li><a href="{{ url('/apuestas') }}" class="hover:text-brand-400 transition">Apuestas Deportivas</a></li>
+                    <li><a href="{{ url('/cajas') }}" class="hover:text-brand-400 transition">Cajas de Azar</a></li>
                 </ul>
             </div>
 
