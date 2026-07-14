@@ -170,7 +170,7 @@
                     <template x-for="(h, i) in historial.slice(0, 8)" :key="i">
                         <div class="flex items-center justify-between text-xs">
                             <span class="text-slate-400" x-text="h.puntos + ' pts'"></span>
-                            <span class="text-slate-500" x-text="h dealer_puntos ? 'vs ' + h.dealer_puntos : ''"></span>
+                            <span class="text-slate-500" x-text="h.dealer_puntos ? 'vs ' + h.dealer_puntos : ''"></span>
                             <span :class="h.ganancia > 0 ? 'text-emerald-400' : 'text-red-400'"
                                   x-text="h.ganancia > 0 ? '+€' + h.ganancia.toFixed(2) : '-€' + h.apuesta.toFixed(2)"></span>
                         </div>

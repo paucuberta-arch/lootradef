@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Partida;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 
 class CrashController extends Controller
 {
@@ -29,22 +30,49 @@ class CrashController extends Controller
         $apuesta = round($request->apuesta, 2);
 
         if (!$user->cartera->apostar($apuesta)) {
-            return back()->withErrors(['apuesta' => 'Saldo insuficiente.']);
+            return response()->json(['error' => 'Saldo insuficiente.'], 422);
         }
 
         $crashPoint = $this->generateCrashPoint();
-        $cashoutAt = $request->cashout_at ? (float) $request->cashout_at : null;
 
-        if ($cashoutAt && $cashoutAt >= $crashPoint) {
+        Session::put('crash_round', [
+            'crash_point' => $crashPoint,
+            'apuesta' => $apuesta,
+            'started_at' => now()->timestamp,
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'saldo' => $user->cartera->saldo,
+        ]);
+    }
+
+    public function cashout(Request $request)
+    {
+        $request->validate([
+            'multiplier' => 'required|numeric|min:1.01',
+        ]);
+
+        $user = Auth::user();
+        $round = Session::get('crash_round');
+
+        if (!$round) {
+            return response()->json(['error' => 'No hay ronda activa.'], 422);
+        }
+
+        Session::forget('crash_round');
+
+        $crashPoint = $round['crash_point'];
+        $apuesta = $round['apuesta'];
+        $multiplier = round($request->multiplier, 2);
+
+        if ($multiplier >= $crashPoint) {
             $ganancia = 0;
             $resultado = 'crash';
-        } elseif ($cashoutAt && $cashoutAt > 1) {
-            $ganancia = round($apuesta * $cashoutAt, 2);
+        } else {
+            $ganancia = round($apuesta * $multiplier, 2);
             $resultado = 'cobrado';
             $user->cartera->ganar($ganancia);
-        } else {
-            $ganancia = 0;
-            $resultado = 'crash';
         }
 
         Partida::create([
@@ -54,16 +82,46 @@ class CrashController extends Controller
             'ganancia' => $ganancia,
             'detalles' => [
                 'crash_point' => $crashPoint,
-                'cashout_at' => $cashoutAt,
+                'cashout_at' => $multiplier,
                 'resultado' => $resultado,
             ],
         ]);
 
         return response()->json([
             'crash_point' => $crashPoint,
-            'cashout_at' => $cashoutAt,
             'ganancia' => $ganancia,
             'resultado' => $resultado,
+            'saldo' => $user->cartera->saldo,
+        ]);
+    }
+
+    public function crash(Request $request)
+    {
+        $round = Session::get('crash_round');
+        if (!$round) return response()->json(['ok' => true]);
+
+        Session::forget('crash_round');
+
+        $user = Auth::user();
+        $apuesta = $round['apuesta'];
+        $crashPoint = $round['crash_point'];
+
+        Partida::create([
+            'usuario_id' => $user->id,
+            'juego' => 'crash',
+            'apuesta' => $apuesta,
+            'ganancia' => 0,
+            'detalles' => [
+                'crash_point' => $crashPoint,
+                'cashout_at' => null,
+                'resultado' => 'crash',
+            ],
+        ]);
+
+        return response()->json([
+            'crash_point' => $crashPoint,
+            'ganancia' => 0,
+            'resultado' => 'crash',
             'saldo' => $user->cartera->saldo,
         ]);
     }

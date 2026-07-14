@@ -17,29 +17,23 @@
 
     <div class="flex flex-col lg:flex-row gap-6">
 
-        {{-- Zona del juego --}}
         <div class="flex-1 min-w-0">
 
-            {{-- Header --}}
             <div class="flex items-center justify-between mb-6">
                 <div>
                     <h1 class="text-2xl font-extrabold text-white">Crash Rocket</h1>
                     <p class="text-sm text-slate-500 mt-1">Multiplicador creciente — cobra antes de que explote</p>
                 </div>
-                <div class="flex items-center gap-3">
-                    <div class="px-4 py-2 rounded-xl bg-white/5 border border-white/10">
-                        <span class="text-xs text-slate-500">Saldo</span>
-                        <span class="ml-2 text-sm font-bold text-brand-400" x-text="'€' + saldo.toFixed(2)"></span>
-                    </div>
+                <div class="px-4 py-2 rounded-xl bg-white/5 border border-white/10">
+                    <span class="text-xs text-slate-500">Saldo</span>
+                    <span class="ml-2 text-sm font-bold text-brand-400" x-text="'€' + saldo.toFixed(2)"></span>
                 </div>
             </div>
 
-            {{-- Pantalla del crash --}}
             <div class="rounded-2xl bg-white/[0.03] border border-white/5 overflow-hidden mb-6">
                 <div class="relative h-64 sm:h-80 flex items-center justify-center"
                      :class="fase === 'crashed' ? 'crash-shake' : ''">
 
-                    {{-- Fondo de la grafica --}}
                     <div class="absolute inset-0 p-4">
                         <svg class="w-full h-full" viewBox="0 0 100 60" preserveAspectRatio="none">
                             <line x1="0" y1="58" x2="100" y2="58" stroke="rgba(255,255,255,0.05)" stroke-width="0.5"/>
@@ -56,7 +50,6 @@
                         </svg>
                     </div>
 
-                    {{-- Numero central --}}
                     <div class="relative z-10 text-center">
                         <template x-if="fase === 'esperando'">
                             <div>
@@ -73,18 +66,18 @@
                         <template x-if="fase === 'crashed'">
                             <div>
                                 <div class="text-5xl sm:text-6xl font-black text-red-500" x-text="crashAt.toFixed(2) + 'x'"></div>
-                                <p class="text-sm text-red-400 mt-2">¡Explotado!</p>
+                                <p class="text-sm text-red-400 mt-2">Explotado!</p>
                             </div>
                         </template>
                         <template x-if="fase === 'cobrado'">
                             <div>
                                 <div class="text-5xl sm:text-6xl font-black text-emerald-400" x-text="cashoutAt.toFixed(2) + 'x'"></div>
-                                <p class="text-sm text-emerald-400 mt-2">¡Cobrado!</p>
+                                <p class="text-sm text-emerald-400 mt-2">Cobrado!</p>
+                                <p class="text-lg text-emerald-300 font-bold mt-1" x-text="'+€' + ganancia.toFixed(2)"></p>
                             </div>
                         </template>
                     </div>
 
-                    {{-- Cohetes en la grafica --}}
                     <template x-if="fase === 'subiendo'">
                         <div class="absolute z-10 text-2xl"
                              :style="'left:' + Math.min(90, (multiplier - 1) * 5 + 5) + '%; bottom:' + Math.min(85, (multiplier - 1) * 8 + 10) + '%'">
@@ -93,7 +86,6 @@
                     </template>
                 </div>
 
-                {{-- Controles --}}
                 <div class="border-t border-white/5 p-4 sm:p-6">
                     <div class="flex flex-col sm:flex-row items-center gap-4">
                         <div class="flex-1 w-full">
@@ -103,7 +95,7 @@
                                    class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-brand-500 transition disabled:opacity-50">
                         </div>
                         <div class="flex-1 w-full">
-                            <label class="text-xs text-slate-500 mb-1 block">Cobrar en (x)</label>
+                            <label class="text-xs text-slate-500 mb-1 block">Auto-cobrar en (x)</label>
                             <input type="number" x-model.number="autoCashout" min="1.01" max="100" step="0.01"
                                    :disabled="fase === 'subiendo'"
                                    class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-brand-500 transition disabled:opacity-50">
@@ -127,7 +119,6 @@
                 </div>
             </div>
 
-            {{-- Historial --}}
             <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
                 <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Historial reciente</h3>
                 <div class="flex flex-wrap gap-2">
@@ -140,7 +131,6 @@
             </div>
         </div>
 
-        {{-- Sidebar --}}
         <aside class="w-full lg:w-72 shrink-0 space-y-5">
             <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
                 <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-3">Info</h3>
@@ -152,8 +142,8 @@
                 </div>
             </div>
             <div class="rounded-2xl bg-gradient-to-br from-brand-500/20 to-brand-600/10 border border-brand-500/20 p-5">
-                <h3 class="text-sm font-bold text-white mb-2">¿Cómo funciona?</h3>
-                <p class="text-xs text-slate-400 leading-relaxed">El multiplicador sube desde 1.00x. Puedes cobrar en cualquier momento. Si explota antes de cobrar, pierdes la apuesta. ¡Cobra a tiempo!</p>
+                <h3 class="text-sm font-bold text-white mb-2">Como funciona?</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">El multiplicador sube desde 1.00x. Puedes cobrar en cualquier momento haciendo clic en "Cobrar". Si el cohete explota antes de cobrar, pierdes la apuesta.</p>
             </div>
         </aside>
     </div>
@@ -170,17 +160,19 @@ function crashGame() {
         multiplier: 1.00,
         crashAt: 0,
         cashoutAt: 0,
+        ganancia: 0,
         error: '',
         graphPoints: '0,58',
         historial: @js($partidas->pluck('detalles.crash_point')->filter()->take(15)->values()->all()),
         interval: null,
+        autoCashoutTriggered: false,
 
         init() {},
 
         async startRound() {
             this.error = '';
             if (this.apuesta <= 0 || this.apuesta > this.saldo) {
-                this.error = 'Apuesta no válida.';
+                this.error = 'Apuesta no valida.';
                 return;
             }
 
@@ -192,31 +184,29 @@ function crashGame() {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'Accept': 'application/json',
                     },
-                    body: JSON.stringify({ apuesta: this.apuesta, cashout_at: this.autoCashout }),
+                    body: JSON.stringify({ apuesta: this.apuesta }),
                 });
                 const data = await res.json();
 
-                if (data.errors) {
-                    this.error = Object.values(data.errors).flat()[0];
+                if (data.error) {
+                    this.error = data.error;
                     return;
                 }
 
-                this.crashAt = data.crash_point;
-                this.cashoutAt = data.cashout_at || 0;
                 this.saldo = data.saldo;
-                this.saldo -= this.apuesta;
                 this.multiplier = 1.00;
+                this.ganancia = 0;
                 this.graphPoints = '0,58';
                 this.fase = 'subiendo';
+                this.autoCashoutTriggered = false;
 
-                this.animateCrash(data);
+                this.animateCrash();
             } catch (e) {
-                this.error = 'Error de conexión.';
+                this.error = 'Error de conexion.';
             }
         },
 
-        animateCrash(data) {
-            const target = data.crash_point;
+        animateCrash() {
             let current = 1.00;
             let pointIndex = 0;
 
@@ -230,24 +220,72 @@ function crashGame() {
                 const y = Math.max(5, 58 - (current - 1) * 8);
                 this.graphPoints += ` ${x},${y}`;
 
-                if (current >= target) {
-                    clearInterval(this.interval);
-                    this.fase = data.cashout_at ? 'cobrado' : 'crashed';
-                    this.saldo = data.saldo;
-                    this.historial.unshift(target);
-                    if (this.historial.length > 15) this.historial.pop();
+                if (!this.autoCashoutTriggered && current >= this.autoCashout) {
+                    this.autoCashoutTriggered = true;
+                    this.doCashout(current);
                 }
             }, 50);
         },
 
-        cashout() {
+        async cashout() {
             if (this.fase !== 'subiendo') return;
             clearInterval(this.interval);
-            this.cashoutAt = this.multiplier;
-            this.fase = 'cobrado';
+            await this.doCashout(this.multiplier);
+        },
 
-            const ganancia = Math.round(this.apuesta * this.multiplier * 100) / 100;
-            this.saldo += ganancia;
+        async doCashout(mult) {
+            try {
+                const res = await fetch('{{ route("crash.cashout") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ multiplier: mult }),
+                });
+                const data = await res.json();
+
+                if (data.error) {
+                    this.error = data.error;
+                    this.fase = 'esperando';
+                    return;
+                }
+
+                this.crashAt = data.crash_point;
+                this.cashoutAt = mult;
+                this.ganancia = data.ganancia;
+                this.saldo = data.saldo;
+
+                if (data.resultado === 'crash') {
+                    this.fase = 'crashed';
+                    this.graphPoints = '0,58';
+                    let c = 1.00;
+                    let pi = 0;
+                    const crashAnim = setInterval(() => {
+                        c += (Math.random() * 0.15) + 0.05;
+                        c = Math.round(c * 100) / 100;
+                        if (c >= data.crash_point) {
+                            clearInterval(crashAnim);
+                            this.fase = 'crashed';
+                        } else {
+                            this.multiplier = c;
+                            pi++;
+                            const x = Math.min(95, pi * 1.5);
+                            const y = Math.max(5, 58 - (c - 1) * 8);
+                            this.graphPoints += ` ${x},${y}`;
+                        }
+                    }, 30);
+                } else {
+                    this.fase = 'cobrado';
+                }
+
+                this.historial.unshift(data.crash_point);
+                if (this.historial.length > 15) this.historial.pop();
+            } catch (e) {
+                this.error = 'Error de conexion.';
+                this.fase = 'esperando';
+            }
         },
     };
 }

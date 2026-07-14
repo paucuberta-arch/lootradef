@@ -139,10 +139,13 @@ Route::post('/iniciar-sesion', [AuthController::class, 'iniciarSesion'])->name('
 
 Route::middleware('auth')->group(function () {
     Route::get('/perfil', [PerfilController::class, 'index'])->name('perfil');
+    Route::post('/perfil/depositar', [PerfilController::class, 'deposit'])->name('perfil.deposit');
     Route::post('/cerrar-sesion', [AuthController::class, 'cerrarSesion'])->name('logout');
 
     Route::get('/jugar/crash', [CrashController::class, 'index'])->name('crash');
     Route::post('/jugar/crash', [CrashController::class, 'play'])->name('crash.play');
+    Route::post('/jugar/crash/cashout', [CrashController::class, 'cashout'])->name('crash.cashout');
+    Route::post('/jugar/crash/crash', [CrashController::class, 'crash'])->name('crash.crash');
 
     Route::get('/jugar/slots', [SlotsController::class, 'index'])->name('slots');
     Route::post('/jugar/slots', [SlotsController::class, 'play'])->name('slots.play');
