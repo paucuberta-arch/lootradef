@@ -57,6 +57,7 @@ public function registrar(Request $request): RedirectResponse
     ]);
 
     $usuario->cartera()->create(['saldo' => 1000.00]);
+    $usuario->assignRole('user');
 
     Auth::login($usuario);
 

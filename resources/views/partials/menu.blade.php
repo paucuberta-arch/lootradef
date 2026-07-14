@@ -64,6 +64,11 @@
                 @endguest
 
                 @auth
+                    @if(auth()->user()->hasAnyRole(['super_admin', 'admin', 'moderator']))
+                        <a href="{{ url('/admin') }}" class="px-3 py-2 rounded-lg text-sm font-medium text-brand-400 hover:text-brand-300 hover:bg-brand-500/5 transition">
+                            Admin
+                        </a>
+                    @endif
                     <div class="px-3 py-1.5 rounded-lg bg-brand-500/10 border border-brand-500/20 text-sm font-bold text-brand-400">
                         €{{ number_format(auth()->user()->cartera->saldo ?? 0, 2) }}
                     </div>
@@ -124,6 +129,9 @@
                 @endguest
 
                 @auth
+                    @if(auth()->user()->hasAnyRole(['super_admin', 'admin', 'moderator']))
+                        <a href="{{ url('/admin') }}" class="px-3 py-2.5 rounded-lg text-sm font-medium text-brand-400 hover:text-brand-300 hover:bg-brand-500/5 transition">Panel Admin</a>
+                    @endif
                     <div class="px-3 py-2 rounded-lg bg-brand-500/10 border border-brand-500/20 text-sm font-bold text-brand-400 text-center">
                         Saldo: €{{ number_format(auth()->user()->cartera->saldo ?? 0, 2) }}
                     </div>

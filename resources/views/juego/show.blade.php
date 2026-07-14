@@ -89,6 +89,19 @@
                 </div>
             </div>
 
+            {{-- Reviews --}}
+            @php
+                $reviews = \App\Models\Review::where('juego_slug', $slug)
+                    ->where('tipo', 'juego')
+                    ->where('estado', 'aprobado')
+                    ->with('usuario')
+                    ->latest()
+                    ->take(10)
+                    ->get()
+                    ->toArray();
+            @endphp
+            <x-review-widget :slug="$slug" :reviews="$reviews" review-type="juego" />
+
         </div>
 
         {{-- Sidebar info --}}
