@@ -1,107 +1,256 @@
 @extends('layouts.app')
 
-@section('title', 'Lootra — Calculadora Profesional')
+@section('title', 'Lootra Casino — Juegos de Casino Online')
+
+@section('styles')
+<style>
+    .game-gradient-1 { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
+    .game-gradient-2 { background: linear-gradient(135deg, #2d1b69 0%, #11998e 100%); }
+    .game-gradient-3 { background: linear-gradient(135deg, #c31432 0%, #240b36 100%); }
+    .game-gradient-4 { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); }
+    .game-gradient-5 { background: linear-gradient(135deg, #f12711 0%, #f5af19 100%); }
+    .game-gradient-6 { background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%); }
+    .game-gradient-7 { background: linear-gradient(135deg, #7f00ff 0%, #e100ff 100%); }
+    .game-gradient-8 { background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%); }
+    .game-gradient-9 { background: linear-gradient(135deg, #1f1c2c 0%, #928dab 100%); }
+    .game-gradient-10 { background: linear-gradient(135deg, #e44d26 0%, #f16529 100%); }
+    .game-gradient-11 { background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%); }
+    .game-gradient-12 { background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); }
+</style>
+@endsection
 
 @section('contenido')
 
-    {{-- HERO --}}
-    <section class="relative overflow-hidden">
-        {{-- Background glow --}}
-        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-brand-600/20 rounded-full blur-[120px] pointer-events-none"></div>
-        <div class="absolute bottom-0 right-0 w-[400px] h-[400px] bg-brand-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+<div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
 
-        <div class="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24 sm:pt-28 sm:pb-32 text-center">
+    <div class="flex flex-col lg:flex-row gap-8">
 
-            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-300 text-sm font-medium mb-8">
-                <span class="w-2 h-2 rounded-full bg-brand-400 animate-pulse"></span>
-                Calculadora profesional
-            </div>
+        {{-- ============================================= --}}
+        {{-- SIDEBAR                                       --}}
+        {{-- ============================================= --}}
+        <aside class="w-full lg:w-64 shrink-0" x-data="{ selected: 'todos' }">
 
-            <h1 class="text-4xl sm:text-5xl lg:text-7xl font-black tracking-tight leading-[1.1] mb-6">
-                <span class="text-white">Realiza cálculos</span><br>
-                <span class="bg-gradient-to-r from-brand-400 via-brand-300 to-blue-400 bg-clip-text text-transparent">
-                    de forma inteligente.
-                </span>
-            </h1>
+            <div class="lg:sticky lg:top-20 space-y-6">
 
-            <p class="max-w-2xl mx-auto text-lg sm:text-xl text-slate-400 leading-relaxed mb-10">
-                Suma, resta, multiplica y divide con una interfaz moderna.
-                Guarda tu historial y accede a tus resultados en cualquier momento.
-            </p>
-
-            <div class="flex flex-col sm:flex-row justify-center gap-4">
-                <a href="{{ route('suma') }}"
-                   class="group relative px-8 py-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-lg transition-all shadow-xl shadow-brand-600/25 hover:shadow-brand-500/40 hover:-translate-y-0.5">
-                    Empezar a calcular
-                    <span class="inline-block ml-2 transition-transform group-hover:translate-x-1">&rarr;</span>
-                </a>
-                <a href="{{ route('registro') }}"
-                   class="px-8 py-4 rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold text-lg border border-white/10 hover:border-white/20 transition-all">
-                    Crear cuenta gratis
-                </a>
-            </div>
-
-        </div>
-    </section>
-
-    {{-- FEATURES --}}
-    <section class="relative py-20 sm:py-28">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-
-            <div class="text-center mb-16">
-                <h2 class="text-2xl sm:text-3xl font-bold text-white mb-4">Todo lo que necesitas</h2>
-                <p class="text-slate-400 text-lg max-w-xl mx-auto">Herramientas diseñadas para hacer tu vida más fácil.</p>
-            </div>
-
-            <div class="grid sm:grid-cols-3 gap-6">
-
-                <div class="glass-card rounded-2xl p-6 sm:p-8 hover:bg-white/[0.05] transition-colors group">
-                    <div class="w-12 h-12 rounded-xl bg-brand-500/10 flex items-center justify-center text-2xl mb-5 group-hover:scale-110 transition-transform">
-                        &#x2795;
-                    </div>
-                    <h3 class="text-lg font-bold text-white mb-2">Cuatro operaciones</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">Suma, resta, multiplicación y división con tantos números como necesites.</p>
+                {{-- Buscador movil --}}
+                <div class="relative lg:hidden">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" placeholder="Buscar juegos..." class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-slate-500 outline-none focus:border-brand-500 transition">
                 </div>
 
-                <div class="glass-card rounded-2xl p-6 sm:p-8 hover:bg-white/[0.05] transition-colors group">
-                    <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-2xl mb-5 group-hover:scale-110 transition-transform">
-                        &#x1F4CA;
+                {{-- Categorias --}}
+                <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Categorias</h3>
+                    <div class="space-y-1">
+                        @php
+                            $categorias = [
+                                ['id' => 'todos', 'label' => 'Todos', 'icon' => '&#x1F3AE;', 'count' => 12],
+                                ['id' => 'slots', 'label' => 'Slots', 'icon' => '&#x1F3B0;', 'count' => 5],
+                                ['id' => 'ruleta', 'label' => 'Ruleta', 'icon' => '&#x1F3B2;', 'count' => 2],
+                                ['id' => 'blackjack', 'label' => 'Blackjack', 'icon' => '&#x1F0CF;', 'count' => 2],
+                                ['id' => 'poker', 'label' => 'Poker', 'icon' => '&#x1F0AD;', 'count' => 1],
+                                ['id' => 'live', 'label' => 'Live Casino', 'icon' => '&#x1F4FA;', 'count' => 1],
+                                ['id' => 'crash', 'label' => 'Crash', 'icon' => '&#x1F680;', 'count' => 1],
+                            ];
+                        @endphp
+
+                        @foreach($categorias as $cat)
+                            <button
+                                onclick="selected = '{{ $cat['id'] }}'; filtrarJuegos('{{ $cat['id'] }}')"
+                                :class="selected === '{{ $cat['id'] }}' ? 'filter-active' : 'text-slate-400 hover:text-white hover:bg-white/5'"
+                                class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium border border-transparent transition-all"
+                            >
+                                <span class="flex items-center gap-2.5">
+                                    <span class="text-base">{!! $cat['icon'] !!}</span>
+                                    {{ $cat['label'] }}
+                                </span>
+                                <span class="text-xs text-slate-600 font-mono">{{ $cat['count'] }}</span>
+                            </button>
+                        @endforeach
                     </div>
-                    <h3 class="text-lg font-bold text-white mb-2">Historial completo</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">Cada cálculo se guarda automáticamente para que puedas consultarlo después.</p>
                 </div>
 
-                <div class="glass-card rounded-2xl p-6 sm:p-8 hover:bg-white/[0.05] transition-colors group">
-                    <div class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-2xl mb-5 group-hover:scale-110 transition-transform">
-                        &#x1F512;
+                {{-- Filtros --}}
+                <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Ordenar por</h3>
+                    <div class="space-y-1">
+                        @foreach(['Populares', 'Nuevos', 'Alfabetico', 'Mayor RTP'] as $filtro)
+                            <button class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 border border-transparent transition-all text-left">
+                                {{ $filtro }}
+                            </button>
+                        @endforeach
                     </div>
-                    <h3 class="text-lg font-bold text-white mb-2">Cuenta personal</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">Regístrate para guardar tus datos de forma segura y acceder desde cualquier dispositivo.</p>
                 </div>
 
-            </div>
-
-        </div>
-    </section>
-
-    {{-- CTA --}}
-    <section class="py-20 sm:py-28">
-        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="glass-card rounded-3xl p-10 sm:p-16 text-center glow-brand">
-                <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">¿Listo para empezar?</h2>
-                <p class="text-slate-400 text-lg mb-8 max-w-lg mx-auto">Comienza a calcular ahora mismo o crea una cuenta para guardar tu historial.</p>
-                <div class="flex flex-col sm:flex-row justify-center gap-4">
-                    <a href="{{ route('suma') }}"
-                       class="px-8 py-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-lg transition-all shadow-xl shadow-brand-600/25 hover:shadow-brand-500/40 hover:-translate-y-0.5">
-                        Ir a la calculadora
-                    </a>
-                    <a href="{{ route('registro') }}"
-                       class="px-8 py-4 rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold text-lg border border-white/10 hover:border-white/20 transition-all">
-                        Crear cuenta
+                {{-- Promo card --}}
+                <div class="rounded-2xl bg-gradient-to-br from-brand-500/20 to-brand-600/10 border border-brand-500/20 p-5">
+                    <div class="text-2xl mb-3">&#x1F389;</div>
+                    <h3 class="text-sm font-bold text-white mb-1">Bonus de bienvenida</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed mb-4">Registrate y recibe un bonus exclusivo para empezar a jugar.</p>
+                    <a href="{{ route('registro') }}" class="block w-full text-center rounded-xl bg-brand-500 hover:bg-brand-400 text-black text-sm font-bold py-2.5 transition">
+                        Registrarse
                     </a>
                 </div>
+
             </div>
+        </aside>
+
+        {{-- ============================================= --}}
+        {{-- CONTENIDO PRINCIPAL                           --}}
+        {{-- ============================================= --}}
+        <div class="flex-1 min-w-0">
+
+            {{-- Featured 2x1 --}}
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-5">
+                    <h2 class="text-xl font-bold text-white">Destacados</h2>
+                    <span class="text-xs text-slate-500 font-medium">Los mas populares</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                    {{-- Featured 1 --}}
+                    <div class="featured-card game-gradient-5 aspect-[16/9] sm:aspect-[16/10] flex items-end">
+                        <div class="featured-overlay"></div>
+                        <div class="absolute top-4 left-4 z-10">
+                            <span class="px-3 py-1 rounded-lg bg-brand-500/90 text-black text-xs font-bold uppercase tracking-wider">Popular</span>
+                        </div>
+                        <div class="relative z-10 p-5 sm:p-6 w-full">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-xs font-semibold text-brand-300">Pragmatic Play</span>
+                                <span class="w-1 h-1 rounded-full bg-slate-600"></span>
+                                <span class="text-xs text-slate-500">Slots</span>
+                            </div>
+                            <h3 class="text-xl sm:text-2xl font-extrabold text-white mb-3">Gates of Olympus</h3>
+                            <div class="flex items-center gap-3">
+                                <a href="#" class="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-400 text-black text-sm font-bold transition shadow-lg shadow-brand-500/20">
+                                    Jugar ahora
+                                </a>
+                                <a href="#" class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-sm font-semibold transition border border-white/10">
+                                    Demo
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Featured 2 --}}
+                    <div class="featured-card game-gradient-2 aspect-[16/9] sm:aspect-[16/10] flex items-end">
+                        <div class="featured-overlay"></div>
+                        <div class="absolute top-4 left-4 z-10">
+                            <span class="px-3 py-1 rounded-lg bg-emerald-500/90 text-black text-xs font-bold uppercase tracking-wider">Nuevo</span>
+                        </div>
+                        <div class="relative z-10 p-5 sm:p-6 w-full">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-xs font-semibold text-emerald-300">Evolution</span>
+                                <span class="w-1 h-1 rounded-full bg-slate-600"></span>
+                                <span class="text-xs text-slate-500">Live Casino</span>
+                            </div>
+                            <h3 class="text-xl sm:text-2xl font-extrabold text-white mb-3">Crazy Time</h3>
+                            <div class="flex items-center gap-3">
+                                <a href="#" class="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-400 text-black text-sm font-bold transition shadow-lg shadow-brand-500/20">
+                                    Jugar ahora
+                                </a>
+                                <a href="#" class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-sm font-semibold transition border border-white/10">
+                                    Demo
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Todos los juegos --}}
+            <div>
+                <div class="flex items-center justify-between mb-5">
+                    <h2 class="text-xl font-bold text-white">Todos los juegos</h2>
+                    <span class="text-xs text-slate-500 font-medium">12 juegos</span>
+                </div>
+
+                <div id="grid-juegos" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+
+                    @php
+                        $juegos = [
+                            ['name' => 'Gates of Olympus', 'provider' => 'Pragmatic Play', 'cat' => 'slots', 'grad' => 'game-gradient-5', 'badge' => '', 'badgeColor' => ''],
+                            ['name' => 'Crazy Time', 'provider' => 'Evolution', 'cat' => 'live', 'grad' => 'game-gradient-2', 'badge' => 'Nuevo', 'badgeColor' => 'bg-emerald-500/90 text-black'],
+                            ['name' => 'Sweet Bonanza', 'provider' => 'Pragmatic Play', 'cat' => 'slots', 'grad' => 'game-gradient-3', 'badge' => '', 'badgeColor' => ''],
+                            ['name' => 'European Roulette', 'provider' => 'NetEnt', 'cat' => 'ruleta', 'grad' => 'game-gradient-11', 'badge' => '', 'badgeColor' => ''],
+                            ['name' => 'Blackjack VIP', 'provider' => 'Evolution', 'cat' => 'blackjack', 'grad' => 'game-gradient-4', 'badge' => 'VIP', 'badgeColor' => 'bg-purple-500/90 text-white'],
+                            ['name' => 'Book of Dead', 'provider' => 'Play\'n GO', 'cat' => 'slots', 'grad' => 'game-gradient-1', 'badge' => '', 'badgeColor' => ''],
+                            ['name' => 'Crash Rocket', 'provider' => 'Spribe', 'cat' => 'crash', 'grad' => 'game-gradient-8', 'badge' => '', 'badgeColor' => ''],
+                            ['name' => 'Texas Hold\'em', 'provider' => 'PokerStars', 'cat' => 'poker', 'grad' => 'game-gradient-6', 'badge' => '', 'badgeColor' => ''],
+                            ['name' => 'Starburst', 'provider' => 'NetEnt', 'cat' => 'slots', 'grad' => 'game-gradient-7', 'badge' => 'Clasico', 'badgeColor' => 'bg-blue-500/90 text-white'],
+                            ['name' => 'Lightning Roulette', 'provider' => 'Evolution', 'cat' => 'ruleta', 'grad' => 'game-gradient-12', 'badge' => '', 'badgeColor' => ''],
+                            ['name' => 'Big Bass Bonanza', 'provider' => 'Pragmatic Play', 'cat' => 'slots', 'grad' => 'game-gradient-9', 'badge' => '', 'badgeColor' => ''],
+                            ['name' => ' Blackjack Classic', 'provider' => 'Microgaming', 'cat' => 'blackjack', 'grad' => 'game-gradient-10', 'badge' => '', 'badgeColor' => ''],
+                        ];
+                    @endphp
+
+                    @foreach($juegos as $juego)
+                        <div class="game-card aspect-[3/4] {{ $juego['grad'] }}" data-cat="{{ $juego['cat'] }}">
+                            <div class="game-overlay"></div>
+
+                            @if($juego['badge'])
+                                <div class="absolute top-3 left-3 z-10">
+                                    <span class="px-2.5 py-1 rounded-lg {{ $juego['badgeColor'] }} text-[11px] font-bold uppercase tracking-wider">
+                                        {{ $juego['badge'] }}
+                                    </span>
+                                </div>
+                            @endif
+
+                            <div class="absolute inset-0 flex items-center justify-center text-5xl sm:text-6xl opacity-20 select-none pointer-events-none">
+                                @if($juego['cat'] === 'slots') &#x1F3B0;
+                                @elseif($juego['cat'] === 'ruleta') &#x1F3B2;
+                                @elseif($juego['cat'] === 'blackjack') &#x1F0CF;
+                                @elseif($juego['cat'] === 'poker') &#x1F0AD;
+                                @elseif($juego['cat'] === 'live') &#x1F4FA;
+                                @elseif($juego['cat'] === 'crash') &#x1F680;
+                                @endif
+                            </div>
+
+                            <div class="game-actions z-10">
+                                <a href="#" class="block w-full text-center rounded-xl bg-brand-500 hover:bg-brand-400 text-black text-sm font-bold py-2.5 transition mb-2">
+                                    Jugar
+                                </a>
+                                <a href="#" class="block w-full text-center rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold py-2 transition border border-white/10">
+                                    Demo
+                                </a>
+                            </div>
+
+                            <div class="absolute bottom-0 left-0 right-0 p-3 sm:p-4 z-10">
+                                <p class="text-xs text-slate-400 mb-0.5">{{ $juego['provider'] }}</p>
+                                <p class="text-sm sm:text-base font-bold text-white leading-tight">{{ $juego['name'] }}</p>
+                            </div>
+                        </div>
+                    @endforeach
+
+                </div>
+            </div>
+
         </div>
-    </section>
+
+    </div>
+
+</div>
 
 @endsection
+
+@push('scripts')
+<script>
+    function filtrarJuegos(categoria) {
+        const cards = document.querySelectorAll('#grid-juegos .game-card');
+        let count = 0;
+
+        cards.forEach(card => {
+            if (categoria === 'todos' || card.dataset.cat === categoria) {
+                card.style.display = '';
+                count++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        document.querySelector('#grid-juegos').closest('div').querySelector('span.text-xs').textContent = count + ' juegos';
+    }
+</script>
+@endpush
