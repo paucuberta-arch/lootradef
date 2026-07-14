@@ -56,6 +56,8 @@ public function registrar(Request $request): RedirectResponse
         'password' => Hash::make($datos['password']),
     ]);
 
+    $usuario->cartera()->create(['saldo' => 1000.00]);
+
     Auth::login($usuario);
 
     $request->session()->regenerate();

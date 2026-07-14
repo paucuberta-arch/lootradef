@@ -64,6 +64,9 @@
                 @endguest
 
                 @auth
+                    <div class="px-3 py-1.5 rounded-lg bg-brand-500/10 border border-brand-500/20 text-sm font-bold text-brand-400">
+                        €{{ number_format(auth()->user()->cartera->saldo ?? 0, 2) }}
+                    </div>
                     <a href="{{ route('perfil') }}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition">
                         <div class="w-7 h-7 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-black text-xs font-bold">
                             {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
@@ -121,6 +124,9 @@
                 @endguest
 
                 @auth
+                    <div class="px-3 py-2 rounded-lg bg-brand-500/10 border border-brand-500/20 text-sm font-bold text-brand-400 text-center">
+                        Saldo: €{{ number_format(auth()->user()->cartera->saldo ?? 0, 2) }}
+                    </div>
                     <a href="{{ route('perfil') }}" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition">
                         <div class="w-7 h-7 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-black text-xs font-bold">
                             {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}

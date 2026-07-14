@@ -3,6 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PerfilController;
+use App\Http\Controllers\CrashController;
+use App\Http\Controllers\SlotsController;
+use App\Http\Controllers\RuletaController;
+use App\Http\Controllers\BlackjackController;
 
 $uegos = [
     'gates-of-olympus' => ['name' => 'Gates of Olympus', 'provider' => 'Pragmatic Play', 'cat' => 'Slots', 'grad' => 'game-gradient-5', 'rtp' => '96.5%', 'volatilidad' => 'Alta', 'max_win' => 'x5000', 'min_bet' => '€0.20', 'max_bet' => '€125', 'lines' => '20', 'reels' => '6', 'description' => 'Viaja al Monte del Olimpo con Zeus en esta emocionante slot de Pragmatic Play. Con un sistema de pagos por clusters y multiplicadores hasta x500, Gates of Olympus ofrece una experiencia de juego unica con graficos espectaculares y efectos de sonido envolventes.'],
@@ -25,7 +29,21 @@ Route::get('/', function () {
 
 Route::get('/juego/{slug}', function ($slug) use ($uegos) {
     if (!isset($uegos[$slug])) abort(404);
-    return view('juego.show', ['juego' => $uegos[$slug], 'slug' => $slug]);
+
+    $gameRoutes = [
+        'crash-rocket' => route('crash'),
+        'sweet-bonanza' => route('slots'),
+        'european-roulette' => route('ruleta'),
+        'lightning-roulette' => route('ruleta'),
+        'blackjack-vip' => route('blackjack'),
+        'blackjack-classic' => route('blackjack'),
+    ];
+
+    return view('juego.show', [
+        'juego' => $uegos[$slug],
+        'slug' => $slug,
+        'playUrl' => $gameRoutes[$slug] ?? null,
+    ]);
 })->name('juego.show');
 
 Route::get('/apuestas', function () {
@@ -45,4 +63,18 @@ Route::post('/iniciar-sesion', [AuthController::class, 'iniciarSesion'])->name('
 Route::middleware('auth')->group(function () {
     Route::get('/perfil', [PerfilController::class, 'index'])->name('perfil');
     Route::post('/cerrar-sesion', [AuthController::class, 'cerrarSesion'])->name('logout');
+
+    Route::get('/jugar/crash', [CrashController::class, 'index'])->name('crash');
+    Route::post('/jugar/crash', [CrashController::class, 'play'])->name('crash.play');
+
+    Route::get('/jugar/slots', [SlotsController::class, 'index'])->name('slots');
+    Route::post('/jugar/slots', [SlotsController::class, 'play'])->name('slots.play');
+
+    Route::get('/jugar/ruleta', [RuletaController::class, 'index'])->name('ruleta');
+    Route::post('/jugar/ruleta', [RuletaController::class, 'play'])->name('ruleta.play');
+
+    Route::get('/jugar/blackjack', [BlackjackController::class, 'index'])->name('blackjack');
+    Route::post('/jugar/blackjack/deal', [BlackjackController::class, 'deal'])->name('blackjack.deal');
+    Route::post('/jugar/blackjack/hit', [BlackjackController::class, 'hit'])->name('blackjack.hit');
+    Route::post('/jugar/blackjack/stand', [BlackjackController::class, 'stand'])->name('blackjack.stand');
 });

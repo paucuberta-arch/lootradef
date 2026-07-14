@@ -46,12 +46,15 @@
                         </div>
                         <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-4">{{ $juego['name'] }}</h1>
                         <div class="flex flex-wrap gap-3">
-                            <a href="#" class="px-6 py-3 rounded-xl bg-brand-500 hover:bg-brand-400 text-black font-bold transition shadow-lg shadow-brand-500/20">
-                                Jugar ahora
-                            </a>
-                            <a href="#" class="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold border border-white/10 transition backdrop-blur-sm">
-                                Jugar en demo
-                            </a>
+                            @if($playUrl)
+                                <a href="{{ $playUrl }}" class="px-6 py-3 rounded-xl bg-brand-500 hover:bg-brand-400 text-black font-bold transition shadow-lg shadow-brand-500/20">
+                                    Jugar ahora
+                                </a>
+                            @else
+                                <a href="#" class="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold border border-white/10 transition backdrop-blur-sm opacity-50 cursor-not-allowed">
+                                    Proximamente
+                                </a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -115,9 +118,15 @@
                         <span class="text-sm font-bold text-brand-400">{{ $juego['max_win'] }}</span>
                     </div>
                 </div>
-                <a href="#" class="block w-full text-center mt-6 rounded-xl bg-brand-500 hover:bg-brand-400 text-black font-bold py-3 transition shadow-lg shadow-brand-500/20">
-                    Jugar ahora
-                </a>
+                @if($playUrl)
+                    <a href="{{ $playUrl }}" class="block w-full text-center mt-6 rounded-xl bg-brand-500 hover:bg-brand-400 text-black font-bold py-3 transition shadow-lg shadow-brand-500/20">
+                        Jugar ahora
+                    </a>
+                @else
+                    <div class="block w-full text-center mt-6 rounded-xl bg-white/5 text-slate-500 font-bold py-3 border border-white/5">
+                        Proximamente
+                    </div>
+                @endif
             </div>
 
             {{-- Juegos similares --}}
