@@ -4,10 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
-use App\Models\Role;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class AdminUserController extends Controller
 {
@@ -23,7 +22,7 @@ class AdminUserController extends Controller
         }
 
         if ($role = $request->input('role')) {
-            $query->whereHas('roles', fn($q) => $q->where('roles.name', $role));
+            $query->whereRoleIs($role);
         }
 
         $usuarios = $query->latest()->paginate(20);
@@ -53,8 +52,7 @@ class AdminUserController extends Controller
             'email' => $datos['email'],
         ]);
 
-        $usuario->removeRole($usuario->roles->first()?->name);
-        $usuario->assignRole($datos['rol']);
+        $usuario->syncRoles($datos['rol']);
 
         if ($request->has('saldo') && $usuario->cartera) {
             $usuario->cartera->update(['saldo' => $datos['saldo']]);

@@ -11,7 +11,7 @@
                 <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center gap-3">
                         <span class="px-3 py-1 rounded-lg text-xs font-bold bg-{{ $role->color }}-500/10 text-{{ $role->color }}-400 border border-{{ $role->color }}-500/20">{{ $role->label }}</span>
-                        <span class="text-xs text-slate-500">{{ $role->usuarios_count ?? $role->usuarios()->count() }} usuarios</span>
+                        <span class="text-xs text-slate-500">{{ $role->users_count }} usuarios</span>
                     </div>
                     @if($role->name !== 'super_admin')
                         <form method="POST" action="{{ route('admin.roles.destroy', $role) }}" onsubmit="return confirm('Eliminar este rol?')">
@@ -41,8 +41,8 @@
                                 <div class="flex flex-wrap gap-1.5">
                                     @foreach($perms as $perm)
                                         <label class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/[0.02] border border-white/5 cursor-pointer hover:bg-white/5 transition">
-                                            <input type="checkbox" name="permissions[]" value="{{ $perm->id }}"
-                                                   {{ $role->permissions->contains('id', $perm->id) ? 'checked' : '' }}
+                                            <input type="checkbox" name="permissions[]" value="{{ $perm->name }}"
+                                                   {{ $role->hasPermissionTo($perm->name) ? 'checked' : '' }}
                                                    class="rounded border-white/20 bg-white/5 text-brand-500 focus:ring-brand-500">
                                             <span class="text-[11px] text-slate-400">{{ $perm->label }}</span>
                                         </label>

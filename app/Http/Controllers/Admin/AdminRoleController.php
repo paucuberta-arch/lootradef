@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Permission;
-use App\Models\Role;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class AdminRoleController extends Controller
 {
     public function index()
     {
-        $roles = Role::with('permissions')->get();
+        $roles = Role::withCount('users')->get();
         $permissions = Permission::all()->groupBy('group');
         return view('admin.roles.index', compact('roles', 'permissions'));
     }
@@ -24,10 +24,10 @@ class AdminRoleController extends Controller
             'color' => 'required|string',
         ]);
 
-        $role = Role::create($datos);
+        $role = Role::create(array_merge($datos, ['guard_name' => 'web']));
 
         if ($request->has('permissions')) {
-            $role->permissions()->sync($request->permissions);
+            $role->syncPermissions($request->permissions);
         }
 
         return redirect()->route('admin.roles')->with('success', "Rol {$role->label} creado.");
@@ -41,7 +41,7 @@ class AdminRoleController extends Controller
         ]);
 
         $role->update($datos);
-        $role->permissions()->sync($request->permissions ?? []);
+        $role->syncPermissions($request->permissions ?? []);
 
         return redirect()->route('admin.roles')->with('success', "Rol {$role->label} actualizado.");
     }
@@ -52,7 +52,7 @@ class AdminRoleController extends Controller
             return back()->withErrors(['error' => 'No se puede eliminar el rol Super Admin.']);
         }
 
-        $usuariosConRol = $role->usuarios()->count();
+        $usuariosConRol = $role->users()->count();
         if ($usuariosConRol > 0) {
             return back()->withErrors(['error' => "Hay {$usuariosConRol} usuarios con este rol. Reasignalos primero."]);
         }
