@@ -10,6 +10,8 @@
     .reel-container {
         overflow: hidden;
         position: relative;
+        background: linear-gradient(155deg, rgba(255,255,255,.96), rgba(203,213,225,.9));
+        box-shadow: inset 0 0 22px rgba(15,23,42,.28), 0 8px 24px rgba(0,0,0,.32);
     }
     .reel-strip {
         display: flex;
@@ -36,6 +38,11 @@
         pointer-events: none;
         font-size: 1.2rem;
     }
+    .slot-cabinet { background: linear-gradient(145deg, rgba(29,11,55,.97), rgba(5,8,25,.98)); box-shadow: inset 0 0 55px rgba(217,70,239,.12), 0 30px 80px rgba(0,0,0,.5); }
+    .slot-cabinet::before { content:""; position:absolute; inset:0; background:var(--game-art) center/cover; opacity:.14; mix-blend-mode:screen; }
+    .slot-symbol { width:100%; aspect-ratio:1; display:grid; place-items:center; color:#111827; font-size:clamp(2.2rem,6vw,4.2rem); filter:drop-shadow(0 7px 7px rgba(15,23,42,.25)); text-shadow:0 2px 0 white; }
+    .reel-shine { position:absolute; inset:0; background:linear-gradient(110deg,transparent 25%,rgba(255,255,255,.45) 48%,transparent 70%); transform:translateX(-100%); pointer-events:none; z-index:3; }
+    .reel-strip.spinning ~ .reel-shine { animation:shimmer .7s linear infinite; }
 </style>
 @endsection
 
@@ -50,29 +57,31 @@
             {{-- Header --}}
             <div class="flex items-center justify-between mb-6">
                 <div>
-                    <h1 class="text-2xl font-extrabold text-white">{{ $gameEmoji }} {{ $gameName }}</h1>
+                    <div class="flex items-center gap-3"><span class="w-11 h-11 rounded-xl bg-gradient-to-br from-fuchsia-500 to-cyan-400 grid place-items-center shadow-lg shadow-fuchsia-500/20"><svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M13 2 4 14h7l-1 8 10-13h-7V2Z" stroke-width="2" stroke-linejoin="round"/></svg></span><h1 class="game-heading font-extrabold">{{ $gameName }}</h1></div>
                     <p class="text-sm text-slate-500 mt-1">{{ $gameTagline }}</p>
                 </div>
-                <div class="px-4 py-2 rounded-xl bg-white/5 border border-white/10">
+                <div class="balance-chip px-4 py-2 rounded-xl">
                     <span class="text-xs text-slate-500">Saldo</span>
                     <span class="ml-2 text-sm font-bold text-brand-400" x-text="'€' + saldo.toFixed(2)"></span>
                 </div>
             </div>
 
             {{-- Maquina tragaperras --}}
-            <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-6 sm:p-8 mb-6">
+            <div class="game-stage rounded-[1.75rem] bg-white/[0.03] border border-white/5 p-6 sm:p-8 mb-6 overflow-hidden">
                 <div class="max-w-md mx-auto">
                     {{-- Carretes --}}
-                    <div class="bg-[#0d0d18] rounded-2xl border-2 border-white/10 p-5 mb-6 relative overflow-hidden"
+                    <div class="slot-cabinet rounded-[1.6rem] border-2 border-fuchsia-400/20 p-5 mb-6 relative overflow-hidden"
+                         style="--game-art:url('https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1000&q=80')"
                          :class="ganancia > 0 && !spinning ? 'win-flash' : ''">
                         <div class="grid grid-cols-3 gap-3">
                             <template x-for="(reel, i) in reels" :key="i">
-                                <div class="reel-container aspect-square rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-center"
+                                <div class="reel-container aspect-square rounded-xl border border-white/40 flex items-center justify-center"
                                      :class="ganancia > 0 && !spinning ? 'win-bounce border-brand-500/50' : ''">
                                     <div class="reel-strip" :id="'reel-' + i"
                                          :class="reelSpinning[i] ? 'spinning' : (reelStopping[i] ? 'stopping' : '')">
-                                        <div class="aspect-square flex items-center justify-center text-4xl sm:text-5xl" x-text="reel"></div>
+                                        <div class="slot-symbol" x-text="reel"></div>
                                     </div>
+                                    <div class="reel-shine"></div>
                                 </div>
                             </template>
                         </div>
@@ -113,7 +122,7 @@
                         </div>
                         <div class="mt-5">
                             <button @click="spin()" :disabled="spinning || apuesta > saldo"
-                                    class="px-8 py-3 rounded-xl bg-brand-500 hover:bg-brand-400 text-black font-bold transition shadow-lg shadow-brand-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    class="cta-shine px-8 py-3 rounded-xl bg-gradient-to-r from-brand-400 via-orange-400 to-fuchsia-500 hover:scale-105 text-black font-bold transition shadow-lg shadow-fuchsia-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
                                 <span x-text="spinning ? 'Girando...' : 'Girar'"></span>
                             </button>
                         </div>
@@ -253,6 +262,7 @@ function slotsGame() {
                 this.ganancia = data.ganancia;
                 this.lastResult = true;
                 this.saldo = data.saldo;
+                Alpine.store('wallet').saldo = data.saldo;
                 window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
                 this.historial.unshift({ reels: data.reels, ganancia: data.ganancia, apuesta: this.apuesta });
 

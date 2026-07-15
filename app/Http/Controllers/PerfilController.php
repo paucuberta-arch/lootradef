@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -23,7 +24,7 @@ class PerfilController extends Controller
         $user = $request->user();
         $amount = round($request->amount, 2);
 
-        if (!$user->cartera) {
+        if (! $user->cartera) {
             return response()->json(['error' => 'No tienes una cartera activa.'], 422);
         }
 
@@ -33,6 +34,13 @@ class PerfilController extends Controller
             'ok' => true,
             'saldo' => $user->cartera->saldo,
             'message' => "€{$amount} anadidos a tu cartera.",
+        ]);
+    }
+
+    public function saldo(Request $request): JsonResponse
+    {
+        return response()->json([
+            'saldo' => (float) ($request->user()->cartera()->value('saldo') ?? 0),
         ]);
     }
 }

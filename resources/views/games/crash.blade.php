@@ -8,6 +8,11 @@
     .pulse-glow { animation: pulse-glow 1.5s ease-in-out infinite; }
     @keyframes crash-shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
     .crash-shake { animation: crash-shake 0.3s ease-in-out 3; }
+    @keyframes rocket-flame { 50% { transform:scaleX(1.45); filter:brightness(1.5); } }
+    .rocket-craft { width:54px; height:24px; border-radius:70% 45% 45% 70%; background:linear-gradient(180deg,#f8fafc,#67e8f9 45%,#2563eb); border:2px solid rgba(255,255,255,.75); box-shadow:0 0 24px rgba(34,211,238,.65); transform:rotate(-28deg); transition:left .12s linear,bottom .12s linear; }
+    .rocket-craft::before { content:""; position:absolute; width:17px; height:17px; left:-13px; top:2px; border-radius:60% 0 0 60%; background:linear-gradient(90deg,transparent,#fb7185,#fbbf24); filter:drop-shadow(-5px 0 8px #ef4444); animation:rocket-flame .16s infinite; }
+    .rocket-craft::after { content:""; position:absolute; right:8px; bottom:-9px; border-left:13px solid #7c3aed; border-top:8px solid transparent; }
+    .rocket-window { position:absolute; width:10px; height:10px; border-radius:50%; right:12px; top:5px; background:#0f172a; border:2px solid #a5f3fc; }
 </style>
 @endsection
 
@@ -21,7 +26,7 @@
 
             <div class="flex items-center justify-between mb-6">
                 <div>
-                    <h1 class="text-2xl font-extrabold text-white">Crash Rocket</h1>
+                    <h1 class="game-heading font-extrabold">Crash Rocket</h1>
                     <p class="text-sm text-slate-500 mt-1">Multiplicador creciente — cobra antes de que explote</p>
                 </div>
                 <div class="px-4 py-2 rounded-xl bg-white/5 border border-white/10">
@@ -30,7 +35,7 @@
                 </div>
             </div>
 
-            <div class="rounded-2xl bg-white/[0.03] border border-white/5 overflow-hidden mb-6">
+            <div class="game-stage rounded-[1.75rem] bg-white/[0.03] border border-white/5 overflow-hidden mb-6">
                 <div class="relative h-64 sm:h-80 flex items-center justify-center"
                      :class="fase === 'crashed' ? 'crash-shake' : ''">
 
@@ -79,9 +84,9 @@
                     </div>
 
                     <template x-if="fase === 'subiendo'">
-                        <div class="absolute z-10 text-2xl"
+                        <div class="absolute z-10 rocket-craft"
                              :style="'left:' + Math.min(90, (multiplier - 1) * 5 + 5) + '%; bottom:' + Math.min(85, (multiplier - 1) * 8 + 10) + '%'">
-                            🚀
+                            <span class="rocket-window"></span>
                         </div>
                     </template>
                 </div>
@@ -195,6 +200,7 @@ function crashGame() {
                 }
 
                 this.saldo = data.saldo;
+                Alpine.store('wallet').saldo = data.saldo;
                 window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
                 this.serverCrashPoint = data.crash_point;
                 this.multiplier = 1.00;
@@ -263,6 +269,7 @@ function crashGame() {
                 this.crashAt = data.crash_point || this.serverCrashPoint;
                 this.ganancia = 0;
                 this.saldo = data.saldo ?? this.saldo;
+                Alpine.store('wallet').saldo = this.saldo;
                 window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: this.saldo } }));
                 this.fase = 'crashed';
 
@@ -318,6 +325,7 @@ function crashGame() {
                 this.cashoutAt = mult;
                 this.ganancia = data.ganancia;
                 this.saldo = data.saldo;
+                Alpine.store('wallet').saldo = data.saldo;
                 window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
 
                 if (data.resultado === 'crash') {

@@ -23,17 +23,17 @@
 
 @php
     $juegos = [
-        ['slug' => 'gates-of-olympus', 'name' => 'Gates of Olympus', 'provider' => 'Pragmatic Play', 'cat' => 'slots', 'grad' => 'game-gradient-5', 'badge' => 'Popular', 'badgeColor' => 'bg-brand-500/90 text-black', 'rtp' => '96.5%', 'min' => '€0.20', 'max' => '€125', 'image' => 'https://images.unsplash.com/photo-1551524559-8af4e6624178?w=600&h=800&fit=crop'],
+        ['slug' => 'gates-of-olympus', 'name' => 'Gates of Olympus', 'provider' => 'Pragmatic Play', 'cat' => 'slots', 'grad' => 'game-gradient-5', 'badge' => 'Popular', 'badgeColor' => 'bg-brand-500/90 text-black', 'rtp' => '96.5%', 'min' => '€0.20', 'max' => '€125', 'image' => 'https://images.unsplash.com/photo-1603565816030-6b389eeb23cb?auto=format&fit=crop&w=700&h=900&q=85'],
         ['slug' => 'crazy-time', 'name' => 'Crazy Time', 'provider' => 'Evolution', 'cat' => 'live', 'grad' => 'game-gradient-2', 'badge' => 'Nuevo', 'badgeColor' => 'bg-emerald-500/90 text-black', 'rtp' => '96.08%', 'min' => '€0.10', 'max' => '€1000', 'image' => 'https://images.unsplash.com/photo-1511882150382-421056c89033?w=600&h=800&fit=crop'],
-        ['slug' => 'sweet-bonanza', 'name' => 'Sweet Bonanza', 'provider' => 'Pragmatic Play', 'cat' => 'slots', 'grad' => 'game-gradient-3', 'badge' => '', 'badgeColor' => '', 'rtp' => '96.48%', 'min' => '€0.20', 'max' => '€100', 'image' => 'https://images.unsplash.com/photo-1558021211-6d002b0e4e6e?w=600&h=800&fit=crop'],
+        ['slug' => 'sweet-bonanza', 'name' => 'Sweet Bonanza', 'provider' => 'Pragmatic Play', 'cat' => 'slots', 'grad' => 'game-gradient-3', 'badge' => '', 'badgeColor' => '', 'rtp' => '96.48%', 'min' => '€0.20', 'max' => '€100', 'image' => 'https://images.unsplash.com/photo-1575224300306-1b8da36134ec?auto=format&fit=crop&w=700&h=900&q=85'],
         ['slug' => 'european-roulette', 'name' => 'European Roulette', 'provider' => 'NetEnt', 'cat' => 'ruleta', 'grad' => 'game-gradient-11', 'badge' => '', 'badgeColor' => '', 'rtp' => '97.3%', 'min' => '€0.10', 'max' => '€500', 'image' => 'https://images.unsplash.com/photo-1517232115160-ff93364542dd?w=600&h=800&fit=crop'],
         ['slug' => 'blackjack-vip', 'name' => 'Blackjack VIP', 'provider' => 'Evolution', 'cat' => 'blackjack', 'grad' => 'game-gradient-4', 'badge' => 'VIP', 'badgeColor' => 'bg-purple-500/90 text-white', 'rtp' => '99.28%', 'min' => '€5', 'max' => '€5000', 'image' => 'https://images.unsplash.com/photo-1541278107931-e006523892df?w=600&h=800&fit=crop'],
         ['slug' => 'book-of-dead', 'name' => 'Book of Dead', 'provider' => "Play'n GO", 'cat' => 'slots', 'grad' => 'game-gradient-1', 'badge' => '', 'badgeColor' => '', 'rtp' => '96.21%', 'min' => '€0.10', 'max' => '€100', 'image' => 'https://images.unsplash.com/photo-1539768942893-daf53e736b68?w=600&h=800&fit=crop'],
-        ['slug' => 'crash-rocket', 'name' => 'Crash Rocket', 'provider' => 'Spribe', 'cat' => 'crash', 'grad' => 'game-gradient-8', 'badge' => '', 'badgeColor' => '', 'rtp' => '97.0%', 'min' => '€0.10', 'max' => '€200', 'image' => 'https://images.unsplash.com/photo-1516849841032-87cbdec47910?w=600&h=800&fit=crop'],
+        ['slug' => 'crash-rocket', 'name' => 'Crash Rocket', 'provider' => 'Spribe', 'cat' => 'crash', 'grad' => 'game-gradient-8', 'badge' => 'Turbo', 'badgeColor' => 'bg-cyan-400/90 text-slate-950', 'rtp' => '97.0%', 'min' => '€0.10', 'max' => '€200', 'image' => 'https://images.unsplash.com/photo-1517976547714-720226b864c1?auto=format&fit=crop&w=700&h=900&q=85'],
         ['slug' => 'texas-holdem', 'name' => "Texas Hold'em", 'provider' => 'PokerStars', 'cat' => 'poker', 'grad' => 'game-gradient-6', 'badge' => '', 'badgeColor' => '', 'rtp' => '98.5%', 'min' => '€1', 'max' => '€10000', 'image' => 'https://images.unsplash.com/photo-1542317783-24cb2074f0a5?w=600&h=800&fit=crop'],
         ['slug' => 'starburst', 'name' => 'Starburst', 'provider' => 'NetEnt', 'cat' => 'slots', 'grad' => 'game-gradient-7', 'badge' => 'Clasico', 'badgeColor' => 'bg-blue-500/90 text-white', 'rtp' => '96.09%', 'min' => '€0.10', 'max' => '€100', 'image' => 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=600&h=800&fit=crop'],
         ['slug' => 'lightning-roulette', 'name' => 'Lightning Roulette', 'provider' => 'Evolution', 'cat' => 'ruleta', 'grad' => 'game-gradient-12', 'badge' => '', 'badgeColor' => '', 'rtp' => '97.3%', 'min' => '€0.20', 'max' => '€500', 'image' => 'https://images.unsplash.com/photo-1507400492013-162706c8c05e?w=600&h=800&fit=crop'],
-        ['slug' => 'big-bass-bonanza', 'name' => 'Big Bass Bonanza', 'provider' => 'Pragmatic Play', 'cat' => 'slots', 'grad' => 'game-gradient-9', 'badge' => '', 'badgeColor' => '', 'rtp' => '96.71%', 'min' => '€0.10', 'max' => '€250', 'image' => 'https://images.unsplash.com/photo-1500463959177-e0869687df26?w=600&h=800&fit=crop'],
+        ['slug' => 'big-bass-bonanza', 'name' => 'Big Bass Bonanza', 'provider' => 'Pragmatic Play', 'cat' => 'slots', 'grad' => 'game-gradient-9', 'badge' => '', 'badgeColor' => '', 'rtp' => '96.71%', 'min' => '€0.10', 'max' => '€250', 'image' => 'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=700&h=900&q=85'],
         ['slug' => 'blackjack-classic', 'name' => 'Blackjack Classic', 'provider' => 'Microgaming', 'cat' => 'blackjack', 'grad' => 'game-gradient-10', 'badge' => '', 'badgeColor' => '', 'rtp' => '99.91%', 'min' => '€1', 'max' => '€2000', 'image' => 'https://images.unsplash.com/photo-1560015534-cee980ba7e13?w=600&h=800&fit=crop'],
     ];
 
@@ -76,7 +76,41 @@
          }
      }">
 
-    <div class="flex flex-col lg:flex-row gap-8">
+    <section class="relative overflow-hidden rounded-[2rem] border border-white/10 min-h-[420px] mb-10 flex items-end hero-casino">
+        <img src="{{ asset('images/lootra-hero.webp') }}"
+             alt="Mesa de casino premium iluminada" class="absolute inset-0 w-full h-full object-cover" fetchpriority="high">
+        <div class="absolute inset-0 bg-gradient-to-r from-[#070712] via-[#09081a]/90 to-fuchsia-950/25"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-[#070712] via-transparent to-cyan-500/10"></div>
+        <div class="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-fuchsia-500/25 blur-[90px]"></div>
+        <div class="relative z-10 p-7 sm:p-12 lg:p-16 max-w-3xl">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-400/10 border border-cyan-300/20 text-cyan-200 text-xs font-bold uppercase tracking-[.18em] mb-5">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                Casino de nueva generación
+            </div>
+            <h1 class="font-display text-4xl sm:text-6xl lg:text-7xl font-bold tracking-[-.06em] leading-[.95] text-white mb-5">
+                Tu próxima gran <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-300 via-fuchsia-400 to-cyan-300">jugada</span> empieza aquí.
+            </h1>
+            <p class="text-slate-300 text-base sm:text-lg max-w-xl leading-relaxed mb-7">Juegos con ritmo, recompensas instantáneas y una experiencia visual creada para que cada ronda se sienta única.</p>
+            <div class="flex flex-wrap gap-3">
+                <button @click="selected = 'slots'; $nextTick(() => document.querySelector('#catalogo').scrollIntoView({behavior:'smooth'}))" class="cta-shine px-6 py-3.5 rounded-xl bg-gradient-to-r from-brand-400 via-orange-400 to-fuchsia-500 text-black font-extrabold shadow-xl shadow-fuchsia-500/20 hover:scale-105 transition-transform">Explorar juegos</button>
+                @guest
+                    <a href="{{ route('registro') }}" class="px-6 py-3.5 rounded-xl bg-white/10 border border-white/15 text-white font-bold backdrop-blur-xl hover:bg-white/15 hover:border-cyan-300/30 transition">Crear cuenta</a>
+                @else
+                    <a href="{{ route('perfil') }}" class="px-6 py-3.5 rounded-xl bg-white/10 border border-white/15 text-white font-bold backdrop-blur-xl hover:bg-white/15 hover:border-cyan-300/30 transition">Mi perfil</a>
+                @endguest
+            </div>
+        </div>
+        <div class="absolute right-8 bottom-8 hidden lg:grid grid-cols-3 gap-2 z-10">
+            @foreach([['12+', 'Juegos'], ['97%', 'RTP máx.'], ['24/7', 'Acceso']] as [$value, $label])
+                <div class="min-w-24 p-3 rounded-xl bg-black/30 border border-white/10 backdrop-blur-xl text-center">
+                    <div class="font-display font-bold text-white">{{ $value }}</div>
+                    <div class="text-[10px] uppercase tracking-widest text-slate-400">{{ $label }}</div>
+                </div>
+            @endforeach
+        </div>
+    </section>
+
+    <div id="catalogo" class="flex flex-col lg:flex-row gap-8 scroll-mt-24">
 
         {{-- SIDEBAR --}}
         <aside class="w-full lg:w-64 shrink-0">
@@ -167,7 +201,7 @@
             {{-- Featured 2x1 --}}
             <div class="mb-8">
                 <div class="flex items-center justify-between mb-5">
-                    <h2 class="text-xl font-bold text-white">Destacados</h2>
+                    <div><span class="text-[10px] font-bold uppercase tracking-[.2em] text-fuchsia-400">Selección Lootra</span><h2 class="text-2xl font-bold text-white mt-1">Destacados</h2></div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                     <a href="{{ route('juego.show', 'gates-of-olympus') }}" class="featured-card game-gradient-5 aspect-[16/9] sm:aspect-[16/10] flex items-end">
@@ -210,7 +244,7 @@
             {{-- Grid juegos --}}
             <div>
                 <div class="flex items-center justify-between mb-5">
-                    <h2 class="text-xl font-bold text-white">Todos los juegos</h2>
+                    <div><span class="text-[10px] font-bold uppercase tracking-[.2em] text-cyan-400">Catálogo</span><h2 class="text-2xl font-bold text-white mt-1">Todos los juegos</h2></div>
                     <span class="text-sm text-slate-500 font-medium" x-text="filtered.length + ' juegos'"></span>
                 </div>
 

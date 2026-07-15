@@ -7,6 +7,7 @@ use App\Http\Controllers\CrashController;
 use App\Http\Controllers\SlotsController;
 use App\Http\Controllers\RuletaController;
 use App\Http\Controllers\BlackjackController;
+use App\Http\Controllers\CajaController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\Admin\AdminDashboardController;
@@ -62,9 +63,7 @@ Route::get('/apuestas', function () {
     return view('apuestas.index');
 })->name('apuestas');
 
-Route::get('/cajas', function () {
-    return view('cajas.index');
-})->name('cajas');
+Route::get('/cajas', [CajaController::class, 'index'])->name('cajas');
 
 Route::get('/info/{page}', function ($page) {
     $pages = [
@@ -142,7 +141,10 @@ Route::get('/iniciar-sesion', [AuthController::class, 'mostrarLogin'])->name('lo
 Route::post('/iniciar-sesion', [AuthController::class, 'iniciarSesion'])->name('login.store');
 
 Route::middleware('auth')->group(function () {
+    Route::post('/cajas/{caja}/abrir', [CajaController::class, 'open'])->name('cajas.open');
+    Route::post('/inventario/{item}/canjear', [CajaController::class, 'redeem'])->name('inventario.redeem');
     Route::get('/perfil', [PerfilController::class, 'index'])->name('perfil');
+    Route::get('/perfil/saldo', [PerfilController::class, 'saldo'])->name('perfil.saldo');
     Route::post('/perfil/depositar', [PerfilController::class, 'deposit'])->name('perfil.deposit');
     Route::post('/cerrar-sesion', [AuthController::class, 'cerrarSesion'])->name('logout');
 
@@ -168,7 +170,7 @@ Route::middleware('auth')->group(function () {
 Route::get('/feedback', [FeedbackController::class, 'create'])->name('feedback.create');
 Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
 
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin,admin,moderator'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin|admin|moderator'])->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/usuarios', [AdminUserController::class, 'index'])->name('users');
@@ -185,7 +187,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin,ad
     Route::delete('/feedback/{fb}', [AdminFeedbackController::class, 'destroy'])->name('feedback.destroy');
 });
 
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin,admin'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin|admin'])->group(function () {
     Route::get('/roles', [AdminRoleController::class, 'index'])->name('roles');
     Route::post('/roles', [AdminRoleController::class, 'store'])->name('roles.store');
     Route::put('/roles/{role}', [AdminRoleController::class, 'update'])->name('roles.update');

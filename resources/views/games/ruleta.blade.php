@@ -7,6 +7,9 @@
     .wheel-spin { animation: spin-wheel 3s cubic-bezier(0.17, 0.67, 0.12, 0.99) forwards; }
     @keyframes number-pop { 0% { transform: scale(0.5); opacity:0; } 50% { transform: scale(1.2); } 100% { transform: scale(1); opacity:1; } }
     .number-pop { animation: number-pop 0.4s ease-out forwards; }
+    .roulette-wheel { width:min(280px,70vw); aspect-ratio:1; border-radius:50%; padding:18px; margin:0 auto 1.5rem; position:relative; background:repeating-conic-gradient(#991b1b 0 9.7deg,#111827 9.7deg 19.4deg); border:9px solid #d6a93d; box-shadow:0 0 0 8px #3b2108,0 30px 70px rgba(0,0,0,.6),inset 0 0 35px #000; }
+    .roulette-wheel::before { content:""; position:absolute; inset:27%; border-radius:50%; background:radial-gradient(circle at 35% 30%,#fef3c7,#b7791f 32%,#2b1604 35%,#09090b 67%,#d6a93d 70%); box-shadow:0 0 25px #000; }
+    .roulette-wheel::after { content:""; position:absolute; left:50%; top:-19px; transform:translateX(-50%); border-left:11px solid transparent;border-right:11px solid transparent;border-top:25px solid #f8fafc;filter:drop-shadow(0 3px 3px #000); }
 </style>
 @endsection
 
@@ -21,7 +24,7 @@
             {{-- Header --}}
             <div class="flex items-center justify-between mb-6">
                 <div>
-                    <h1 class="text-2xl font-extrabold text-white">🎲 Ruleta Europea</h1>
+                    <h1 class="game-heading font-extrabold">Ruleta Europea</h1>
                     <p class="text-sm text-slate-500 mt-1">Apuesta al numero, color o grupo</p>
                 </div>
                 <div class="px-4 py-2 rounded-xl bg-white/5 border border-white/10">
@@ -31,8 +34,10 @@
             </div>
 
             {{-- Ruleta visual --}}
-            <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-6 sm:p-8 mb-6">
+            <div class="game-stage rounded-[1.75rem] bg-white/[0.03] border border-white/5 p-6 sm:p-8 mb-6 overflow-hidden">
                 <div class="max-w-lg mx-auto text-center">
+
+                    <div class="roulette-wheel" :class="spinning ? 'wheel-spin' : ''" aria-label="Ruleta europea animada"></div>
 
                     {{-- Numero resultado --}}
                     <div class="mb-6 h-20 flex items-center justify-center">
@@ -51,17 +56,17 @@
                         <button @click="tipo = 'rojo'; valor = null"
                                 :class="tipo === 'rojo' ? 'ring-2 ring-white/50 bg-red-600' : 'bg-red-600/80 hover:bg-red-600'"
                                 class="py-4 rounded-xl text-white font-bold text-sm transition">
-                            🔴 Rojo
+                            Rojo
                         </button>
                         <button @click="tipo = 'negro'; valor = null"
                                 :class="tipo === 'negro' ? 'ring-2 ring-white/50 bg-slate-700' : 'bg-slate-800 hover:bg-slate-700'"
                                 class="py-4 rounded-xl text-white font-bold text-sm transition">
-                            ⚫ Negro
+                            Negro
                         </button>
                         <button @click="tipo = 'numero'; valor = 0"
                                 :class="tipo === 'numero' && valor === 0 ? 'ring-2 ring-white/50 bg-emerald-600' : 'bg-emerald-700 hover:bg-emerald-600'"
                                 class="py-4 rounded-xl text-white font-bold text-sm transition">
-                            0 🟢
+                            Cero
                         </button>
                     </div>
 
@@ -210,6 +215,7 @@ function ruletaGame() {
                 this.lastColor = data.color;
                 this.ganancia = data.ganancia;
                 this.saldo = data.saldo;
+                Alpine.store('wallet').saldo = data.saldo;
                 window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
                 this.historial.unshift({ numero: data.numero, color: data.color, tipo: this.tipo, ganancia: data.ganancia, apuesta: this.apuesta });
             } catch (e) {

@@ -17,7 +17,7 @@ class AdminUserController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -35,6 +35,7 @@ class AdminUserController extends Controller
     {
         $usuario->load('roles', 'cartera');
         $roles = Role::all();
+
         return view('admin.users.edit', compact('usuario', 'roles'));
     }
 
@@ -42,7 +43,7 @@ class AdminUserController extends Controller
     {
         $datos = $request->validate([
             'name' => 'required|string|max:100',
-            'email' => 'required|email|unique:usuarios,email,' . $usuario->id,
+            'email' => 'required|email|unique:usuarios,email,'.$usuario->id,
             'rol' => 'required|exists:roles,name',
             'saldo' => 'nullable|numeric|min:0',
         ]);
@@ -54,8 +55,11 @@ class AdminUserController extends Controller
 
         $usuario->syncRoles($datos['rol']);
 
-        if ($request->has('saldo') && $usuario->cartera) {
-            $usuario->cartera->update(['saldo' => $datos['saldo']]);
+        if ($request->filled('saldo')) {
+            $usuario->cartera()->updateOrCreate(
+                ['usuario_id' => $usuario->id],
+                ['saldo' => $datos['saldo']]
+            );
         }
 
         ActivityLog::log('usuario_editado', 'Usuario', $usuario->id, ['name' => $usuario->name]);

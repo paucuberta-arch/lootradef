@@ -6,6 +6,24 @@
     $user = auth()->user();
 @endphp
 
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-7">
+    <div>
+        <p class="text-xs font-bold uppercase tracking-[.2em] text-brand-400">Centro de control</p>
+        <h2 class="text-2xl font-extrabold text-white mt-1">Visión general del negocio</h2>
+        <p class="text-sm text-slate-500 mt-1">Indicadores actualizados directamente desde la actividad de la plataforma.</p>
+    </div>
+    @if($user->hasAnyRole(['super_admin', 'admin']))
+        <div class="inline-flex p-1 rounded-xl bg-white/[0.04] border border-white/10">
+            @foreach([7, 30, 90] as $period)
+                <a href="{{ route('admin.dashboard', ['period' => $period]) }}"
+                   class="px-4 py-2 rounded-lg text-xs font-bold transition {{ $days === $period ? 'bg-brand-500 text-black shadow-lg shadow-brand-500/20' : 'text-slate-400 hover:text-white' }}">
+                    {{ $period }} días
+                </a>
+            @endforeach
+        </div>
+    @endif
+</div>
+
 {{-- KPI Cards — visibles segun permisos --}}
 @if($user->hasAnyRole(['super_admin', 'admin']))
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -38,10 +56,10 @@
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
     @php
         $financeCards = [
-            ['label' => 'Apostado hoy', 'value' => '€' . number_format($stats['apostado_hoy'], 2), 'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'color' => 'purple'],
-            ['label' => 'Ganado hoy', 'value' => '€' . number_format($stats['ganado_hoy'], 2), 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'color' => 'emerald'],
-            ['label' => 'Beneficio hoy', 'value' => '€' . number_format($stats['beneficio_hoy'], 2), 'icon' => 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6', 'color' => $stats['beneficio_hoy'] >= 0 ? 'emerald' : 'red'],
-            ['label' => 'Rating medio', 'value' => $stats['rating_promedio'] . ' ★', 'icon' => 'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z', 'color' => 'brand'],
+            ['label' => "Volumen apostado ({$days}d)", 'value' => '€' . number_format($stats['apostado_periodo'], 2), 'trend' => $stats['tendencia_apuestas'], 'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'color' => 'purple'],
+            ['label' => "Beneficio bruto ({$days}d)", 'value' => '€' . number_format($stats['beneficio_periodo'], 2), 'trend' => null, 'icon' => 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6', 'color' => $stats['beneficio_periodo'] >= 0 ? 'emerald' : 'red'],
+            ['label' => 'Margen de la casa', 'value' => number_format($stats['margen_periodo'], 1) . '%', 'trend' => null, 'icon' => 'M3 3v18h18M7 16l4-5 4 3 5-7', 'color' => 'cyan'],
+            ['label' => 'Payout real', 'value' => number_format($stats['payout_periodo'], 1) . '%', 'trend' => null, 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'color' => 'brand'],
         ];
     @endphp
     @foreach($financeCards as $card)
@@ -55,6 +73,26 @@
             </div>
             <p class="text-2xl font-extrabold text-white">{{ $card['value'] }}</p>
             <p class="text-xs text-slate-500 mt-1">{{ $card['label'] }}</p>
+            @if($card['trend'] !== null)
+                <p class="text-[11px] font-bold mt-2 {{ $card['trend'] >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
+                    {{ $card['trend'] >= 0 ? '↑' : '↓' }} {{ number_format(abs($card['trend']), 1) }}% frente al periodo anterior
+                </p>
+            @endif
+        </div>
+    @endforeach
+</div>
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    @foreach([
+        ['label' => 'Jugadores activos', 'value' => number_format($stats['jugadores_periodo']), 'meta' => ($stats['tendencia_jugadores'] >= 0 ? '+' : '') . number_format($stats['tendencia_jugadores'], 1) . '%'],
+        ['label' => 'Partidas jugadas', 'value' => number_format($stats['partidas_periodo']), 'meta' => number_format($stats['partidas_periodo'] / max($days, 1), 1) . ' por día'],
+        ['label' => 'Apuesta media', 'value' => '€' . number_format($stats['apuesta_media'], 2), 'meta' => 'por partida'],
+        ['label' => 'Saldo en circulación', 'value' => '€' . number_format($stats['saldo_total'], 2), 'meta' => 'en todas las carteras'],
+    ] as $metric)
+        <div class="rounded-2xl bg-gradient-to-br from-white/[0.055] to-white/[0.015] border border-white/10 p-5">
+            <p class="text-xs text-slate-500">{{ $metric['label'] }}</p>
+            <p class="text-xl font-extrabold text-white mt-2">{{ $metric['value'] }}</p>
+            <p class="text-[11px] text-cyan-400 mt-1">{{ $metric['meta'] }}</p>
         </div>
     @endforeach
 </div>
@@ -163,7 +201,7 @@
 {{-- Grafico de crecimiento usuarios (ultimos 30 dias) — solo super_admin --}}
 @if($user->hasPermissionTo('stats.growth') && $usuariosPorDia->count())
 <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5 mt-6">
-    <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Crecimiento de usuarios (30 dias)</h3>
+    <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Crecimiento de usuarios ({{ $days }} días)</h3>
     <div class="flex items-end gap-1 h-32">
         @php
             $maxUsers = $usuariosPorDia->max('total') ?: 1;
@@ -188,7 +226,7 @@
 {{-- Grafico de ingresos vs gastos (ultimos 30 dias) — solo super_admin --}}
 @if($user->hasPermissionTo('stats.growth') && $ingresosPorDia->count())
 <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5 mt-6">
-    <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Ingresos vs Pagos (30 dias)</h3>
+    <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Apuestas vs Pagos ({{ $days }} días)</h3>
     <div class="space-y-2">
         @php
             $maxIngreso = $ingresosPorDia->max('apuestas') ?: 1;

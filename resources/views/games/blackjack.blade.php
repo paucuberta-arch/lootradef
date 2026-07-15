@@ -21,7 +21,7 @@
             {{-- Header --}}
             <div class="flex items-center justify-between mb-6">
                 <div>
-                    <h1 class="text-2xl font-extrabold text-white">🃏 Blackjack VIP</h1>
+                    <h1 class="game-heading font-extrabold">Blackjack VIP</h1>
                     <p class="text-sm text-slate-500 mt-1">21 puntos — vence al dealer</p>
                 </div>
                 <div class="px-4 py-2 rounded-xl bg-white/5 border border-white/10">
@@ -31,7 +31,7 @@
             </div>
 
             {{-- Mesa --}}
-            <div class="rounded-2xl bg-[#0a2e1a] border border-emerald-900/50 p-6 sm:p-8 mb-6 relative overflow-hidden">
+            <div class="game-stage rounded-[2rem] bg-[#063c28] border border-emerald-400/20 p-6 sm:p-8 mb-6 relative overflow-hidden shadow-2xl shadow-emerald-950/50">
                 {{-- Felt texture --}}
                 <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle, #fff 1px, transparent 1px); background-size: 20px 20px;"></div>
 
@@ -58,7 +58,7 @@
                                         </div>
                                     </template>
                                     <template x-if="oculto && i === 1">
-                                        <span class="text-2xl">🂠</span>
+                                        <span class="w-11 h-16 rounded-md border border-cyan-300/40 bg-[repeating-linear-gradient(45deg,#312e81_0_5px,#0e7490_5px_10px)] shadow-inner"></span>
                                     </template>
                                 </div>
                             </template>
@@ -230,6 +230,7 @@ function blackjackGame() {
                 this.puntosDealer = data.puntos_dealer;
                 this.baraja = data.baraja || [];
                 this.saldo = data.saldo;
+                Alpine.store('wallet').saldo = data.saldo;
                 window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
                 this.estado = data.estado;
 
@@ -282,6 +283,7 @@ function blackjackGame() {
                     this.estado = data.estado;
                     this.ganancia = data.ganancia;
                     this.saldo = data.saldo;
+                    Alpine.store('wallet').saldo = data.saldo;
                     window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
                     this.oculto = false;
                     this.fase = 'terminado';
@@ -317,6 +319,7 @@ function blackjackGame() {
                 this.estado = data.estado;
                 this.ganancia = data.ganancia;
                 this.saldo = data.saldo;
+                Alpine.store('wallet').saldo = data.saldo;
                 window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
                 this.fase = 'terminado';
                 this.historial.unshift({ puntos: data.puntos_jugador, dealer_puntos: data.puntos_dealer, ganancia: data.ganancia, apuesta: this.apuesta });

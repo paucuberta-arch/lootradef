@@ -11,7 +11,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class Usuario extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, HasRoles, Notifiable;
 
     protected $table = 'usuarios';
 
@@ -48,6 +48,11 @@ class Usuario extends Authenticatable
         return $this->hasMany(Feedback::class, 'usuario_id');
     }
 
+    public function inventario(): HasMany
+    {
+        return $this->hasMany(InventarioItem::class, 'usuario_id');
+    }
+
     public function getSaldoAttribute(): float
     {
         return $this->cartera?->saldo ?? 0;
@@ -55,13 +60,15 @@ class Usuario extends Authenticatable
 
     public function getRoleBadgeAttribute(): string
     {
-        $role = $this->getFirstRole();
+        $role = $this->roles->first();
+
         return $role?->label ?? 'Jugador';
     }
 
     public function getRoleColorAttribute(): string
     {
-        $role = $this->getFirstRole();
+        $role = $this->roles->first();
+
         return $role?->color ?? 'slate';
     }
 }

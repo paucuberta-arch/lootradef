@@ -1,13 +1,13 @@
-<nav class="sticky top-0 z-50 bg-[#0d0d18]/90 backdrop-blur-xl border-b border-white/5" x-data="navbar()">
+<nav class="premium-nav sticky top-0 z-50 bg-[#080814]/75 backdrop-blur-2xl border-b border-white/5" x-data="navbar()">
     <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
 
             {{-- LOGO --}}
             <a href="{{ url('/') }}" class="flex items-center gap-2.5 group shrink-0">
-                <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-black font-black text-sm shadow-lg shadow-brand-500/20">
-                    L
+                <div class="brand-gem w-10 h-10 rounded-xl bg-gradient-to-br from-fuchsia-400 via-brand-400 to-cyan-400 flex items-center justify-center text-black font-black text-sm shadow-lg shadow-brand-500/20">
+                    <span>L</span>
                 </div>
-                <span class="text-lg font-extrabold tracking-tight hidden sm:block">
+                <span class="font-display text-lg font-extrabold tracking-tight hidden sm:block">
                     <span class="text-white">Lootra</span>
                     <span class="text-brand-400">Casino</span>
                 </span>
@@ -74,7 +74,7 @@
                     <div class="relative" @mouseenter="depositOpen = true" @mouseleave="depositOpen = false">
                         <div class="flex items-center gap-1">
                             <div class="px-3 py-1.5 rounded-lg bg-brand-500/10 border border-brand-500/20 text-sm font-bold text-brand-400 cursor-default">
-                                €<span x-text="saldo.toFixed(2)">{{ number_format(auth()->user()->saldo, 2) }}</span>
+                                €<span x-text="$store.wallet.saldo.toFixed(2)">{{ number_format(auth()->user()->saldo, 2) }}</span>
                             </div>
                             <button @click="depositOpen = !depositOpen" class="px-2 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition text-sm font-bold" title="Depositar">
                                 +
@@ -177,7 +177,7 @@
                     @endif
 
                     <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-brand-500/10 border border-brand-500/20 text-sm font-bold text-brand-400">
-                        <span>Saldo: €<span x-text="saldo.toFixed(2)">{{ number_format(auth()->user()->saldo, 2) }}</span></span>
+                        <span>Saldo: €<span x-text="$store.wallet.saldo.toFixed(2)">{{ number_format(auth()->user()->saldo, 2) }}</span></span>
                         <button @click="depositOpen = !depositOpen" class="px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold">+</button>
                     </div>
 
@@ -230,12 +230,10 @@ function navbar() {
         depositOpen: false,
         depositing: false,
         customAmt: 100,
-        saldo: {{ auth()->user()?->cartera?->saldo ?? 0 }},
 
         init() {
-            var self = this;
             window.addEventListener('saldo-updated', function(e) {
-                self.saldo = e.detail.saldo;
+                Alpine.store('wallet').saldo = e.detail.saldo;
             });
         },
 
@@ -258,7 +256,7 @@ function navbar() {
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 if (data.ok) {
-                    self.saldo = data.saldo;
+                    Alpine.store('wallet').saldo = data.saldo;
                     window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
                 }
                 self.depositing = false;

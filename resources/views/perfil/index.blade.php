@@ -47,7 +47,7 @@
                     <div class="flex items-center justify-between p-4 rounded-xl bg-brand-500/5 border border-brand-500/20">
                         <div>
                             <p class="text-xs font-medium text-brand-400 uppercase tracking-wider">Saldo</p>
-                            <p class="text-white font-semibold mt-0.5">€{{ number_format($usuario->saldo, 2) }}</p>
+                            <p class="text-white font-semibold mt-0.5">€<span x-text="$store.wallet.saldo.toFixed(2)">{{ number_format($usuario->saldo, 2) }}</span></p>
                         </div>
                         <button onclick="window.location.reload()" class="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition text-sm font-bold">+</button>
                     </div>
