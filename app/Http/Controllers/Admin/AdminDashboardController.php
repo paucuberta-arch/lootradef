@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\ApuestaDeportiva;
 use App\Models\Cartera;
 use App\Models\Feedback;
+use App\Models\InventarioItem;
 use App\Models\Partida;
 use App\Models\Rating;
 use App\Models\Review;
@@ -47,6 +49,21 @@ class AdminDashboardController extends Controller
             $stats['apuesta_media'] = $stats['partidas_periodo'] > 0 ? $stats['apostado_periodo'] / $stats['partidas_periodo'] : 0;
             $stats['saldo_total'] = (float) Cartera::sum('saldo');
             $stats['usuarios_periodo'] = Usuario::where('created_at', '>=', $periodStart)->count();
+
+            $sportsBets = ApuestaDeportiva::where('created_at', '>=', $periodStart);
+            $stats['apuestas_deportivas'] = (clone $sportsBets)->count();
+            $stats['volumen_deportivo'] = (float) (clone $sportsBets)->sum('importe');
+            $stats['premios_deportivos'] = (float) (clone $sportsBets)->sum('ganancia');
+            $stats['apuestas_pendientes'] = (clone $sportsBets)->where('estado', 'pendiente')->count();
+            $stats['beneficio_deportivo'] = $stats['volumen_deportivo'] - $stats['premios_deportivos'];
+
+            $boxes = InventarioItem::where('created_at', '>=', $periodStart);
+            $stats['cajas_abiertas'] = (clone $boxes)->count();
+            $stats['ingresos_cajas'] = (float) (clone $boxes)->sum('precio_caja');
+            $stats['cajas_canjeadas'] = (clone $boxes)->where('estado', 'canjeado')->count();
+            $stats['pagado_canje'] = (float) (clone $boxes)->where('estado', 'canjeado')->sum('valor_canje');
+            $stats['valor_inventario'] = (float) (clone $boxes)->where('estado', 'disponible')->sum('valor_canje');
+            $stats['beneficio_cajas'] = $stats['ingresos_cajas'] - $stats['pagado_canje'];
 
             $previousBets = (float) (clone $previousGames)->sum('apuesta');
             $previousPlayers = (clone $previousGames)->distinct('usuario_id')->count('usuario_id');

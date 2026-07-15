@@ -98,6 +98,44 @@
 </div>
 @endif
 
+{{-- Operativa de apuestas deportivas y cajas --}}
+@if($user->hasAnyRole(['super_admin', 'admin']))
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-5 mb-8">
+    <section class="rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-500/[.09] to-white/[.02] p-5">
+        <div class="flex items-center justify-between mb-5">
+            <div><p class="text-[10px] font-black uppercase tracking-[.2em] text-cyan-400">Sportsbook</p><h3 class="text-lg font-extrabold text-white mt-1">Apuestas deportivas</h3></div>
+            <span class="rounded-xl bg-cyan-400/10 px-3 py-2 text-sm font-black text-cyan-300">{{ number_format($stats['apuestas_deportivas']) }}</span>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+            @foreach([
+                ['Volumen', '€'.number_format($stats['volumen_deportivo'], 2), 'text-purple-300'],
+                ['Premios pagados', '€'.number_format($stats['premios_deportivos'], 2), 'text-emerald-300'],
+                ['Beneficio', '€'.number_format($stats['beneficio_deportivo'], 2), $stats['beneficio_deportivo'] >= 0 ? 'text-cyan-300' : 'text-red-300'],
+                ['Pendientes', number_format($stats['apuestas_pendientes']), 'text-amber-300'],
+            ] as [$label, $value, $color])
+            <div class="rounded-xl border border-white/5 bg-black/20 p-3"><p class="text-[11px] text-slate-500">{{ $label }}</p><p class="mt-1 font-extrabold {{ $color }}">{{ $value }}</p></div>
+            @endforeach
+        </div>
+    </section>
+    <section class="rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/[.09] to-white/[.02] p-5">
+        <div class="flex items-center justify-between mb-5">
+            <div><p class="text-[10px] font-black uppercase tracking-[.2em] text-fuchsia-400">Loot boxes</p><h3 class="text-lg font-extrabold text-white mt-1">Rendimiento de cajas</h3></div>
+            <span class="rounded-xl bg-fuchsia-400/10 px-3 py-2 text-sm font-black text-fuchsia-300">{{ number_format($stats['cajas_abiertas']) }}</span>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+            @foreach([
+                ['Ingresos', '€'.number_format($stats['ingresos_cajas'], 2), 'text-purple-300'],
+                ['Canjeado', '€'.number_format($stats['pagado_canje'], 2).' · '.$stats['cajas_canjeadas'], 'text-emerald-300'],
+                ['Beneficio', '€'.number_format($stats['beneficio_cajas'], 2), $stats['beneficio_cajas'] >= 0 ? 'text-fuchsia-300' : 'text-red-300'],
+                ['Inventario pendiente', '€'.number_format($stats['valor_inventario'], 2), 'text-amber-300'],
+            ] as [$label, $value, $color])
+            <div class="rounded-xl border border-white/5 bg-black/20 p-3"><p class="text-[11px] text-slate-500">{{ $label }}</p><p class="mt-1 font-extrabold {{ $color }}">{{ $value }}</p></div>
+            @endforeach
+        </div>
+    </section>
+</div>
+@endif
+
 {{-- Alerts — visibles para admin/moderator --}}
 @if($user->hasAnyRole(['super_admin', 'admin', 'moderator']))
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">

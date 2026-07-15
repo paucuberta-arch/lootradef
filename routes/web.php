@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminChartsController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminFeedbackController;
 use App\Http\Controllers\Admin\AdminLogController;
@@ -202,6 +203,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin|ad
 });
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin|admin'])->group(function () {
+    Route::get('/graficos', [AdminChartsController::class, 'index'])->name('charts');
     Route::get('/roles', [AdminRoleController::class, 'index'])->name('roles');
     Route::post('/roles', [AdminRoleController::class, 'store'])->name('roles.store');
     Route::put('/roles/{role}', [AdminRoleController::class, 'update'])->name('roles.update');
