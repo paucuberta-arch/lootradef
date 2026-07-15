@@ -210,6 +210,7 @@ function ruletaGame() {
                 this.lastColor = data.color;
                 this.ganancia = data.ganancia;
                 this.saldo = data.saldo;
+                window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
                 this.historial.unshift({ numero: data.numero, color: data.color, tipo: this.tipo, ganancia: data.ganancia, apuesta: this.apuesta });
             } catch (e) {
                 this.error = 'Error de conexion.';

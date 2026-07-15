@@ -1,20 +1,47 @@
 @extends('layouts.app')
-@section('title', 'Slots — Lootra Casino')
+@section('title', $gameName . ' — Lootra Casino')
 
 @section('styles')
 <style>
-    @keyframes spin-reel { 0% { transform: translateY(0); } 100% { transform: translateY(-300%); } }
-    .reel-spin { animation: spin-reel 0.6s cubic-bezier(0.25, 0.1, 0.25, 1); }
-    @keyframes win-flash { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
-    .win-flash { animation: win-flash 0.4s ease-in-out 4; }
-    @keyframes coin-fall { 0% { transform: translateY(-20px) rotate(0deg); opacity:1; } 100% { transform: translateY(100px) rotate(360deg); opacity:0; } }
-    .coin { animation: coin-fall 1s ease-in forwards; }
+    @keyframes reel-scroll {
+        0% { transform: translateY(0); }
+        100% { transform: translateY(-100%); }
+    }
+    .reel-container {
+        overflow: hidden;
+        position: relative;
+    }
+    .reel-strip {
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.1s linear;
+    }
+    .reel-strip.spinning {
+        animation: reel-scroll 0.15s linear infinite;
+    }
+    .reel-strip.stopping {
+        transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    @keyframes win-flash { 0%,100% { box-shadow: 0 0 0 rgba(245,158,11,0); } 50% { box-shadow: 0 0 25px rgba(245,158,11,0.5); } }
+    .win-flash { animation: win-flash 0.5s ease-in-out 3; border-color: rgba(245,158,11,0.5) !important; }
+    @keyframes win-bounce { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+    .win-bounce { animation: win-bounce 0.4s ease-in-out 3; }
+    @keyframes coin-rain {
+        0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(200px) rotate(720deg); opacity: 0; }
+    }
+    .coin-particle {
+        animation: coin-rain 1.2s ease-in forwards;
+        position: absolute;
+        pointer-events: none;
+        font-size: 1.2rem;
+    }
 </style>
 @endsection
 
 @section('contenido')
 <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10"
-     x-data="slotsGame()">
+     x-data="slotsGame()" x-init="initReels()">
 
     <div class="flex flex-col lg:flex-row gap-6">
 
@@ -23,8 +50,8 @@
             {{-- Header --}}
             <div class="flex items-center justify-between mb-6">
                 <div>
-                    <h1 class="text-2xl font-extrabold text-white">🎰 Slots</h1>
-                    <p class="text-sm text-slate-500 mt-1">Gira los carretes y gana premios</p>
+                    <h1 class="text-2xl font-extrabold text-white">{{ $gameEmoji }} {{ $gameName }}</h1>
+                    <p class="text-sm text-slate-500 mt-1">{{ $gameTagline }}</p>
                 </div>
                 <div class="px-4 py-2 rounded-xl bg-white/5 border border-white/10">
                     <span class="text-xs text-slate-500">Saldo</span>
@@ -36,24 +63,37 @@
             <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-6 sm:p-8 mb-6">
                 <div class="max-w-md mx-auto">
                     {{-- Carretes --}}
-                    <div class="bg-[#0d0d18] rounded-2xl border-2 border-white/10 p-4 mb-6 relative overflow-hidden">
+                    <div class="bg-[#0d0d18] rounded-2xl border-2 border-white/10 p-5 mb-6 relative overflow-hidden"
+                         :class="ganancia > 0 && !spinning ? 'win-flash' : ''">
                         <div class="grid grid-cols-3 gap-3">
                             <template x-for="(reel, i) in reels" :key="i">
-                                <div class="aspect-square rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-center text-4xl sm:text-5xl"
-                                     :class="spinning ? 'opacity-30' : (ganancia > 0 ? 'win-flash border-brand-500/50' : '')"
-                                     x-text="spinning ? '❓' : reel">
+                                <div class="reel-container aspect-square rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-center"
+                                     :class="ganancia > 0 && !spinning ? 'win-bounce border-brand-500/50' : ''">
+                                    <div class="reel-strip" :id="'reel-' + i"
+                                         :class="reelSpinning[i] ? 'spinning' : (reelStopping[i] ? 'stopping' : '')">
+                                        <div class="aspect-square flex items-center justify-center text-4xl sm:text-5xl" x-text="reel"></div>
+                                    </div>
                                 </div>
                             </template>
                         </div>
 
                         {{-- Linea central --}}
                         <div class="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-brand-500/30 pointer-events-none"></div>
+
+                        {{-- Coin rain effect --}}
+                        <template x-if="showCoins">
+                            <div class="absolute inset-0 pointer-events-none">
+                                <template x-for="c in coinParticles" :key="c.id">
+                                    <span class="coin-particle" :style="'left:' + c.x + '%; top:' + c.y + '%; animation-delay:' + c.delay + 's'" x-text="c.emoji"></span>
+                                </template>
+                            </div>
+                        </template>
                     </div>
 
                     {{-- Resultado --}}
                     <div x-show="lastResult" class="text-center mb-4">
                         <template x-if="ganancia > 0">
-                            <div class="text-emerald-400 font-bold text-lg">
+                            <div class="text-emerald-400 font-bold text-lg win-bounce">
                                 ¡Ganaste <span x-text="'€' + ganancia.toFixed(2)"></span>!
                             </div>
                         </template>
@@ -95,30 +135,12 @@
             <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
                 <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Tabla de pagos</h3>
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
-                    <div class="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-center">
-                        <div class="text-2xl mb-1">7️⃣7️⃣7️⃣</div>
-                        <div class="text-brand-400 font-bold">x50</div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-center">
-                        <div class="text-2xl mb-1">💎💎💎</div>
-                        <div class="text-brand-400 font-bold">x25</div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-center">
-                        <div class="text-2xl mb-1">🔔🔔🔔</div>
-                        <div class="text-brand-400 font-bold">x20</div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-center">
-                        <div class="text-2xl mb-1">⭐⭐⭐</div>
-                        <div class="text-brand-400 font-bold">x15</div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-center">
-                        <div class="text-2xl mb-1">🍒🍒🍒</div>
-                        <div class="text-brand-400 font-bold">x10</div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-center">
-                        <div class="text-2xl mb-1">X X X</div>
-                        <div class="text-emerald-400 font-bold">x2 (pareja)</div>
-                    </div>
+                    <template x-for="p in paytable" :key="p.label">
+                        <div class="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-center">
+                            <div class="text-2xl mb-1" x-text="p.symbols"></div>
+                            <div class="text-brand-400 font-bold" x-text="p.label"></div>
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>
@@ -132,6 +154,7 @@
                     <div class="flex justify-between"><span class="text-slate-500">Max apuesta</span><span class="text-white font-semibold">€500</span></div>
                     <div class="flex justify-between"><span class="text-slate-500">Max win</span><span class="text-brand-400 font-bold">x50</span></div>
                     <div class="flex justify-between"><span class="text-slate-500">Carretes</span><span class="text-white font-semibold">3x3</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Proveedor</span><span class="text-white font-semibold">{{ $gameProvider }}</span></div>
                 </div>
             </div>
             <div class="rounded-2xl bg-gradient-to-br from-brand-500/20 to-brand-600/10 border border-brand-500/20 p-5">
@@ -160,14 +183,28 @@
 <script>
 function slotsGame() {
     return {
-        saldo: {{ Auth::user()?->cartera?->saldo ?? 1000 }},
+        saldo: {{ $saldo }},
         apuesta: 1,
         reels: ['🍒', '🍋', '🍊'],
+        reelSpinning: [false, false, false],
+        reelStopping: [false, false, false],
         spinning: false,
         ganancia: 0,
         lastResult: false,
         error: '',
+        showCoins: false,
+        coinParticles: [],
         historial: @js($partidas->map(fn($p) => ['reels' => $p->detalles['reels'] ?? ['?','?','?'], 'ganancia' => $p->ganancia, 'apuesta' => $p->apuesta])->take(10)->all()),
+        paytable: @js($paytable),
+        symbols: @js($symbols),
+
+        initReels() {
+            this.reels = [
+                this.symbols[Math.floor(Math.random() * this.symbols.length)],
+                this.symbols[Math.floor(Math.random() * this.symbols.length)],
+                this.symbols[Math.floor(Math.random() * this.symbols.length)],
+            ];
+        },
 
         async spin() {
             if (this.spinning || this.apuesta > this.saldo) return;
@@ -175,6 +212,7 @@ function slotsGame() {
             this.ganancia = 0;
             this.lastResult = false;
             this.error = '';
+            this.showCoins = false;
 
             try {
                 const res = await fetch('{{ route("slots.play") }}', {
@@ -184,7 +222,7 @@ function slotsGame() {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'Accept': 'application/json',
                     },
-                    body: JSON.stringify({ apuesta: this.apuesta }),
+                    body: JSON.stringify({ apuesta: this.apuesta, game: '{{ $gameSlug }}' }),
                 });
                 const data = await res.json();
 
@@ -194,18 +232,55 @@ function slotsGame() {
                     return;
                 }
 
-                await new Promise(r => setTimeout(r, 600));
+                // Start all reels spinning
+                this.reelSpinning = [true, true, true];
 
-                this.reels = data.reels;
+                // Staggered stop: reel 0 at 600ms, reel 1 at 1000ms, reel 2 at 1400ms
+                const delays = [600, 1000, 1400];
+                for (let i = 0; i < 3; i++) {
+                    await new Promise(r => setTimeout(r, delays[i] - (i > 0 ? delays[i-1] : 0)));
+                    this.reelSpinning[i] = false;
+                    this.reelStopping[i] = true;
+
+                    // Animate to final position
+                    await new Promise(r => setTimeout(r, 50));
+                    this.reels[i] = data.reels[i];
+
+                    await new Promise(r => setTimeout(r, 500));
+                    this.reelStopping[i] = false;
+                }
+
                 this.ganancia = data.ganancia;
                 this.lastResult = true;
                 this.saldo = data.saldo;
+                window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
                 this.historial.unshift({ reels: data.reels, ganancia: data.ganancia, apuesta: this.apuesta });
+
+                // Show coins on win
+                if (data.ganancia > 0) {
+                    this.spawnCoins();
+                }
             } catch (e) {
                 this.error = 'Error de conexion.';
             }
 
             this.spinning = false;
+        },
+
+        spawnCoins() {
+            const emojis = ['🪙', '💰', '✨', '💎'];
+            this.coinParticles = [];
+            for (let i = 0; i < 15; i++) {
+                this.coinParticles.push({
+                    id: i,
+                    emoji: emojis[Math.floor(Math.random() * emojis.length)],
+                    x: 10 + Math.random() * 80,
+                    y: Math.random() * 30,
+                    delay: Math.random() * 0.5,
+                });
+            }
+            this.showCoins = true;
+            setTimeout(() => { this.showCoins = false; }, 2000);
         },
     };
 }

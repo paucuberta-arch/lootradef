@@ -8,17 +8,103 @@ use Illuminate\Support\Facades\Auth;
 
 class SlotsController extends Controller
 {
-    private array $symbols = ['🍒', '🍋', '🍊', '🍇', '💎', '⭐', '7️⃣', '🔔'];
-
-    private array $weights = [
-        '🍒' => 25,
-        '🍋' => 25,
-        '🍊' => 20,
-        '🍇' => 15,
-        '💎' => 8,
-        '⭐' => 5,
-        '7️⃣' => 1,
-        '🔔' => 1,
+    private array $themes = [
+        'default' => [
+            'name' => 'Slots',
+            'emoji' => '🎰',
+            'tagline' => 'Gira los carretes y gana premios',
+            'provider' => 'Lootra',
+            'symbols' => ['🍒', '🍋', '🍊', '🍇', '💎', '⭐', '7️⃣', '🔔'],
+            'weights' => ['🍒' => 25, '🍋' => 25, '🍊' => 20, '🍇' => 15, '💎' => 8, '⭐' => 5, '7️⃣' => 1, '🔔' => 1],
+            'paytable' => [
+                ['symbols' => '7️⃣7️⃣7️⃣', 'label' => 'x50'],
+                ['symbols' => '💎💎💎', 'label' => 'x25'],
+                ['symbols' => '🔔🔔🔔', 'label' => 'x20'],
+                ['symbols' => '⭐⭐⭐', 'label' => 'x15'],
+                ['symbols' => '🍒🍒🍒', 'label' => 'x10'],
+                ['symbols' => 'X X X', 'label' => 'x2 (pareja)'],
+            ],
+        ],
+        'gates-of-olympus' => [
+            'name' => 'Gates of Olympus',
+            'emoji' => '⚡',
+            'tagline' => 'Viaja al Monte del Olimpo con Zeus',
+            'provider' => 'Pragmatic Play',
+            'symbols' => ['👑', '⚡', '💎', '🏆', '🏺', '🪙', '🔴', '🔵'],
+            'weights' => ['👑' => 5, '⚡' => 8, '💎' => 10, '🏆' => 12, '🏺' => 18, '🪙' => 20, '🔴' => 25, '🔵' => 25],
+            'paytable' => [
+                ['symbols' => '👑👑👑', 'label' => 'x50'],
+                ['symbols' => '⚡⚡⚡', 'label' => 'x25'],
+                ['symbols' => '💎💎💎', 'label' => 'x20'],
+                ['symbols' => '🏆🏆🏆', 'label' => 'x15'],
+                ['symbols' => '🏺🏺🏺', 'label' => 'x10'],
+                ['symbols' => 'X X X', 'label' => 'x2 (pareja)'],
+            ],
+        ],
+        'sweet-bonanza' => [
+            'name' => 'Sweet Bonanza',
+            'emoji' => '🍬',
+            'tagline' => 'Un mundo de dulces y frutas te espera',
+            'provider' => 'Pragmatic Play',
+            'symbols' => ['🍭', '🍫', '🍬', '🍰', '🍩', '🍒', '🫐', '🟣'],
+            'weights' => ['🍭' => 8, '🍫' => 10, '🍬' => 15, '🍰' => 15, '🍩' => 20, '🍒' => 22, '🫐' => 25, '🟣' => 25],
+            'paytable' => [
+                ['symbols' => '🍭🍭🍭', 'label' => 'x50'],
+                ['symbols' => '🍫🍫🍫', 'label' => 'x25'],
+                ['symbols' => '🍬🍬🍬', 'label' => 'x20'],
+                ['symbols' => '🍰🍰🍰', 'label' => 'x15'],
+                ['symbols' => '🍩🍩🍩', 'label' => 'x10'],
+                ['symbols' => 'X X X', 'label' => 'x2 (pareja)'],
+            ],
+        ],
+        'book-of-dead' => [
+            'name' => 'Book of Dead',
+            'emoji' => '📖',
+            'tagline' => 'Aventura por el antiguo Egipto con Rich Wilde',
+            'provider' => "Play'n GO",
+            'symbols' => ['📖', '💀', '🧔', '🦅', '🏛️', '🃏', '🔟', '👑'],
+            'weights' => ['📖' => 5, '💀' => 8, '🧔' => 10, '🦅' => 15, '🏛️' => 18, '🃏' => 20, '🔟' => 25, '👑' => 25],
+            'paytable' => [
+                ['symbols' => '📖📖📖', 'label' => 'x50'],
+                ['symbols' => '💀💀💀', 'label' => 'x25'],
+                ['symbols' => '🧔🧔🧔', 'label' => 'x20'],
+                ['symbols' => '🦅🦅🦅', 'label' => 'x15'],
+                ['symbols' => '🏛️🏛️🏛️', 'label' => 'x10'],
+                ['symbols' => 'X X X', 'label' => 'x2 (pareja)'],
+            ],
+        ],
+        'starburst' => [
+            'name' => 'Starburst',
+            'emoji' => '💫',
+            'tagline' => 'La slot mas iconica de NetEnt',
+            'provider' => 'NetEnt',
+            'symbols' => ['💎', '⭐', '🌟', '✨', '🔵', '🟢', '🔴', '🟠'],
+            'weights' => ['💎' => 5, '⭐' => 8, '🌟' => 12, '✨' => 15, '🔵' => 20, '🟢' => 22, '🔴' => 25, '🟠' => 25],
+            'paytable' => [
+                ['symbols' => '💎💎💎', 'label' => 'x50'],
+                ['symbols' => '⭐⭐⭐', 'label' => 'x25'],
+                ['symbols' => '🌟🌟🌟', 'label' => 'x20'],
+                ['symbols' => '✨✨✨', 'label' => 'x15'],
+                ['symbols' => '🔵🔵🔵', 'label' => 'x10'],
+                ['symbols' => 'X X X', 'label' => 'x2 (pareja)'],
+            ],
+        ],
+        'big-bass-bonanza' => [
+            'name' => 'Big Bass Bonanza',
+            'emoji' => '🐟',
+            'tagline' => 'Salva de pesca en esta slot acuatica',
+            'provider' => 'Pragmatic Play',
+            'symbols' => ['🐟', '🎣', '🪣', '🦞', '🐡', '🌊', '⚓', '🐠'],
+            'weights' => ['🐟' => 5, '🎣' => 8, '🪣' => 12, '🦞' => 15, '🐡' => 20, '🌊' => 22, '⚓' => 25, '🐠' => 25],
+            'paytable' => [
+                ['symbols' => '🐟🐟🐟', 'label' => 'x50'],
+                ['symbols' => '🎣🎣🎣', 'label' => 'x25'],
+                ['symbols' => '🪣🪣🪣', 'label' => 'x20'],
+                ['symbols' => '🦞🦞🦞', 'label' => 'x15'],
+                ['symbols' => '🐡🐡🐡', 'label' => 'x10'],
+                ['symbols' => 'X X X', 'label' => 'x2 (pareja)'],
+            ],
+        ],
     ];
 
     public function index()
@@ -29,26 +115,42 @@ class SlotsController extends Controller
             ->take(10)
             ->get();
 
-        return view('games.slots', ['partidas' => $partidas]);
+        $gameSlug = request()->query('game', 'default');
+        $theme = $this->themes[$gameSlug] ?? $this->themes['default'];
+
+        return view('games.slots', [
+            'partidas' => $partidas,
+            'gameSlug' => $gameSlug,
+            'gameName' => $theme['name'],
+            'gameEmoji' => $theme['emoji'],
+            'gameTagline' => $theme['tagline'],
+            'gameProvider' => $theme['provider'],
+            'symbols' => $theme['symbols'],
+            'paytable' => $theme['paytable'],
+            'saldo' => Auth::user()?->cartera?->saldo ?? 0,
+        ]);
     }
 
     public function play(Request $request)
     {
         $request->validate([
             'apuesta' => 'required|numeric|min:0.10|max:500',
+            'game' => 'nullable|string',
         ]);
 
         $user = Auth::user();
         $apuesta = round($request->apuesta, 2);
+        $gameSlug = $request->input('game', 'default');
+        $theme = $this->themes[$gameSlug] ?? $this->themes['default'];
 
         if (!$user->cartera || !$user->cartera->apostar($apuesta)) {
             return response()->json(['error' => 'Saldo insuficiente.'], 422);
         }
 
         $reels = [
-            $this->spin(),
-            $this->spin(),
-            $this->spin(),
+            $this->spin($theme['symbols'], $theme['weights']),
+            $this->spin($theme['symbols'], $theme['weights']),
+            $this->spin($theme['symbols'], $theme['weights']),
         ];
 
         $ganancia = $this->calculateWin($reels, $apuesta);
@@ -66,6 +168,7 @@ class SlotsController extends Controller
             'detalles' => [
                 'reels' => $reels,
                 'resultado' => $resultado,
+                'game' => $gameSlug,
             ],
         ]);
 
@@ -77,30 +180,30 @@ class SlotsController extends Controller
         ]);
     }
 
-    private function spin(): string
+    private function spin(array $symbols, array $weights): string
     {
-        $totalWeight = array_sum($this->weights);
+        $totalWeight = array_sum($weights);
         $rand = random_int(1, $totalWeight);
         $accum = 0;
 
-        foreach ($this->weights as $symbol => $weight) {
+        foreach ($weights as $symbol => $weight) {
             $accum += $weight;
             if ($rand <= $accum) {
                 return $symbol;
             }
         }
 
-        return $this->symbols[0];
+        return $symbols[0];
     }
 
     private function calculateWin(array $reels, float $apuesta): float
     {
         if ($reels[0] === $reels[1] && $reels[1] === $reels[2]) {
             return match ($reels[0]) {
-                '7️⃣' => $apuesta * 50,
-                '💎' => $apuesta * 25,
-                '⭐' => $apuesta * 15,
-                '🔔' => $apuesta * 20,
+                '7️⃣', '👑', '📖', '💎', '🐟', '🍭' => $apuesta * 50,
+                '💎', '⚡', '💀', '⭐', '🎣', '🍫' => $apuesta * 25,
+                '🔔', '🏆', '🧔', '🌟', '🪣', '🍬' => $apuesta * 20,
+                '⭐', '🏺', '🦅', '✨', '🦞', '🍰' => $apuesta * 15,
                 default => $apuesta * 10,
             };
         }

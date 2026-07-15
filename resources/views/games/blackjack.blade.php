@@ -230,6 +230,7 @@ function blackjackGame() {
                 this.puntosDealer = data.puntos_dealer;
                 this.baraja = data.baraja || [];
                 this.saldo = data.saldo;
+                window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
                 this.estado = data.estado;
 
                 if (data.estado === 'jugando') {
@@ -281,6 +282,7 @@ function blackjackGame() {
                     this.estado = data.estado;
                     this.ganancia = data.ganancia;
                     this.saldo = data.saldo;
+                    window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
                     this.oculto = false;
                     this.fase = 'terminado';
                     this.historial.unshift({ puntos: data.puntos_jugador, dealer_puntos: data.puntos_dealer, ganancia: data.ganancia, apuesta: this.apuesta });
@@ -315,6 +317,7 @@ function blackjackGame() {
                 this.estado = data.estado;
                 this.ganancia = data.ganancia;
                 this.saldo = data.saldo;
+                window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
                 this.fase = 'terminado';
                 this.historial.unshift({ puntos: data.puntos_jugador, dealer_puntos: data.puntos_dealer, ganancia: data.ganancia, apuesta: this.apuesta });
             } catch (e) {

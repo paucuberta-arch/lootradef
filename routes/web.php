@@ -40,7 +40,11 @@ Route::get('/juego/{slug}', function ($slug) use ($uegos) {
 
     $gameRoutes = [
         'crash-rocket' => route('crash'),
-        'sweet-bonanza' => route('slots'),
+        'sweet-bonanza' => route('slots', ['game' => 'sweet-bonanza']),
+        'gates-of-olympus' => route('slots', ['game' => 'gates-of-olympus']),
+        'book-of-dead' => route('slots', ['game' => 'book-of-dead']),
+        'starburst' => route('slots', ['game' => 'starburst']),
+        'big-bass-bonanza' => route('slots', ['game' => 'big-bass-bonanza']),
         'european-roulette' => route('ruleta'),
         'lightning-roulette' => route('ruleta'),
         'blackjack-vip' => route('blackjack'),

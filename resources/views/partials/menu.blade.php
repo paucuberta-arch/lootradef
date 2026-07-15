@@ -1,8 +1,11 @@
 <nav class="sticky top-0 z-50 bg-[#0d0d18]/90 backdrop-blur-xl border-b border-white/5" x-data="{
-         open: false, catOpen: false, depositModal: false, depositAmount: 100, depositing: false,
+         open: false, catOpen: false, depositOpen: false, depositAmount: 100, depositing: false,
          saldo: {{ auth()->user()?->cartera?->saldo ?? 0 }},
-         async doDeposit() {
-             if (this.depositing || this.depositAmount < 1) return;
+         init() {
+             window.addEventListener('saldo-updated', (e) => { this.saldo = e.detail.saldo; });
+         },
+         async quickDeposit(amount) {
+             if (this.depositing) return;
              this.depositing = true;
              try {
                  const res = await fetch('{{ route('perfil.deposit') }}', {
@@ -12,15 +15,16 @@
                          'X-CSRF-TOKEN': document.querySelector('meta[name=\"csrf-token\"]').content,
                          'Accept': 'application/json',
                      },
-                     body: JSON.stringify({ amount: this.depositAmount }),
+                     body: JSON.stringify({ amount: amount }),
                  });
                  const data = await res.json();
                  if (data.ok) {
                      this.saldo = data.saldo;
-                     this.depositModal = false;
+                     window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
                  }
              } catch (e) {}
              this.depositing = false;
+             this.depositOpen = false;
          }
      }">
     <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -93,14 +97,56 @@
                             Admin
                         </a>
                     @endif
-                    <div class="flex items-center gap-1">
-                        <div class="px-3 py-1.5 rounded-lg bg-brand-500/10 border border-brand-500/20 text-sm font-bold text-brand-400">
-                            €<span x-text="saldo.toFixed(2)">{{ number_format(auth()->user()->saldo, 2) }}</span>
+
+                    {{-- Saldo + deposit dropdown --}}
+                    <div class="relative" @mouseenter="depositOpen = true" @mouseleave="depositOpen = false">
+                        <div class="flex items-center gap-1">
+                            <div class="px-3 py-1.5 rounded-lg bg-brand-500/10 border border-brand-500/20 text-sm font-bold text-brand-400 cursor-default">
+                                €<span x-text="saldo.toFixed(2)">{{ number_format(auth()->user()->saldo, 2) }}</span>
+                            </div>
+                            <button @click="depositOpen = !depositOpen" class="px-2 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition text-sm font-bold" title="Depositar">
+                                +
+                            </button>
                         </div>
-                        <button @click="depositModal = true" class="px-2 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition text-sm font-bold" title="Depositar">
-                            +
-                        </button>
+
+                        {{-- Dropdown deposito rapido --}}
+                        <div
+                            x-show="depositOpen"
+                            x-transition:enter="transition ease-out duration-150"
+                            x-transition:enter-start="opacity-0 -translate-y-1 scale-95"
+                            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                            x-transition:leave="transition ease-in duration-100"
+                            x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                            x-transition:leave-end="opacity-0 -translate-y-1 scale-95"
+                            @click.outside="depositOpen = false"
+                            class="absolute top-full right-0 mt-2 w-56 p-3 rounded-xl bg-[#14142a] border border-white/10 shadow-2xl shadow-black/60 z-50"
+                        >
+                            <p class="text-xs text-slate-500 font-medium mb-2">Depositar rapido</p>
+                            <div class="grid grid-cols-3 gap-2 mb-2">
+                                @foreach([10, 25, 50, 100, 250, 500] as $amt)
+                                    <button @click="quickDeposit({{ $amt }})"
+                                            :disabled="depositing"
+                                            class="py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-bold text-slate-300 hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-emerald-500/10 transition disabled:opacity-50"
+                                            x-text="'€{{ $amt }}'">
+                                    </button>
+                                @endforeach
+                            </div>
+                            <button @click="$refs.customAmountInput.focus(); $refs.customAmountInput.select()"
+                                    class="w-full py-2 rounded-lg bg-white/5 border border-white/10 text-xs font-medium text-slate-400 hover:text-white hover:bg-white/10 transition">
+                                Otro importe...
+                            </button>
+                            <div class="mt-2 flex gap-2" x-data="{ customAmt: 100 }">
+                                <input x-ref="customAmountInput" x-model.number="customAmt" type="number" min="1" max="50000"
+                                       class="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-emerald-500 transition">
+                                <button @click="$root.__x.$data.quickDeposit(customAmt)"
+                                        :disabled="depositing || customAmt < 1"
+                                        class="px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-bold transition disabled:opacity-50">
+                                    OK
+                                </button>
+                            </div>
+                        </div>
                     </div>
+
                     <a href="{{ route('perfil') }}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition">
                         <div class="w-7 h-7 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-black text-xs font-bold">
                             {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
@@ -161,10 +207,34 @@
                     @if(auth()->user()->hasAnyRole(['super_admin', 'admin', 'moderator']))
                         <a href="{{ url('/admin') }}" class="px-3 py-2.5 rounded-lg text-sm font-medium text-brand-400 hover:text-brand-300 hover:bg-brand-500/5 transition">Panel Admin</a>
                     @endif
+
                     <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-brand-500/10 border border-brand-500/20 text-sm font-bold text-brand-400">
                         <span>Saldo: €<span x-text="saldo.toFixed(2)">{{ number_format(auth()->user()->saldo, 2) }}</span></span>
-                        <button @click="depositModal = true" class="px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold">+</button>
+                        <button @click="depositOpen = !depositOpen" class="px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold">+</button>
                     </div>
+
+                    {{-- Dropdown deposito movil --}}
+                    <div x-show="depositOpen" x-cloak class="px-3 py-2">
+                        <div class="grid grid-cols-3 gap-2 mb-2">
+                            @foreach([10, 25, 50, 100, 250, 500] as $amt)
+                                <button @click="quickDeposit({{ $amt }})"
+                                        :disabled="depositing"
+                                        class="py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-bold text-slate-300 hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-emerald-500/10 transition disabled:opacity-50"
+                                        x-text="'€{{ $amt }}'">
+                                </button>
+                            @endforeach
+                        </div>
+                        <div class="flex gap-2" x-data="{ customAmt: 100 }">
+                            <input x-model.number="customAmt" type="number" min="1" max="50000"
+                                   class="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-emerald-500 transition">
+                            <button @click="$root.__x.$data.quickDeposit(customAmt)"
+                                    :disabled="depositing || customAmt < 1"
+                                    class="px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-bold transition disabled:opacity-50">
+                                OK
+                            </button>
+                        </div>
+                    </div>
+
                     <a href="{{ route('perfil') }}" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition">
                         <div class="w-7 h-7 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-black text-xs font-bold">
                             {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
@@ -177,39 +247,6 @@
                     </form>
                 @endauth
             </div>
-        </div>
-    </div>
-
-    {{-- MODAL DEPOSITO --}}
-    <div x-show="depositModal" x-cloak
-         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="depositModal = false"></div>
-        <div class="relative z-10 w-full max-w-sm rounded-2xl bg-[#14142a] border border-white/10 p-6">
-            <button @click="depositModal = false" class="absolute top-3 right-3 text-slate-500 hover:text-white transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-            <h3 class="text-lg font-bold text-white mb-1">Depositar fondos</h3>
-            <p class="text-xs text-slate-500 mb-5">Anade dinero a tu cartera para seguir jugando.</p>
-
-            <div class="grid grid-cols-4 gap-2 mb-4">
-                <template x-for="val in [10, 50, 100, 500]" :key="val">
-                    <button @click="depositAmount = val"
-                            :class="depositAmount === val ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400' : 'border-white/10 bg-white/5 text-slate-400 hover:text-white'"
-                            class="py-2 rounded-lg border text-sm font-bold transition"
-                            x-text="'€' + val">
-                    </button>
-                </template>
-            </div>
-
-            <input type="number" x-model.number="depositAmount" min="1" max="50000" step="1"
-                   class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-center text-lg font-bold outline-none focus:border-emerald-500 transition mb-4">
-
-            <button @click="doDeposit()" :disabled="depositing || depositAmount < 1"
-                    class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold transition disabled:opacity-50">
-                <span x-text="depositing ? 'Procesando...' : 'Depositar €' + depositAmount"></span>
-            </button>
         </div>
     </div>
 

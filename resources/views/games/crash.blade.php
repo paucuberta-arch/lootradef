@@ -195,6 +195,7 @@ function crashGame() {
                 }
 
                 this.saldo = data.saldo;
+                window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
                 this.serverCrashPoint = data.crash_point;
                 this.multiplier = 1.00;
                 this.ganancia = 0;
@@ -262,6 +263,7 @@ function crashGame() {
                 this.crashAt = data.crash_point || this.serverCrashPoint;
                 this.ganancia = 0;
                 this.saldo = data.saldo ?? this.saldo;
+                window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: this.saldo } }));
                 this.fase = 'crashed';
 
                 const crashTarget = data.crash_point || this.serverCrashPoint;
@@ -316,6 +318,7 @@ function crashGame() {
                 this.cashoutAt = mult;
                 this.ganancia = data.ganancia;
                 this.saldo = data.saldo;
+                window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
 
                 if (data.resultado === 'crash') {
                     this.fase = 'crashed';
