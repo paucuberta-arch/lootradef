@@ -24,6 +24,7 @@ return [
 
     'cache' => [
         'store' => 'file',
+        'key' => 'spatie.permission.cache',
         'prefix' => 'spatie.permission.cache.',
     ],
 ];
