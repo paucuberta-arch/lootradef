@@ -143,7 +143,7 @@ class SlotsController extends Controller
         $gameSlug = $request->input('game', 'default');
         $theme = $this->themes[$gameSlug] ?? $this->themes['default'];
 
-        if (!$user->cartera || !$user->cartera->apostar($apuesta)) {
+        if (! $user->cartera || ! $user->cartera->apostar($apuesta)) {
             return response()->json(['error' => 'Saldo insuficiente.'], 422);
         }
 
@@ -153,7 +153,7 @@ class SlotsController extends Controller
             $this->spin($theme['symbols'], $theme['weights']),
         ];
 
-        $ganancia = $this->calculateWin($reels, $apuesta);
+        $ganancia = $this->calculateWin($reels, $apuesta, $gameSlug);
         $resultado = $ganancia > 0 ? 'win' : 'lose';
 
         if ($ganancia > 0) {
@@ -196,8 +196,31 @@ class SlotsController extends Controller
         return $symbols[0];
     }
 
-    private function calculateWin(array $reels, float $apuesta): float
+    private function calculateWin(array $reels, float $apuesta, string $gameSlug): float
     {
+        if ($gameSlug === 'gates-of-olympus' && in_array('⚡', $reels, true)) {
+            return round($apuesta * count(array_filter($reels, fn ($symbol) => $symbol === '⚡')) * random_int(2, 5), 2);
+        }
+
+        if ($gameSlug === 'sweet-bonanza' && count(array_intersect($reels, ['🍭', '🍫', '🍬'])) >= 2) {
+            return round($apuesta * 3, 2);
+        }
+
+        if ($gameSlug === 'book-of-dead' && count(array_filter($reels, fn ($symbol) => $symbol === '📖')) >= 2) {
+            return round($apuesta * 12, 2);
+        }
+
+        if ($gameSlug === 'starburst' && in_array('✨', $reels, true)) {
+            $nonWild = array_values(array_filter($reels, fn ($symbol) => $symbol !== '✨'));
+            if (count(array_unique($nonWild)) === 1) {
+                return round($apuesta * 8, 2);
+            }
+        }
+
+        if ($gameSlug === 'big-bass-bonanza' && in_array('🐟', $reels, true) && in_array('🎣', $reels, true)) {
+            return round($apuesta * 10, 2);
+        }
+
         if ($reels[0] === $reels[1] && $reels[1] === $reels[2]) {
             return match ($reels[0]) {
                 '7️⃣', '👑', '📖', '💎', '🐟', '🍭' => $apuesta * 50,

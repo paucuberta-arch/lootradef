@@ -1,21 +1,22 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminFeedbackController;
+use App\Http\Controllers\Admin\AdminLogController;
+use App\Http\Controllers\Admin\AdminReviewController;
+use App\Http\Controllers\Admin\AdminRoleController;
+use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\ArcadeController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\PerfilController;
-use App\Http\Controllers\CrashController;
-use App\Http\Controllers\SlotsController;
-use App\Http\Controllers\RuletaController;
 use App\Http\Controllers\BlackjackController;
 use App\Http\Controllers\CajaController;
+use App\Http\Controllers\CrashController;
 use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\ReviewController;
-use App\Http\Controllers\Admin\AdminDashboardController;
-use App\Http\Controllers\Admin\AdminUserController;
-use App\Http\Controllers\Admin\AdminReviewController;
-use App\Http\Controllers\Admin\AdminFeedbackController;
-use App\Http\Controllers\Admin\AdminRoleController;
-use App\Http\Controllers\Admin\AdminLogController;
+use App\Http\Controllers\RuletaController;
+use App\Http\Controllers\SlotsController;
+use Illuminate\Support\Facades\Route;
 
 $uegos = [
     'gates-of-olympus' => ['name' => 'Gates of Olympus', 'provider' => 'Pragmatic Play', 'cat' => 'Slots', 'grad' => 'game-gradient-5', 'rtp' => '96.5%', 'volatilidad' => 'Alta', 'max_win' => 'x5000', 'min_bet' => '€0.20', 'max_bet' => '€125', 'lines' => '20', 'reels' => '6', 'image' => 'https://images.unsplash.com/photo-1551524559-8af4e6624178?w=800&h=600&fit=crop', 'description' => 'Viaja al Monte del Olimpo con Zeus en esta emocionante slot de Pragmatic Play. Con un sistema de pagos por clusters y multiplicadores hasta x500, Gates of Olympus ofrece una experiencia de juego unica con graficos espectaculares y efectos de sonido envolventes.'],
@@ -32,12 +33,16 @@ $uegos = [
     'blackjack-classic' => ['name' => 'Blackjack Classic', 'provider' => 'Microgaming', 'cat' => 'Blackjack', 'grad' => 'game-gradient-10', 'rtp' => '99.91%', 'volatilidad' => 'Baja', 'max_win' => 'x3', 'min_bet' => '€1', 'max_bet' => '€2000', 'lines' => '-', 'reels' => '-', 'image' => 'https://images.unsplash.com/photo-1560015534-cee980ba7e13?w=800&h=600&fit=crop', 'description' => 'Blackjack clasico con la mejor tasa de retorno del 99.91%. Reglas estandar con 6 barajas, dealer se para en 17. Decisiones rapidas y estrategia optima para maximizar tus posibilidades.'],
 ];
 
+$uegos = array_merge($uegos, config('arcade_games'));
+
 Route::get('/', function () {
     return view('inicio');
 })->name('inicio');
 
 Route::get('/juego/{slug}', function ($slug) use ($uegos) {
-    if (!isset($uegos[$slug])) abort(404);
+    if (! isset($uegos[$slug])) {
+        abort(404);
+    }
 
     $gameRoutes = [
         'crash-rocket' => route('crash'),
@@ -51,6 +56,10 @@ Route::get('/juego/{slug}', function ($slug) use ($uegos) {
         'blackjack-vip' => route('blackjack'),
         'blackjack-classic' => route('blackjack'),
     ];
+
+    if (config("arcade_games.{$slug}")) {
+        $gameRoutes[$slug] = route('arcade', ['game' => $slug]);
+    }
 
     return view('juego.show', [
         'juego' => $uegos[$slug],
@@ -73,11 +82,11 @@ Route::get('/info/{page}', function ($page) {
                 <p><strong class="text-white">Como me registro?</strong><br>Haz clic en "Registrarse" y completa el formulario con tus datos. Receiras un email de confirmacion.</p>
                 <p><strong class="text-white">Como realizo un deposito?</strong><br>Ve a tu perfil y utiliza el sistema de cartera. Puedes anadir fondos de forma segura.</p>
                 <p><strong class="text-white">Los juegos son justos?</strong><br>Si, utilizamos algoritmos probadamente justos para todos nuestros juegos.</p>
-                <p><strong class="text-white">Como contacto con soporte?</strong><br>Utiliza nuestra pagina de <a href="' . url('/feedback') . '" class="text-brand-400 hover:text-brand-300">feedback</a> para enviar tus consultas.</p>',
+                <p><strong class="text-white">Como contacto con soporte?</strong><br>Utiliza nuestra pagina de <a href="'.url('/feedback').'" class="text-brand-400 hover:text-brand-300">feedback</a> para enviar tus consultas.</p>',
         ],
         'contacto' => [
             'title' => 'Contacto',
-            'content' => '<p>Puedes contactar con nosotros a traves de nuestro sistema de <a href="' . url('/feedback') . '" class="text-brand-400 hover:text-brand-300">feedback</a>.</p>
+            'content' => '<p>Puedes contactar con nosotros a traves de nuestro sistema de <a href="'.url('/feedback').'" class="text-brand-400 hover:text-brand-300">feedback</a>.</p>
                 <p>Nuestro equipo de soporte respondere en un plazo de 24-48 horas.</p>
                 <p><strong class="text-white">Email:</strong> soporte@lootracasino.com</p>',
         ],
@@ -126,7 +135,9 @@ Route::get('/info/{page}', function ($page) {
         ],
     ];
 
-    if (!isset($pages[$page])) abort(404);
+    if (! isset($pages[$page])) {
+        abort(404);
+    }
 
     return view('info.index', [
         'pageTitle' => $pages[$page]['title'],
@@ -141,6 +152,8 @@ Route::get('/iniciar-sesion', [AuthController::class, 'mostrarLogin'])->name('lo
 Route::post('/iniciar-sesion', [AuthController::class, 'iniciarSesion'])->name('login.store');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/jugar/originales/{game}', [ArcadeController::class, 'index'])->name('arcade');
+    Route::post('/jugar/originales/{game}', [ArcadeController::class, 'play'])->name('arcade.play');
     Route::post('/cajas/{caja}/abrir', [CajaController::class, 'open'])->name('cajas.open');
     Route::post('/inventario/{item}/canjear', [CajaController::class, 'redeem'])->name('inventario.redeem');
     Route::get('/perfil', [PerfilController::class, 'index'])->name('perfil');

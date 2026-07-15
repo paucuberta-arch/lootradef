@@ -67,10 +67,11 @@ class ActiveGamesAccessTest extends TestCase
 
     private function gameSlugs(): array
     {
-        return [
+        return array_values(array_unique([
             'gates-of-olympus', 'crazy-time', 'sweet-bonanza', 'european-roulette',
             'blackjack-vip', 'book-of-dead', 'crash-rocket', 'texas-holdem',
             'starburst', 'lightning-roulette', 'big-bass-bonanza', 'blackjack-classic',
-        ];
+            ...array_keys(config('arcade_games')),
+        ]));
     }
 }

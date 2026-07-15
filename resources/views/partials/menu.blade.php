@@ -37,7 +37,7 @@
                         x-transition:leave-end="opacity-0 -translate-y-1"
                         class="absolute top-full left-0 mt-1 w-52 py-2 rounded-xl bg-[#14142a] border border-white/10 shadow-2xl shadow-black/60"
                     >
-                        @foreach(['Slots' => 'slots', 'Ruleta' => 'ruleta', 'Blackjack' => 'blackjack', 'Poker' => 'poker', 'Live Casino' => 'live', 'Crash' => 'crash'] as $label => $catId)
+                        @foreach(['Slots' => 'slots', 'Ruleta' => 'ruleta', 'Blackjack' => 'blackjack', 'Poker' => 'poker', 'Live Casino' => 'live', 'Crash' => 'crash', 'Originales' => 'arcade'] as $label => $catId)
                             <a href="{{ url('/?cat=' . $catId) }}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-400 hover:text-white hover:bg-white/5 transition">
                                 {{ $label }}
                             </a>
@@ -160,7 +160,7 @@
 
                 <div class="h-px bg-white/5 my-2"></div>
 
-                @foreach(['Slots' => 'slots', 'Ruleta' => 'ruleta', 'Blackjack' => 'blackjack', 'Poker' => 'poker', 'Live Casino' => 'live'] as $label => $catId)
+                @foreach(['Slots' => 'slots', 'Ruleta' => 'ruleta', 'Blackjack' => 'blackjack', 'Poker' => 'poker', 'Live Casino' => 'live', 'Originales' => 'arcade'] as $label => $catId)
                     <a href="{{ url('/?cat=' . $catId) }}" class="px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition">{{ $label }}</a>
                 @endforeach
 

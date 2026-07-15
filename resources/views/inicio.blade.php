@@ -37,6 +37,12 @@
         ['slug' => 'blackjack-classic', 'name' => 'Blackjack Classic', 'provider' => 'Microgaming', 'cat' => 'blackjack', 'grad' => 'game-gradient-10', 'badge' => '', 'badgeColor' => '', 'rtp' => '99.91%', 'min' => '€1', 'max' => '€2000', 'image' => 'https://images.unsplash.com/photo-1560015534-cee980ba7e13?w=600&h=800&fit=crop'],
     ];
 
+    $juegos = collect($juegos)
+        ->keyBy('slug')
+        ->merge(collect(config('arcade_games'))->keyBy('slug'))
+        ->values()
+        ->all();
+
     $cats = [
         ['id' => 'todos', 'label' => 'Todos', 'icon' => '&#x1F3AE;'],
         ['id' => 'slots', 'label' => 'Slots', 'icon' => '&#x1F3B0;'],
@@ -45,6 +51,9 @@
         ['id' => 'poker', 'label' => 'Poker', 'icon' => '&#x1F0AD;'],
         ['id' => 'live', 'label' => 'Live Casino', 'icon' => '&#x1F4FA;'],
         ['id' => 'crash', 'label' => 'Crash', 'icon' => '&#x1F680;'],
+        ['id' => 'arcade', 'label' => 'Originales', 'icon' => '&#x2728;'],
+        ['id' => 'cartas', 'label' => 'Cartas', 'icon' => '&#x1F0CF;'],
+        ['id' => 'numeros', 'label' => 'Números', 'icon' => '&#x1F522;'],
     ];
 @endphp
 
@@ -101,7 +110,7 @@
             </div>
         </div>
         <div class="absolute right-8 bottom-8 hidden lg:grid grid-cols-3 gap-2 z-10">
-            @foreach([['12+', 'Juegos'], ['97%', 'RTP máx.'], ['24/7', 'Acceso']] as [$value, $label])
+            @foreach([['20', 'Juegos'], ['97%', 'RTP máx.'], ['24/7', 'Acceso']] as [$value, $label])
                 <div class="min-w-24 p-3 rounded-xl bg-black/30 border border-white/10 backdrop-blur-xl text-center">
                     <div class="font-display font-bold text-white">{{ $value }}</div>
                     <div class="text-[10px] uppercase tracking-widest text-slate-400">{{ $label }}</div>
@@ -221,17 +230,17 @@
                             </div>
                         </div>
                     </a>
-                    <a href="{{ route('juego.show', 'crazy-time') }}" class="featured-card game-gradient-2 aspect-[16/9] sm:aspect-[16/10] flex items-end">
-                        <img src="https://images.unsplash.com/photo-1511882150382-421056c89033?w=1200&h=675&fit=crop" alt="Crazy Time" class="absolute inset-0 w-full h-full object-cover" loading="lazy">
+                    <a href="{{ route('juego.show', 'texas-holdem') }}" class="featured-card game-gradient-2 aspect-[16/9] sm:aspect-[16/10] flex items-end">
+                        <img src="{{ asset('images/poker-live.webp') }}" alt="Texas Hold'em Live" class="absolute inset-0 w-full h-full object-cover" loading="lazy">
                         <div class="featured-overlay"></div>
                         <div class="absolute top-4 left-4 z-10"><span class="px-3 py-1 rounded-lg bg-emerald-500/90 text-black text-xs font-bold uppercase tracking-wider">Nuevo</span></div>
                         <div class="relative z-10 p-5 sm:p-6 w-full">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="text-xs font-semibold text-emerald-300">Evolution</span>
+                                <span class="text-xs font-semibold text-emerald-300">Lootra Originals</span>
                                 <span class="w-1 h-1 rounded-full bg-slate-600"></span>
-                                <span class="text-xs text-slate-500">Live Casino</span>
+                                <span class="text-xs text-slate-500">Poker Live</span>
                             </div>
-                            <h3 class="text-xl sm:text-2xl font-extrabold text-white mb-3">Crazy Time</h3>
+                            <h3 class="text-xl sm:text-2xl font-extrabold text-white mb-3">Texas Hold'em Live</h3>
                             <div class="flex items-center gap-3">
                                 <span class="px-5 py-2.5 rounded-xl bg-brand-500 text-black text-sm font-bold">Jugar ahora</span>
                                 <span class="px-5 py-2.5 rounded-xl bg-white/10 text-white text-sm font-semibold border border-white/10">Demo</span>
