@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\DB;
 
 class Cartera extends Model
 {
@@ -30,15 +31,24 @@ class Cartera extends Model
 
     public function apostar(float $cantidad): bool
     {
-        if (!$this->tieneSaldo($cantidad)) {
-            return false;
+        $updated = DB::table('carteras')
+            ->where('id', $this->id)
+            ->where('saldo', '>=', $cantidad)
+            ->decrement('saldo', $cantidad);
+
+        if ($updated) {
+            $this->refresh();
+            return true;
         }
-        $this->decrement('saldo', $cantidad);
-        return true;
+        return false;
     }
 
     public function ganar(float $cantidad): void
     {
-        $this->increment('saldo', $cantidad);
+        DB::table('carteras')
+            ->where('id', $this->id)
+            ->increment('saldo', $cantidad);
+
+        $this->refresh();
     }
 }

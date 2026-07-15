@@ -41,8 +41,8 @@ class SlotsController extends Controller
         $user = Auth::user();
         $apuesta = round($request->apuesta, 2);
 
-        if (!$user->cartera->apostar($apuesta)) {
-            return back()->withErrors(['apuesta' => 'Saldo insuficiente.']);
+        if (!$user->cartera || !$user->cartera->apostar($apuesta)) {
+            return response()->json(['error' => 'Saldo insuficiente.'], 422);
         }
 
         $reels = [
@@ -73,7 +73,7 @@ class SlotsController extends Controller
             'reels' => $reels,
             'ganancia' => $ganancia,
             'resultado' => $resultado,
-            'saldo' => $user->cartera->saldo,
+            'saldo' => $user->cartera?->saldo ?? 0,
         ]);
     }
 

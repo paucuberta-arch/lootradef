@@ -61,6 +61,7 @@
                             <div class="text-red-400 font-bold text-lg">Sin suerte esta vez</div>
                         </template>
                     </div>
+                    <p x-show="error" class="text-red-400 text-sm text-center mb-4" x-text="error"></p>
 
                     {{-- Controles --}}
                     <div class="flex items-center gap-4">
@@ -159,12 +160,13 @@
 <script>
 function slotsGame() {
     return {
-        saldo: {{ Auth::user()->cartera->saldo ?? 1000 }},
+        saldo: {{ Auth::user()?->cartera?->saldo ?? 1000 }},
         apuesta: 1,
         reels: ['🍒', '🍋', '🍊'],
         spinning: false,
         ganancia: 0,
         lastResult: false,
+        error: '',
         historial: @js($partidas->map(fn($p) => ['reels' => $p->detalles['reels'] ?? ['?','?','?'], 'ganancia' => $p->ganancia, 'apuesta' => $p->apuesta])->take(10)->all()),
 
         async spin() {
@@ -172,6 +174,7 @@ function slotsGame() {
             this.spinning = true;
             this.ganancia = 0;
             this.lastResult = false;
+            this.error = '';
 
             try {
                 const res = await fetch('{{ route("slots.play") }}', {
@@ -185,7 +188,11 @@ function slotsGame() {
                 });
                 const data = await res.json();
 
-                if (data.errors) return;
+                if (data.error) {
+                    this.error = data.error;
+                    this.spinning = false;
+                    return;
+                }
 
                 await new Promise(r => setTimeout(r, 600));
 
@@ -194,7 +201,9 @@ function slotsGame() {
                 this.lastResult = true;
                 this.saldo = data.saldo;
                 this.historial.unshift({ reels: data.reels, ganancia: data.ganancia, apuesta: this.apuesta });
-            } catch (e) {}
+            } catch (e) {
+                this.error = 'Error de conexion.';
+            }
 
             this.spinning = false;
         },

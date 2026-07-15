@@ -31,8 +31,8 @@ class BlackjackController extends Controller
         $user = Auth::user();
         $apuesta = round($request->apuesta, 2);
 
-        if (!$user->cartera->apostar($apuesta)) {
-            return back()->withErrors(['apuesta' => 'Saldo insuficiente.']);
+        if (!$user->cartera || !$user->cartera->apostar($apuesta)) {
+            return response()->json(['error' => 'Saldo insuficiente.'], 422);
         }
 
         $baraja = $this->crearBaraja();
@@ -71,7 +71,7 @@ class BlackjackController extends Controller
             'dealer_visible' => [$manoDealer[0]],
             'estado' => $estado,
             'ganancia' => $ganancia,
-            'saldo' => $user->cartera->saldo,
+            'saldo' => $user->cartera?->saldo ?? 0,
             'apuesta' => $apuesta,
             'baraja' => $baraja,
         ]);
@@ -82,11 +82,13 @@ class BlackjackController extends Controller
         $request->validate([
             'baraja' => 'required|array',
             'mano_jugador' => 'required|array',
+            'mano_dealer' => 'required|array',
             'apuesta' => 'required|numeric',
         ]);
 
         $baraja = $request->baraja;
         $manoJugador = $request->mano_jugador;
+        $manoDealer = $request->mano_dealer;
         $apuesta = $request->apuesta;
 
         $manoJugador[] = $this->draw($baraja);
@@ -98,11 +100,12 @@ class BlackjackController extends Controller
         if ($puntos > 21) {
             $estado = 'bust';
         } elseif ($puntos === 21) {
-            return $this->stand($request->merge(['mano_jugador' => $manoJugador, 'baraja' => $baraja]));
+            return $this->stand($request->merge(['mano_jugador' => $manoJugador, 'baraja' => $baraja, 'mano_dealer' => $manoDealer]));
         }
 
         return response()->json([
             'mano_jugador' => $manoJugador,
+            'mano_dealer' => $manoDealer,
             'puntos_jugador' => $puntos,
             'baraja' => $baraja,
             'estado' => $estado,
@@ -173,7 +176,7 @@ class BlackjackController extends Controller
             'puntos_dealer' => $dealerPts,
             'estado' => $estado,
             'ganancia' => $ganancia,
-            'saldo' => $user->cartera->saldo,
+            'saldo' => $user->cartera?->saldo ?? 0,
         ]);
     }
 

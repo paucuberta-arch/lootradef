@@ -123,6 +123,7 @@
                     <div x-show="ganancia > 0" class="mt-4 text-emerald-400 font-bold text-lg number-pop">
                         ¡Ganaste <span x-text="'€' + ganancia.toFixed(2)"></span>!
                     </div>
+                    <p x-show="error" class="mt-4 text-red-400 text-sm text-center" x-text="error"></p>
                 </div>
             </div>
         </div>
@@ -168,7 +169,7 @@
 <script>
 function ruletaGame() {
     return {
-        saldo: {{ Auth::user()->cartera->saldo ?? 1000 }},
+        saldo: {{ Auth::user()?->cartera?->saldo ?? 1000 }},
         apuesta: 1,
         tipo: 'rojo',
         valor: null,
@@ -176,12 +177,14 @@ function ruletaGame() {
         ganancia: 0,
         lastNumero: null,
         lastColor: null,
+        error: '',
         historial: @js($partidas->map(fn($p) => ['numero' => $p->detalles['numero'] ?? 0, 'color' => $p->detalles['color'] ?? 'verde', 'tipo' => $p->detalles['tipo_apuesta'] ?? '', 'ganancia' => $p->ganancia, 'apuesta' => $p->apuesta])->take(10)->all()),
 
         async play() {
             if (this.spinning || this.apuesta > this.saldo) return;
             this.spinning = true;
             this.ganancia = 0;
+            this.error = '';
 
             try {
                 const res = await fetch('{{ route("ruleta.play") }}', {
@@ -195,7 +198,11 @@ function ruletaGame() {
                 });
                 const data = await res.json();
 
-                if (data.errors) return;
+                if (data.error) {
+                    this.error = data.error;
+                    this.spinning = false;
+                    return;
+                }
 
                 await new Promise(r => setTimeout(r, 1500));
 
@@ -204,7 +211,9 @@ function ruletaGame() {
                 this.ganancia = data.ganancia;
                 this.saldo = data.saldo;
                 this.historial.unshift({ numero: data.numero, color: data.color, tipo: this.tipo, ganancia: data.ganancia, apuesta: this.apuesta });
-            } catch (e) {}
+            } catch (e) {
+                this.error = 'Error de conexion.';
+            }
 
             this.spinning = false;
         },

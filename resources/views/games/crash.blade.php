@@ -153,7 +153,7 @@
 <script>
 function crashGame() {
     return {
-        saldo: {{ Auth::user()->cartera->saldo ?? 1000 }},
+        saldo: {{ Auth::user()?->cartera?->saldo ?? 1000 }},
         apuesta: 1,
         autoCashout: 2,
         fase: 'esperando',
@@ -235,6 +235,7 @@ function crashGame() {
 
                 if (!this.autoCashoutTriggered && current >= this.autoCashout) {
                     this.autoCashoutTriggered = true;
+                    clearInterval(this.interval);
                     this.doCashout(current);
                 }
             }, 50);
@@ -258,20 +259,21 @@ function crashGame() {
                 });
                 const data = await res.json();
 
-                this.crashAt = data.crash_point;
+                this.crashAt = data.crash_point || this.serverCrashPoint;
                 this.ganancia = 0;
-                this.saldo = data.saldo;
+                this.saldo = data.saldo ?? this.saldo;
                 this.fase = 'crashed';
 
+                const crashTarget = data.crash_point || this.serverCrashPoint;
                 this.graphPoints = '0,58';
                 let c = 1.00;
                 let pi = 0;
                 const crashAnim = setInterval(() => {
                     c += (Math.random() * 0.15) + 0.05;
                     c = Math.round(c * 100) / 100;
-                    if (c >= data.crash_point) {
+                    if (c >= crashTarget) {
                         clearInterval(crashAnim);
-                        this.multiplier = data.crash_point;
+                        this.multiplier = crashTarget;
                     } else {
                         this.multiplier = c;
                         pi++;
@@ -281,8 +283,10 @@ function crashGame() {
                     }
                 }, 30);
 
-                this.historial.unshift(data.crash_point);
-                if (this.historial.length > 15) this.historial.pop();
+                if (data.crash_point) {
+                    this.historial.unshift(data.crash_point);
+                    if (this.historial.length > 15) this.historial.pop();
+                }
             } catch (e) {
                 this.error = 'Error de conexion.';
                 this.fase = 'esperando';

@@ -23,6 +23,10 @@ class PerfilController extends Controller
         $user = $request->user();
         $amount = round($request->amount, 2);
 
+        if (!$user->cartera) {
+            return response()->json(['error' => 'No tienes una cartera activa.'], 422);
+        }
+
         $user->cartera->ganar($amount);
 
         return response()->json([

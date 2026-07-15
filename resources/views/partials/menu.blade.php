@@ -1,6 +1,6 @@
 <nav class="sticky top-0 z-50 bg-[#0d0d18]/90 backdrop-blur-xl border-b border-white/5" x-data="{
          open: false, catOpen: false, depositModal: false, depositAmount: 100, depositing: false,
-         saldo: {{ auth()->user()->cartera->saldo ?? 0 }},
+         saldo: {{ auth()->user()?->cartera?->saldo ?? 0 }},
          async doDeposit() {
              if (this.depositing || this.depositAmount < 1) return;
              this.depositing = true;

@@ -185,7 +185,7 @@
 <script>
 function blackjackGame() {
     return {
-        saldo: {{ Auth::user()->cartera->saldo ?? 1000 }},
+        saldo: {{ Auth::user()?->cartera?->saldo ?? 1000 }},
         apuesta: 10,
         manoJugador: [],
         manoDealer: [],
@@ -195,6 +195,7 @@ function blackjackGame() {
         estado: 'jugando',
         fase: '',
         ganancia: 0,
+        error: '',
         baraja: [],
         historial: @js($partidas->take(10)->map(fn($p) => ['puntos' => $p->detalles['puntos_jugador'] ?? 0, 'dealer_puntos' => $p->detalles['puntos_dealer'] ?? 0, 'ganancia' => $p->ganancia, 'apuesta' => $p->apuesta])->all()),
 
@@ -204,6 +205,7 @@ function blackjackGame() {
             this.estado = 'jugando';
             this.ganancia = 0;
             this.oculto = true;
+            this.error = '';
 
             try {
                 const res = await fetch('{{ route("blackjack.deal") }}', {
@@ -217,7 +219,10 @@ function blackjackGame() {
                 });
                 const data = await res.json();
 
-                if (data.errors) return;
+                if (data.error) {
+                    this.error = data.error;
+                    return;
+                }
 
                 this.manoJugador = data.mano_jugador;
                 this.manoDealer = data.mano_dealer;
@@ -235,7 +240,9 @@ function blackjackGame() {
                     this.fase = 'terminado';
                     this.historial.unshift({ puntos: data.puntos_jugador, dealer_puntos: data.puntos_dealer, ganancia: data.ganancia, apuesta: this.apuesta });
                 }
-            } catch (e) {}
+            } catch (e) {
+                this.error = 'Error de conexion.';
+            }
         },
 
         async hit() {
@@ -247,19 +254,27 @@ function blackjackGame() {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'Accept': 'application/json',
                     },
-                    body: JSON.stringify({ baraja: this.baraja, mano_jugador: this.manoJugador, apuesta: this.apuesta }),
+                    body: JSON.stringify({ baraja: this.baraja, mano_jugador: this.manoJugador, mano_dealer: this.manoDealer, apuesta: this.apuesta }),
                 });
                 const data = await res.json();
+
+                if (data.error) {
+                    this.error = data.error;
+                    return;
+                }
 
                 this.manoJugador = data.mano_jugador;
                 this.puntosJugador = data.puntos_jugador;
                 this.baraja = data.baraja;
 
+                if (data.mano_dealer) this.manoDealer = data.mano_dealer;
+                if (data.puntos_dealer) this.puntosDealer = data.puntos_dealer;
+
                 if (data.estado === 'bust') {
                     this.estado = 'bust';
                     this.oculto = false;
                     this.fase = 'terminado';
-                    this.historial.unshift({ puntos: data.puntos_jugador, dealer_puntos: 0, ganancia: 0, apuesta: this.apuesta });
+                    this.historial.unshift({ puntos: data.puntos_jugador, dealer_puntos: data.puntos_dealer || 0, ganancia: 0, apuesta: this.apuesta });
                 } else if (['win', 'lose', 'push', 'blackjack'].includes(data.estado)) {
                     this.manoDealer = data.mano_dealer || this.manoDealer;
                     this.puntosDealer = data.puntos_dealer || this.puntosDealer;
@@ -270,7 +285,9 @@ function blackjackGame() {
                     this.fase = 'terminado';
                     this.historial.unshift({ puntos: data.puntos_jugador, dealer_puntos: data.puntos_dealer, ganancia: data.ganancia, apuesta: this.apuesta });
                 }
-            } catch (e) {}
+            } catch (e) {
+                this.error = 'Error de conexion.';
+            }
         },
 
         async stand() {
@@ -288,6 +305,11 @@ function blackjackGame() {
                 });
                 const data = await res.json();
 
+                if (data.error) {
+                    this.error = data.error;
+                    return;
+                }
+
                 this.manoDealer = data.mano_dealer;
                 this.puntosDealer = data.puntos_dealer;
                 this.estado = data.estado;
@@ -295,7 +317,9 @@ function blackjackGame() {
                 this.saldo = data.saldo;
                 this.fase = 'terminado';
                 this.historial.unshift({ puntos: data.puntos_jugador, dealer_puntos: data.puntos_dealer, ganancia: data.ganancia, apuesta: this.apuesta });
-            } catch (e) {}
+            } catch (e) {
+                this.error = 'Error de conexion.';
+            }
         },
 
         reset() {

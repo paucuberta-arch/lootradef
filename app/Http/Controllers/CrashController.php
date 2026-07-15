@@ -29,7 +29,7 @@ class CrashController extends Controller
         $user = Auth::user();
         $apuesta = round($request->apuesta, 2);
 
-        if (!$user->cartera->apostar($apuesta)) {
+        if (!$user->cartera || !$user->cartera->apostar($apuesta)) {
             return response()->json(['error' => 'Saldo insuficiente.'], 422);
         }
 
@@ -43,7 +43,7 @@ class CrashController extends Controller
 
         return response()->json([
             'ok' => true,
-            'saldo' => $user->cartera->saldo,
+            'saldo' => $user->cartera?->saldo ?? 0,
             'crash_point' => $crashPoint,
         ]);
     }
@@ -58,7 +58,13 @@ class CrashController extends Controller
         $round = Session::get('crash_round');
 
         if (!$round) {
-            return response()->json(['error' => 'No hay ronda activa.'], 422);
+            return response()->json([
+                'error' => 'No hay ronda activa.',
+                'crash_point' => 0,
+                'ganancia' => 0,
+                'resultado' => 'no_round',
+                'saldo' => $user->cartera?->saldo ?? 0,
+            ], 422);
         }
 
         Session::forget('crash_round');
@@ -92,18 +98,26 @@ class CrashController extends Controller
             'crash_point' => $crashPoint,
             'ganancia' => $ganancia,
             'resultado' => $resultado,
-            'saldo' => $user->cartera->saldo,
+            'saldo' => $user->cartera?->saldo ?? 0,
         ]);
     }
 
     public function crash(Request $request)
     {
+        $user = Auth::user();
         $round = Session::get('crash_round');
-        if (!$round) return response()->json(['ok' => true]);
+
+        if (!$round) {
+            return response()->json([
+                'crash_point' => 0,
+                'ganancia' => 0,
+                'resultado' => 'no_round',
+                'saldo' => $user->cartera?->saldo ?? 0,
+            ]);
+        }
 
         Session::forget('crash_round');
 
-        $user = Auth::user();
         $apuesta = $round['apuesta'];
         $crashPoint = $round['crash_point'];
 
@@ -123,7 +137,7 @@ class CrashController extends Controller
             'crash_point' => $crashPoint,
             'ganancia' => 0,
             'resultado' => 'crash',
-            'saldo' => $user->cartera->saldo,
+            'saldo' => $user->cartera?->saldo ?? 0,
         ]);
     }
 
