@@ -95,7 +95,7 @@
                     @endif
                     <div class="flex items-center gap-1">
                         <div class="px-3 py-1.5 rounded-lg bg-brand-500/10 border border-brand-500/20 text-sm font-bold text-brand-400">
-                            €<span x-text="saldo.toFixed(2)">{{ number_format(auth()->user()->cartera->saldo ?? 0, 2) }}</span>
+                            €<span x-text="saldo.toFixed(2)">{{ number_format(auth()->user()->saldo, 2) }}</span>
                         </div>
                         <button @click="depositModal = true" class="px-2 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition text-sm font-bold" title="Depositar">
                             +
@@ -162,7 +162,7 @@
                         <a href="{{ url('/admin') }}" class="px-3 py-2.5 rounded-lg text-sm font-medium text-brand-400 hover:text-brand-300 hover:bg-brand-500/5 transition">Panel Admin</a>
                     @endif
                     <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-brand-500/10 border border-brand-500/20 text-sm font-bold text-brand-400">
-                        <span>Saldo: €<span x-text="saldo.toFixed(2)">{{ number_format(auth()->user()->cartera->saldo ?? 0, 2) }}</span></span>
+                        <span>Saldo: €<span x-text="saldo.toFixed(2)">{{ number_format(auth()->user()->saldo, 2) }}</span></span>
                         <button @click="depositModal = true" class="px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold">+</button>
                     </div>
                     <a href="{{ route('perfil') }}" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition">
