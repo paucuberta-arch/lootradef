@@ -1,32 +1,4 @@
-<nav class="sticky top-0 z-50 bg-[#0d0d18]/90 backdrop-blur-xl border-b border-white/5" x-data="{
-         open: false, catOpen: false, depositOpen: false, depositAmount: 100, depositing: false,
-         saldo: {{ auth()->user()?->cartera?->saldo ?? 0 }},
-         init() {
-             window.addEventListener('saldo-updated', (e) => { this.saldo = e.detail.saldo; });
-         },
-         async quickDeposit(amount) {
-             if (this.depositing) return;
-             this.depositing = true;
-             try {
-                 const res = await fetch('{{ route('perfil.deposit') }}', {
-                     method: 'POST',
-                     headers: {
-                         'Content-Type': 'application/json',
-                         'X-CSRF-TOKEN': document.querySelector('meta[name=\"csrf-token\"]').content,
-                         'Accept': 'application/json',
-                     },
-                     body: JSON.stringify({ amount: amount }),
-                 });
-                 const data = await res.json();
-                 if (data.ok) {
-                     this.saldo = data.saldo;
-                     window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
-                 }
-             } catch (e) {}
-             this.depositing = false;
-             this.depositOpen = false;
-         }
-     }">
+<nav class="sticky top-0 z-50 bg-[#0d0d18]/90 backdrop-blur-xl border-b border-white/5" x-data="navbar()">
     <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
 
@@ -131,14 +103,10 @@
                                     </button>
                                 @endforeach
                             </div>
-                            <button @click="$refs.customAmountInput.focus(); $refs.customAmountInput.select()"
-                                    class="w-full py-2 rounded-lg bg-white/5 border border-white/10 text-xs font-medium text-slate-400 hover:text-white hover:bg-white/10 transition">
-                                Otro importe...
-                            </button>
-                            <div class="mt-2 flex gap-2" x-data="{ customAmt: 100 }">
-                                <input x-ref="customAmountInput" x-model.number="customAmt" type="number" min="1" max="50000"
+                            <div class="flex gap-2">
+                                <input x-model.number="customAmt" type="number" min="1" max="50000"
                                        class="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-emerald-500 transition">
-                                <button @click="$root.__x.$data.quickDeposit(customAmt)"
+                                <button @click="quickDeposit(customAmt)"
                                         :disabled="depositing || customAmt < 1"
                                         class="px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-bold transition disabled:opacity-50">
                                     OK
@@ -224,10 +192,10 @@
                                 </button>
                             @endforeach
                         </div>
-                        <div class="flex gap-2" x-data="{ customAmt: 100 }">
+                        <div class="flex gap-2">
                             <input x-model.number="customAmt" type="number" min="1" max="50000"
                                    class="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-emerald-500 transition">
-                            <button @click="$root.__x.$data.quickDeposit(customAmt)"
+                            <button @click="quickDeposit(customAmt)"
                                     :disabled="depositing || customAmt < 1"
                                     class="px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-bold transition disabled:opacity-50">
                                 OK
@@ -253,3 +221,53 @@
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </nav>
+
+<script>
+function navbar() {
+    return {
+        open: false,
+        catOpen: false,
+        depositOpen: false,
+        depositing: false,
+        customAmt: 100,
+        saldo: {{ auth()->user()?->cartera?->saldo ?? 0 }},
+
+        init() {
+            var self = this;
+            window.addEventListener('saldo-updated', function(e) {
+                self.saldo = e.detail.saldo;
+            });
+        },
+
+        quickDeposit: function(amount) {
+            if (this.depositing || amount < 1) return;
+            var self = this;
+            this.depositing = true;
+
+            var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+            fetch('{{ route("perfil.deposit") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ amount: amount })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.ok) {
+                    self.saldo = data.saldo;
+                    window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
+                }
+                self.depositing = false;
+                self.depositOpen = false;
+            })
+            .catch(function() {
+                self.depositing = false;
+            });
+        }
+    };
+}
+</script>
