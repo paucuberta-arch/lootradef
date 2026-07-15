@@ -100,8 +100,7 @@
                     ->with('usuario')
                     ->latest()
                     ->take(10)
-                    ->get()
-                    ->toArray();
+                    ->get();
             @endphp
             <x-review-widget :slug="$slug" :reviews="$reviews" review-type="juego" />
 
