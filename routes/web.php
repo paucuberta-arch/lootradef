@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AdminLogController;
 use App\Http\Controllers\Admin\AdminReviewController;
 use App\Http\Controllers\Admin\AdminRoleController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\ApuestasController;
 use App\Http\Controllers\ArcadeController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlackjackController;
@@ -68,9 +69,8 @@ Route::get('/juego/{slug}', function ($slug) use ($uegos) {
     ]);
 })->name('juego.show');
 
-Route::get('/apuestas', function () {
-    return view('apuestas.index');
-})->name('apuestas');
+Route::get('/apuestas', [ApuestasController::class, 'index'])->name('apuestas');
+Route::get('/apuestas/en-vivo', [ApuestasController::class, 'feed'])->name('apuestas.feed');
 
 Route::get('/cajas', [CajaController::class, 'index'])->name('cajas');
 
@@ -152,6 +152,7 @@ Route::get('/iniciar-sesion', [AuthController::class, 'mostrarLogin'])->name('lo
 Route::post('/iniciar-sesion', [AuthController::class, 'iniciarSesion'])->name('login.store');
 
 Route::middleware('auth')->group(function () {
+    Route::post('/apuestas/{partido}', [ApuestasController::class, 'place'])->name('apuestas.place');
     Route::get('/jugar/originales/{game}', [ArcadeController::class, 'index'])->name('arcade');
     Route::post('/jugar/originales/{game}', [ArcadeController::class, 'play'])->name('arcade.play');
     Route::post('/cajas/{caja}/abrir', [CajaController::class, 'open'])->name('cajas.open');

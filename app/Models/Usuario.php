@@ -53,6 +53,11 @@ class Usuario extends Authenticatable
         return $this->hasMany(InventarioItem::class, 'usuario_id');
     }
 
+    public function apuestasDeportivas(): HasMany
+    {
+        return $this->hasMany(ApuestaDeportiva::class, 'usuario_id');
+    }
+
     public function getSaldoAttribute(): float
     {
         return $this->cartera?->saldo ?? 0;
