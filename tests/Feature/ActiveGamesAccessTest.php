@@ -44,6 +44,7 @@ class ActiveGamesAccessTest extends TestCase
             route('slots', ['game' => 'starburst']),
             route('slots', ['game' => 'big-bass-bonanza']),
             route('ruleta'),
+            route('ruleta.lightning'),
             route('blackjack'),
             route('crash'),
         ];

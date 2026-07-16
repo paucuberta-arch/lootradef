@@ -1,231 +1,88 @@
 @extends('layouts.app')
-@section('title', 'Ruleta — Lootra Casino')
+@section('title', $gameName . ' — Lootra Casino')
 
 @section('styles')
 <style>
-    @keyframes spin-wheel { 0% { transform: rotate(0deg); } 100% { transform: rotate(3600deg); } }
-    .wheel-spin { animation: spin-wheel 3s cubic-bezier(0.17, 0.67, 0.12, 0.99) forwards; }
-    @keyframes number-pop { 0% { transform: scale(0.5); opacity:0; } 50% { transform: scale(1.2); } 100% { transform: scale(1); opacity:1; } }
-    .number-pop { animation: number-pop 0.4s ease-out forwards; }
-    .roulette-wheel { width:min(280px,70vw); aspect-ratio:1; border-radius:50%; padding:18px; margin:0 auto 1.5rem; position:relative; background:repeating-conic-gradient(#991b1b 0 9.7deg,#111827 9.7deg 19.4deg); border:9px solid #d6a93d; box-shadow:0 0 0 8px #3b2108,0 30px 70px rgba(0,0,0,.6),inset 0 0 35px #000; }
-    .roulette-wheel::before { content:""; position:absolute; inset:27%; border-radius:50%; background:radial-gradient(circle at 35% 30%,#fef3c7,#b7791f 32%,#2b1604 35%,#09090b 67%,#d6a93d 70%); box-shadow:0 0 25px #000; }
-    .roulette-wheel::after { content:""; position:absolute; left:50%; top:-19px; transform:translateX(-50%); border-left:11px solid transparent;border-right:11px solid transparent;border-top:25px solid #f8fafc;filter:drop-shadow(0 3px 3px #000); }
+    @keyframes wheel-spin { from{transform:rotate(0)} to{transform:rotate(2520deg)} }
+    @keyframes ball-orbit { 0%{transform:rotate(0) translateX(132px) rotate(0)} 100%{transform:rotate(-2160deg) translateX(60px) rotate(2160deg)} }
+    @keyframes pointer-pendulum { 0%,100%{transform:translateX(-50%) rotate(-13deg)} 50%{transform:translateX(-50%) rotate(13deg)} }
+    @keyframes electric { 0%,100%{filter:drop-shadow(0 0 5px #22d3ee)} 45%{filter:drop-shadow(0 0 18px #a78bfa) brightness(1.4)} }
+    .roulette-shell{position:relative;width:min(350px,82vw);aspect-ratio:1;margin:auto;perspective:800px}
+    .roulette-wheel{position:absolute;inset:8%;border-radius:50%;padding:20px;background:repeating-conic-gradient(from -4.86deg,#b91c1c 0 9.72deg,#101827 9.72deg 19.44deg);border:10px solid #d9a441;box-shadow:0 0 0 8px #3b2108,0 35px 80px #000b,inset 0 0 38px #000;transition:transform .2s}
+    .roulette-wheel::before{content:"";position:absolute;inset:24%;border-radius:50%;background:radial-gradient(circle at 35% 28%,#fff3bd,#c78b2b 22%,#3b2108 25%,#080b13 57%,#e0ad45 60%,#5b320b 66%);box-shadow:inset 0 0 20px #000,0 0 22px #000}
+    .roulette-wheel::after{content:"0";position:absolute;left:47%;top:1.5%;font-size:11px;font-weight:900;color:#b7ffd6;background:#047857;border-radius:50%;width:19px;height:19px;display:grid;place-items:center}
+    .roulette-wheel.spinning{animation:wheel-spin 4.6s cubic-bezier(.12,.68,.08,1) forwards}
+    .roulette-ball{position:absolute;left:50%;top:50%;z-index:8;width:13px;height:13px;margin:-6px;border-radius:50%;background:radial-gradient(circle at 32% 25%,#fff,#d8dee9 45%,#64748b);box-shadow:0 2px 7px #000}
+    .roulette-ball.spinning{animation:ball-orbit 4.4s cubic-bezier(.2,.65,.12,1) forwards}
+    .pointer-arm{position:absolute;z-index:12;left:50%;top:-1%;width:32px;height:65px;transform-origin:50% 5%;animation:pointer-pendulum .28s ease-in-out infinite;filter:drop-shadow(0 5px 4px #000)}
+    .pointer-arm::before{content:"";position:absolute;left:7px;top:0;width:18px;height:25px;border-radius:9px;background:linear-gradient(90deg,#8b5e16,#fff0a8,#9a6719);border:2px solid #4b2d08}
+    .pointer-arm::after{content:"";position:absolute;left:8px;top:19px;border-left:8px solid transparent;border-right:8px solid transparent;border-top:38px solid #f8fafc}
+    .pointer-arm.idle{animation:none;transform:translateX(-50%)}
+    .result-reveal{position:absolute;z-index:20;left:50%;top:-22%;translate:-50% -50%;width:58px;height:58px;border-radius:18px;display:grid;place-items:center;font-size:25px;font-weight:950;opacity:0;filter:blur(18px);transform:scale(.35);transition:all 1.35s cubic-bezier(.16,1,.3,1)}
+    .result-reveal.approaching{top:27%;opacity:.72;filter:blur(8px);transform:scale(.7)}
+    .result-reveal.resolved{top:50%;opacity:1;filter:blur(0);transform:scale(1.35);box-shadow:0 0 0 8px #ffffff18,0 15px 40px #000}
+    .lightning-stage .roulette-wheel{box-shadow:0 0 0 8px #312e81,0 0 55px #22d3ee55,inset 0 0 38px #000;animation-name:wheel-spin,electric}
+    .number-cell{transition:transform .16s,border-color .16s,filter .16s}.number-cell:hover{transform:translateY(-3px);filter:brightness(1.2)}
 </style>
 @endsection
 
 @section('contenido')
-<div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10"
-     x-data="ruletaGame()">
+<div class="mx-auto max-w-[1450px] px-4 py-7 sm:px-6 sm:py-10" x-data="rouletteGame()">
+    <header class="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div><div class="flex items-center gap-3"><span class="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br {{ $variant === 'lightning' ? 'from-cyan-400 to-violet-600' : 'from-amber-300 to-red-600' }} shadow-lg">◆</span><div><h1 class="game-heading font-extrabold">{{ $gameName }}</h1><p class="mt-1 text-sm text-slate-500">Elige una casilla, confirma el boleto y sigue la bola</p></div></div></div>
+        <div class="flex gap-2"><a href="{{ route('ruleta') }}" class="rounded-xl border px-3 py-2 text-xs font-bold {{ $variant === 'european' ? 'border-amber-400/40 bg-amber-400/10 text-amber-300' : 'border-white/10 text-slate-400' }}">Europea</a><a href="{{ route('ruleta.lightning') }}" class="rounded-xl border px-3 py-2 text-xs font-bold {{ $variant === 'lightning' ? 'border-cyan-400/40 bg-cyan-400/10 text-cyan-300' : 'border-white/10 text-slate-400' }}">Lightning</a><div class="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm"><span class="text-slate-500">Saldo</span> <b class="ml-1 text-brand-400" x-text="money(saldo)"></b></div></div>
+    </header>
 
-    <div class="flex flex-col lg:flex-row gap-6">
-
-        <div class="flex-1 min-w-0">
-
-            {{-- Header --}}
-            <div class="flex items-center justify-between mb-6">
-                <div>
-                    <h1 class="game-heading font-extrabold">Ruleta Europea</h1>
-                    <p class="text-sm text-slate-500 mt-1">Apuesta al numero, color o grupo</p>
-                </div>
-                <div class="px-4 py-2 rounded-xl bg-white/5 border border-white/10">
-                    <span class="text-xs text-slate-500">Saldo</span>
-                    <span class="ml-2 text-sm font-bold text-brand-400" x-text="'€' + saldo.toFixed(2)"></span>
-                </div>
+    <div class="grid gap-6 xl:grid-cols-[minmax(360px,.82fr)_minmax(520px,1.18fr)_290px]">
+        <section class="game-stage rounded-[1.75rem] border border-white/5 bg-white/[.03] p-5 sm:p-7 {{ $variant === 'lightning' ? 'lightning-stage' : '' }}">
+            <div class="roulette-shell">
+                <div class="pointer-arm" :class="spinning?'':'idle'"></div>
+                <div class="roulette-wheel" :class="spinning?'spinning':''"></div>
+                <div class="roulette-ball" :class="spinning?'spinning':''"></div>
+                <div x-show="lastNumero!==null" class="result-reveal" :class="[revealStage===1?'approaching':'',revealStage===2?'resolved':'',resultClass(lastColor)]" x-text="lastNumero"></div>
             </div>
-
-            {{-- Ruleta visual --}}
-            <div class="game-stage rounded-[1.75rem] bg-white/[0.03] border border-white/5 p-6 sm:p-8 mb-6 overflow-hidden">
-                <div class="max-w-lg mx-auto text-center">
-
-                    <div class="roulette-wheel" :class="spinning ? 'wheel-spin' : ''" aria-label="Ruleta europea animada"></div>
-
-                    {{-- Numero resultado --}}
-                    <div class="mb-6 h-20 flex items-center justify-center">
-                        <template x-if="lastNumero !== null">
-                            <div class="number-pop inline-flex items-center justify-center w-20 h-20 rounded-2xl text-3xl font-black"
-                                 :class="lastColor === 'rojo' ? 'bg-red-500 text-white' : lastColor === 'negro' ? 'bg-slate-800 text-white border border-white/20' : 'bg-emerald-600 text-white'"
-                                 x-text="lastNumero"></div>
-                        </template>
-                        <template x-if="lastNumero === null">
-                            <div class="text-slate-600 text-lg">Elige tu apuesta y gira</div>
-                        </template>
-                    </div>
-
-                    {{-- Tablero rapido --}}
-                    <div class="grid grid-cols-3 gap-3 mb-6">
-                        <button @click="tipo = 'rojo'; valor = null"
-                                :class="tipo === 'rojo' ? 'ring-2 ring-white/50 bg-red-600' : 'bg-red-600/80 hover:bg-red-600'"
-                                class="py-4 rounded-xl text-white font-bold text-sm transition">
-                            Rojo
-                        </button>
-                        <button @click="tipo = 'negro'; valor = null"
-                                :class="tipo === 'negro' ? 'ring-2 ring-white/50 bg-slate-700' : 'bg-slate-800 hover:bg-slate-700'"
-                                class="py-4 rounded-xl text-white font-bold text-sm transition">
-                            Negro
-                        </button>
-                        <button @click="tipo = 'numero'; valor = 0"
-                                :class="tipo === 'numero' && valor === 0 ? 'ring-2 ring-white/50 bg-emerald-600' : 'bg-emerald-700 hover:bg-emerald-600'"
-                                class="py-4 rounded-xl text-white font-bold text-sm transition">
-                            Cero
-                        </button>
-                    </div>
-
-                    {{-- Grupos --}}
-                    <div class="grid grid-cols-2 gap-3 mb-4">
-                        <button @click="tipo = 'par'; valor = null"
-                                :class="tipo === 'par' ? 'ring-2 ring-brand-500 bg-brand-500/20 text-brand-400' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'"
-                                class="py-3 rounded-xl font-bold text-sm transition">
-                            Par
-                        </button>
-                        <button @click="tipo = 'impar'; valor = null"
-                                :class="tipo === 'impar' ? 'ring-2 ring-brand-500 bg-brand-500/20 text-brand-400' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'"
-                                class="py-3 rounded-xl font-bold text-sm transition">
-                            Impar
-                        </button>
-                    </div>
-                    <div class="grid grid-cols-3 gap-3 mb-6">
-                        <button @click="tipo = 'docena1'; valor = null"
-                                :class="tipo === 'docena1' ? 'ring-2 ring-brand-500 bg-brand-500/20 text-brand-400' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'"
-                                class="py-3 rounded-xl font-bold text-sm transition">
-                            1-12
-                        </button>
-                        <button @click="tipo = 'docena2'; valor = null"
-                                :class="tipo === 'docena2' ? 'ring-2 ring-brand-500 bg-brand-500/20 text-brand-400' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'"
-                                class="py-3 rounded-xl font-bold text-sm transition">
-                            13-24
-                        </button>
-                        <button @click="tipo = 'docena3'; valor = null"
-                                :class="tipo === 'docena3' ? 'ring-2 ring-brand-500 bg-brand-500/20 text-brand-400' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'"
-                                class="py-3 rounded-xl font-bold text-sm transition">
-                            25-36
-                        </button>
-                    </div>
-
-                    {{-- Numero especifico --}}
-                    <div x-show="tipo === 'numero'" class="mb-6 p-4 rounded-xl bg-white/[0.03] border border-white/5">
-                        <label class="text-xs text-slate-500 mb-2 block">Numero especifico (paga x35)</label>
-                        <input type="number" x-model.number="valor" min="0" max="36"
-                               class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-center text-lg font-bold outline-none focus:border-brand-500 transition">
-                    </div>
-
-                    {{-- Controles --}}
-                    <div class="flex items-center gap-4">
-                        <div class="flex-1">
-                            <label class="text-xs text-slate-500 mb-1 block">Apuesta (€)</label>
-                            <input type="number" x-model.number="apuesta" min="0.10" max="500" step="0.10"
-                                   :disabled="spinning"
-                                   class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-brand-500 transition disabled:opacity-50">
-                        </div>
-                        <div class="mt-5">
-                            <button @click="play()" :disabled="spinning || apuesta > saldo"
-                                    class="px-8 py-3 rounded-xl bg-brand-500 hover:bg-brand-400 text-black font-bold transition shadow-lg shadow-brand-500/20 disabled:opacity-50">
-                                <span x-text="spinning ? 'Girando...' : 'Girar'"></span>
-                            </button>
-                        </div>
-                    </div>
-
-                    {{-- Resultado --}}
-                    <div x-show="ganancia > 0" class="mt-4 text-emerald-400 font-bold text-lg number-pop">
-                        ¡Ganaste <span x-text="'€' + ganancia.toFixed(2)"></span>!
-                    </div>
-                    <p x-show="error" class="mt-4 text-red-400 text-sm text-center" x-text="error"></p>
-                </div>
+            <div class="mt-3 min-h-20 text-center">
+                <p class="text-xs font-black uppercase tracking-[.2em]" :class="spinning?'text-cyan-300':'text-slate-500'" x-text="statusText"></p>
+                <div x-show="revealStage===2" class="mt-3"><b class="text-xl" x-text="`Ha salido el ${lastNumero} ${lastColor}`"></b><p class="mt-1 text-sm" :class="ganancia>0?'text-emerald-300':'text-slate-500'" x-text="ganancia>0?'Premio '+money(ganancia):'La próxima puede ser la tuya'"></p></div>
             </div>
-        </div>
+        </section>
 
-        {{-- Sidebar --}}
-        <aside class="w-full lg:w-72 shrink-0 space-y-5">
-            <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
-                <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-3">Pagos</h3>
-                <div class="space-y-2 text-sm">
-                    <div class="flex justify-between"><span class="text-slate-500">Numero exacto</span><span class="text-brand-400 font-bold">x35</span></div>
-                    <div class="flex justify-between"><span class="text-slate-500">Rojo / Negro</span><span class="text-white font-semibold">x2</span></div>
-                    <div class="flex justify-between"><span class="text-slate-500">Par / Impar</span><span class="text-white font-semibold">x2</span></div>
-                    <div class="flex justify-between"><span class="text-slate-500">Docena (12 nums)</span><span class="text-white font-semibold">x3</span></div>
-                </div>
+        <section class="rounded-[1.75rem] border border-white/5 bg-[#0e1424] p-5 sm:p-7">
+            <div class="mb-5 flex items-start justify-between gap-3"><div><p class="text-[10px] font-black uppercase tracking-[.2em] text-cyan-400">Paso 1</p><h2 class="mt-1 text-xl font-black">Elige dónde apostar</h2></div><span class="rounded-lg bg-white/5 px-3 py-2 text-xs text-slate-400">Seleccionado: <b class="text-white" x-text="selectionLabel"></b></span></div>
+            <div class="mb-5 grid grid-cols-3 gap-2">
+                <button @click="select('rojo')" :class="selected('rojo')?'ring-2 ring-white':''" class="rounded-xl bg-red-600 py-3 font-black">Rojo <small class="block opacity-70">x2</small></button>
+                <button @click="select('negro')" :class="selected('negro')?'ring-2 ring-white':''" class="rounded-xl bg-slate-800 py-3 font-black">Negro <small class="block opacity-70">x2</small></button>
+                <button @click="select('numero',0)" :class="selected('numero',0)?'ring-2 ring-white':''" class="rounded-xl bg-emerald-700 py-3 font-black">Cero <small class="block opacity-70">x35</small></button>
             </div>
+            <div class="mb-3 flex items-center justify-between"><div><p class="text-[10px] font-black uppercase tracking-[.2em] text-fuchsia-400">Número exacto</p><h3 class="font-bold">Pulsa directamente del 1 al 36</h3></div><span class="rounded-lg bg-fuchsia-500/10 px-2 py-1 text-xs font-bold text-fuchsia-300">Paga x35</span></div>
+            <div class="grid grid-cols-6 gap-1.5 rounded-2xl border border-white/5 bg-black/20 p-3">
+                <template x-for="n in 36" :key="n"><button @click="select('numero',n)" class="number-cell aspect-square rounded-lg border text-xs font-black" :class="numberClass(n)" x-text="n"></button></template>
+            </div>
+            <div class="mt-5 grid grid-cols-2 gap-2"><button @click="select('par')" :class="selected('par')?'border-brand-400 bg-brand-400/15 text-brand-300':'border-white/10 bg-white/5 text-slate-400'" class="rounded-xl border py-3 font-bold">Par · x2</button><button @click="select('impar')" :class="selected('impar')?'border-brand-400 bg-brand-400/15 text-brand-300':'border-white/10 bg-white/5 text-slate-400'" class="rounded-xl border py-3 font-bold">Impar · x2</button></div>
+            <div class="mt-2 grid grid-cols-3 gap-2"><template x-for="d in [{id:'docena1',t:'1–12'},{id:'docena2',t:'13–24'},{id:'docena3',t:'25–36'}]"><button @click="select(d.id)" :class="selected(d.id)?'border-cyan-400 bg-cyan-400/15 text-cyan-300':'border-white/10 bg-white/5 text-slate-400'" class="rounded-xl border py-3 text-sm font-bold" x-text="d.t+' · x3'"></button></template></div>
+        </section>
 
-            <div class="rounded-2xl bg-gradient-to-br from-brand-500/20 to-brand-600/10 border border-brand-500/20 p-5">
-                <h3 class="text-sm font-bold text-white mb-2">¿Cómo funciona?</h3>
-                <p class="text-xs text-slate-400 leading-relaxed">Elige tu tipo de apuesta, introduce la cantidad y gira. Puedes apostar a color, par/impar, docena o un numero exacto.</p>
-            </div>
-
-            {{-- Historial --}}
-            <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
-                <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-3">Historial</h3>
-                <div class="space-y-2">
-                    <template x-for="(h, i) in historial.slice(0, 8)" :key="i">
-                        <div class="flex items-center gap-2 text-xs">
-                            <span class="w-6 h-6 rounded-full flex items-center justify-center text-white font-bold text-[10px]"
-                                  :class="h.color === 'rojo' ? 'bg-red-500' : h.color === 'negro' ? 'bg-slate-700' : 'bg-emerald-600'"
-                                  x-text="h.numero"></span>
-                            <span class="text-slate-400" x-text="h.tipo"></span>
-                            <span class="ml-auto" :class="h.ganancia > 0 ? 'text-emerald-400' : 'text-red-400'"
-                                  x-text="h.ganancia > 0 ? '+€' + h.ganancia.toFixed(2) : '-€' + h.apuesta.toFixed(2)"></span>
-                        </div>
-                    </template>
-                </div>
-            </div>
+        <aside class="space-y-5">
+            <section class="rounded-2xl border border-white/10 bg-white/[.035] p-5"><p class="text-[10px] font-black uppercase tracking-[.2em] text-brand-400">Paso 2</p><h2 class="mt-1 text-lg font-black">Confirma tu boleto</h2><div class="mt-4 rounded-xl border border-white/10 bg-black/20 p-3"><p class="text-xs text-slate-500">Tu selección</p><b class="mt-1 block text-cyan-300" x-text="selectionLabel"></b></div><label class="mt-4 block text-xs text-slate-500">Importe de la apuesta</label><div class="mt-2 flex items-center rounded-xl border border-white/10 bg-black/20 px-3"><span class="text-slate-500">€</span><input x-model.number="apuesta" type="number" min=".1" max="500" step=".1" :disabled="spinning" class="w-full bg-transparent px-2 py-3 font-bold outline-none"></div><div class="mt-2 grid grid-cols-4 gap-1"><template x-for="v in [1,5,10,25]"><button @click="apuesta=v" class="rounded-lg bg-white/5 py-2 text-xs text-slate-400 hover:text-white" x-text="v+'€'"></button></template></div><button @click="play" :disabled="spinning||apuesta>saldo||!apuesta" class="mt-4 w-full rounded-xl bg-gradient-to-r {{ $variant === 'lightning' ? 'from-cyan-400 to-violet-500' : 'from-amber-300 to-orange-500' }} py-3.5 font-black text-slate-950 shadow-lg disabled:opacity-40" x-text="spinning?'La bola está girando…':'Girar ruleta'"></button><p x-show="error" class="mt-3 text-center text-xs text-red-300" x-text="error"></p></section>
+            @if($variant === 'lightning')<section class="rounded-2xl border border-cyan-400/20 bg-cyan-400/[.06] p-4"><h3 class="text-sm font-bold text-cyan-300">⚡ Números Lightning</h3><p class="mt-2 text-xs leading-relaxed text-slate-400">En cada giro se cargan cinco números con multiplicadores de x50 a x500. Se revelan con el resultado.</p><div x-show="Object.keys(multipliers).length" class="mt-3 flex flex-wrap gap-1"><template x-for="(boost,n) in multipliers"><span class="rounded-lg bg-violet-500/15 px-2 py-1 text-xs text-violet-300" x-text="n+' · x'+boost"></span></template></div></section>@endif
+            <section class="rounded-2xl border border-white/10 bg-white/[.035] p-5"><h3 class="mb-3 text-sm font-black uppercase tracking-wider">Últimos giros</h3><div class="space-y-2"><template x-for="h in historial.slice(0,8)"><div class="flex items-center text-xs"><span class="grid h-7 w-7 place-items-center rounded-full font-black" :class="resultClass(h.color)" x-text="h.numero"></span><span class="ml-2 text-slate-500" x-text="h.tipo"></span><b class="ml-auto" :class="h.ganancia>0?'text-emerald-300':'text-slate-600'" x-text="h.ganancia>0?'+'+money(h.ganancia):'-'+money(h.apuesta)"></b></div></template><p x-show="!historial.length" class="py-3 text-center text-xs text-slate-600">Todavía no hay giros.</p></div></section>
         </aside>
     </div>
 </div>
 
 @push('scripts')
 <script>
-function ruletaGame() {
-    return {
-        saldo: {{ Auth::user()?->cartera?->saldo ?? 1000 }},
-        apuesta: 1,
-        tipo: 'rojo',
-        valor: null,
-        spinning: false,
-        ganancia: 0,
-        lastNumero: null,
-        lastColor: null,
-        error: '',
-        historial: @js($partidas->map(fn($p) => ['numero' => $p->detalles['numero'] ?? 0, 'color' => $p->detalles['color'] ?? 'verde', 'tipo' => $p->detalles['tipo_apuesta'] ?? '', 'ganancia' => $p->ganancia, 'apuesta' => $p->apuesta])->take(10)->all()),
-
-        async play() {
-            if (this.spinning || this.apuesta > this.saldo) return;
-            this.spinning = true;
-            this.ganancia = 0;
-            this.error = '';
-
-            try {
-                const res = await fetch('{{ route("ruleta.play") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify({ apuesta: this.apuesta, tipo: this.tipo, valor: this.valor }),
-                });
-                const data = await res.json();
-
-                if (data.error) {
-                    this.error = data.error;
-                    this.spinning = false;
-                    return;
-                }
-
-                await new Promise(r => setTimeout(r, 1500));
-
-                this.lastNumero = data.numero;
-                this.lastColor = data.color;
-                this.ganancia = data.ganancia;
-                this.saldo = data.saldo;
-                Alpine.store('wallet').saldo = data.saldo;
-                window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
-                this.historial.unshift({ numero: data.numero, color: data.color, tipo: this.tipo, ganancia: data.ganancia, apuesta: this.apuesta });
-            } catch (e) {
-                this.error = 'Error de conexion.';
-            }
-
-            this.spinning = false;
-        },
-    };
-}
+function rouletteGame(){return{
+    saldo:{{ Auth::user()?->cartera?->saldo ?? 0 }},apuesta:1,tipo:'rojo',valor:null,spinning:false,ganancia:0,lastNumero:null,lastColor:null,revealStage:0,error:'',multipliers:{},
+    historial:@js($partidas->map(fn($p)=>['numero'=>$p->detalles['numero']??0,'color'=>$p->detalles['color']??'verde','tipo'=>$p->detalles['tipo_apuesta']??'','ganancia'=>(float)$p->ganancia,'apuesta'=>(float)$p->apuesta])->all()),
+    red:[1,3,5,7,9,11,13,15,17,19,21,23,25,27,30,32,34,36],
+    get selectionLabel(){if(this.tipo==='numero')return `Número ${this.valor}`;return {rojo:'Rojo',negro:'Negro',par:'Par',impar:'Impar',docena1:'Primera docena',docena2:'Segunda docena',docena3:'Tercera docena'}[this.tipo]},
+    get statusText(){return this.spinning?(this.revealStage===0?'La bola busca su casilla…':'Acercándonos al resultado…'):(this.lastNumero===null?'Selecciona una apuesta para empezar':'Resultado confirmado')},
+    select(tipo,valor=null){if(this.spinning)return;this.tipo=tipo;this.valor=valor},selected(t,v=null){return this.tipo===t&&(t!=='numero'||this.valor===v)},
+    numberClass(n){const active=this.selected('numero',n);const red=this.red.includes(n);return [active?'ring-2 ring-cyan-300 border-cyan-300':'border-white/10',red?'bg-red-600/80 text-white':'bg-slate-800 text-white']},
+    resultClass(c){return c==='rojo'?'bg-red-600 text-white':c==='negro'?'bg-slate-800 text-white border border-white/20':'bg-emerald-600 text-white'},money(v){return new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(Number(v)||0)},
+    async play(){if(this.spinning||this.apuesta>this.saldo)return;this.spinning=true;this.revealStage=0;this.lastNumero=null;this.ganancia=0;this.error='';try{const r=await fetch(@js($playRoute),{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content},body:JSON.stringify({apuesta:this.apuesta,tipo:this.tipo,valor:this.valor})});const d=await r.json();if(!r.ok)throw new Error(d.error||d.message||'No se pudo completar el giro.');await new Promise(x=>setTimeout(x,1500));this.lastNumero=d.numero;this.lastColor=d.color;this.multipliers=d.multipliers||{};this.revealStage=1;await new Promise(x=>setTimeout(x,1800));this.revealStage=2;await new Promise(x=>setTimeout(x,1300));this.ganancia=Number(d.ganancia);this.saldo=Number(d.saldo);this.$store.wallet.saldo=this.saldo;this.historial.unshift({numero:d.numero,color:d.color,tipo:this.selectionLabel,ganancia:this.ganancia,apuesta:this.apuesta});window.dispatchEvent(new CustomEvent('saldo-updated',{detail:{saldo:this.saldo}}));}catch(e){this.error=e.message;}finally{this.spinning=false;}}
+}}
 </script>
 @endpush
 @endsection

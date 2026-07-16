@@ -18,19 +18,27 @@ class RuletaController extends Controller
         31 => 'negro', 32 => 'rojo', 33 => 'negro', 34 => 'rojo', 35 => 'negro', 36 => 'rojo',
     ];
 
-    public function index()
+    public function index(string $variant = 'european')
     {
+        abort_unless(in_array($variant, ['european', 'lightning'], true), 404);
+
         $partidas = Partida::where('usuario_id', Auth::id())
-            ->where('juego', 'ruleta')
+            ->where('juego', 'ruleta_'.$variant)
             ->latest()
             ->take(10)
             ->get();
 
-        return view('games.ruleta', ['partidas' => $partidas]);
+        return view('games.ruleta', [
+            'partidas' => $partidas,
+            'variant' => $variant,
+            'gameName' => $variant === 'lightning' ? 'Lightning Roulette' : 'Ruleta Europea',
+            'playRoute' => $variant === 'lightning' ? route('ruleta.lightning.play') : route('ruleta.play'),
+        ]);
     }
 
-    public function play(Request $request)
+    public function play(Request $request, string $variant = 'european')
     {
+        abort_unless(in_array($variant, ['european', 'lightning'], true), 404);
         $request->validate([
             'apuesta' => 'required|numeric|min:0.10|max:500',
             'tipo' => 'required|string|in:numero,rojo,negro,par,impar,docena1,docena2,docena3',
@@ -40,14 +48,18 @@ class RuletaController extends Controller
         $user = Auth::user();
         $apuesta = round($request->apuesta, 2);
 
-        if (!$user->cartera || !$user->cartera->apostar($apuesta)) {
+        if (! $user->cartera || ! $user->cartera->apostar($apuesta)) {
             return response()->json(['error' => 'Saldo insuficiente.'], 422);
         }
 
         $numero = random_int(0, 36);
         $color = $this->colores[$numero];
 
+        $multipliers = $variant === 'lightning' ? $this->lightningNumbers() : [];
         $ganancia = $this->calculateWin($request->tipo, $request->valor, $numero, $color, $apuesta);
+        if ($variant === 'lightning' && $request->tipo === 'numero' && $request->valor === $numero && isset($multipliers[$numero])) {
+            $ganancia = round($apuesta * $multipliers[$numero], 2);
+        }
         $resultado = $ganancia > 0 ? 'win' : 'lose';
 
         if ($ganancia > 0) {
@@ -56,7 +68,7 @@ class RuletaController extends Controller
 
         Partida::create([
             'usuario_id' => $user->id,
-            'juego' => 'ruleta',
+            'juego' => 'ruleta_'.$variant,
             'apuesta' => $apuesta,
             'ganancia' => $ganancia,
             'detalles' => [
@@ -65,6 +77,8 @@ class RuletaController extends Controller
                 'tipo_apuesta' => $request->tipo,
                 'valor_apuesta' => $request->valor,
                 'resultado' => $resultado,
+                'variante' => $variant,
+                'multiplicadores' => $multipliers,
             ],
         ]);
 
@@ -74,7 +88,20 @@ class RuletaController extends Controller
             'ganancia' => $ganancia,
             'resultado' => $resultado,
             'saldo' => $user->cartera?->saldo ?? 0,
+            'multipliers' => $multipliers,
         ]);
+    }
+
+    private function lightningNumbers(): array
+    {
+        $numbers = range(0, 36);
+        shuffle($numbers);
+        $boosts = [];
+        foreach (array_slice($numbers, 0, 5) as $number) {
+            $boosts[$number] = [50, 100, 200, 500][array_rand([50, 100, 200, 500])];
+        }
+
+        return $boosts;
     }
 
     private function calculateWin(string $tipo, ?int $valor, int $numero, string $color, float $apuesta): float

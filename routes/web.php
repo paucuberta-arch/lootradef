@@ -54,7 +54,7 @@ Route::get('/juego/{slug}', function ($slug) use ($uegos) {
         'starburst' => route('slots', ['game' => 'starburst']),
         'big-bass-bonanza' => route('slots', ['game' => 'big-bass-bonanza']),
         'european-roulette' => route('ruleta'),
-        'lightning-roulette' => route('ruleta'),
+        'lightning-roulette' => route('ruleta.lightning'),
         'blackjack-vip' => route('blackjack'),
         'blackjack-classic' => route('blackjack'),
     ];
@@ -171,8 +171,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/jugar/slots', [SlotsController::class, 'index'])->name('slots');
     Route::post('/jugar/slots', [SlotsController::class, 'play'])->name('slots.play');
 
-    Route::get('/jugar/ruleta', [RuletaController::class, 'index'])->name('ruleta');
-    Route::post('/jugar/ruleta', [RuletaController::class, 'play'])->name('ruleta.play');
+    Route::get('/jugar/ruleta/europea', [RuletaController::class, 'index'])->defaults('variant', 'european')->name('ruleta');
+    Route::post('/jugar/ruleta/europea', [RuletaController::class, 'play'])->defaults('variant', 'european')->name('ruleta.play');
+    Route::get('/jugar/ruleta/lightning', [RuletaController::class, 'index'])->defaults('variant', 'lightning')->name('ruleta.lightning');
+    Route::post('/jugar/ruleta/lightning', [RuletaController::class, 'play'])->defaults('variant', 'lightning')->name('ruleta.lightning.play');
 
     Route::get('/jugar/blackjack', [BlackjackController::class, 'index'])->name('blackjack');
     Route::post('/jugar/blackjack/deal', [BlackjackController::class, 'deal'])->name('blackjack.deal');
