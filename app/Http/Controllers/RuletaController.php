@@ -8,15 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class RuletaController extends Controller
 {
-    private array $colores = [
-        0 => 'verde',
-        1 => 'rojo', 2 => 'negro', 3 => 'rojo', 4 => 'negro', 5 => 'rojo', 6 => 'negro',
-        7 => 'rojo', 8 => 'negro', 9 => 'rojo', 10 => 'negro', 11 => 'rojo', 12 => 'negro',
-        13 => 'rojo', 14 => 'negro', 15 => 'rojo', 16 => 'negro', 17 => 'rojo', 18 => 'negro',
-        19 => 'rojo', 20 => 'negro', 21 => 'rojo', 22 => 'negro', 23 => 'rojo', 24 => 'negro',
-        25 => 'rojo', 26 => 'negro', 27 => 'rojo', 28 => 'negro', 29 => 'negro', 30 => 'rojo',
-        31 => 'negro', 32 => 'rojo', 33 => 'negro', 34 => 'rojo', 35 => 'negro', 36 => 'rojo',
-    ];
+    private array $redNumbers = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
 
     public function index(string $variant = 'european')
     {
@@ -53,7 +45,7 @@ class RuletaController extends Controller
         }
 
         $numero = random_int(0, 36);
-        $color = $this->colores[$numero];
+        $color = $numero === 0 ? 'verde' : (in_array($numero, $this->redNumbers, true) ? 'rojo' : 'negro');
 
         $multipliers = $variant === 'lightning' ? $this->lightningNumbers() : [];
         $ganancia = $this->calculateWin($request->tipo, $request->valor, $numero, $color, $apuesta);

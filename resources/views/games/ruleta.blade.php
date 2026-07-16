@@ -3,25 +3,22 @@
 
 @section('styles')
 <style>
-    @keyframes wheel-spin { from{transform:rotate(0)} to{transform:rotate(2520deg)} }
-    @keyframes ball-orbit { 0%{transform:rotate(0) translateX(132px) rotate(0)} 100%{transform:rotate(-2160deg) translateX(60px) rotate(2160deg)} }
-    @keyframes pointer-pendulum { 0%,100%{transform:translateX(-50%) rotate(-13deg)} 50%{transform:translateX(-50%) rotate(13deg)} }
-    @keyframes electric { 0%,100%{filter:drop-shadow(0 0 5px #22d3ee)} 45%{filter:drop-shadow(0 0 18px #a78bfa) brightness(1.4)} }
-    .roulette-shell{position:relative;width:min(350px,82vw);aspect-ratio:1;margin:auto;perspective:800px}
-    .roulette-wheel{position:absolute;inset:8%;border-radius:50%;padding:20px;background:repeating-conic-gradient(from -4.86deg,#b91c1c 0 9.72deg,#101827 9.72deg 19.44deg);border:10px solid #d9a441;box-shadow:0 0 0 8px #3b2108,0 35px 80px #000b,inset 0 0 38px #000;transition:transform .2s}
-    .roulette-wheel::before{content:"";position:absolute;inset:24%;border-radius:50%;background:radial-gradient(circle at 35% 28%,#fff3bd,#c78b2b 22%,#3b2108 25%,#080b13 57%,#e0ad45 60%,#5b320b 66%);box-shadow:inset 0 0 20px #000,0 0 22px #000}
-    .roulette-wheel::after{content:"0";position:absolute;left:47%;top:1.5%;font-size:11px;font-weight:900;color:#b7ffd6;background:#047857;border-radius:50%;width:19px;height:19px;display:grid;place-items:center}
-    .roulette-wheel.spinning{animation:wheel-spin 4.6s cubic-bezier(.12,.68,.08,1) forwards}
-    .roulette-ball{position:absolute;left:50%;top:50%;z-index:8;width:13px;height:13px;margin:-6px;border-radius:50%;background:radial-gradient(circle at 32% 25%,#fff,#d8dee9 45%,#64748b);box-shadow:0 2px 7px #000}
-    .roulette-ball.spinning{animation:ball-orbit 4.4s cubic-bezier(.2,.65,.12,1) forwards}
-    .pointer-arm{position:absolute;z-index:12;left:50%;top:-1%;width:32px;height:65px;transform-origin:50% 5%;animation:pointer-pendulum .28s ease-in-out infinite;filter:drop-shadow(0 5px 4px #000)}
-    .pointer-arm::before{content:"";position:absolute;left:7px;top:0;width:18px;height:25px;border-radius:9px;background:linear-gradient(90deg,#8b5e16,#fff0a8,#9a6719);border:2px solid #4b2d08}
-    .pointer-arm::after{content:"";position:absolute;left:8px;top:19px;border-left:8px solid transparent;border-right:8px solid transparent;border-top:38px solid #f8fafc}
-    .pointer-arm.idle{animation:none;transform:translateX(-50%)}
-    .result-reveal{position:absolute;z-index:20;left:50%;top:-22%;translate:-50% -50%;width:58px;height:58px;border-radius:18px;display:grid;place-items:center;font-size:25px;font-weight:950;opacity:0;filter:blur(18px);transform:scale(.35);transition:all 1.35s cubic-bezier(.16,1,.3,1)}
-    .result-reveal.approaching{top:27%;opacity:.72;filter:blur(8px);transform:scale(.7)}
-    .result-reveal.resolved{top:50%;opacity:1;filter:blur(0);transform:scale(1.35);box-shadow:0 0 0 8px #ffffff18,0 15px 40px #000}
-    .lightning-stage .roulette-wheel{box-shadow:0 0 0 8px #312e81,0 0 55px #22d3ee55,inset 0 0 38px #000;animation-name:wheel-spin,electric}
+    @keyframes result-in{from{opacity:0;transform:translateY(10px) scale(.94);filter:blur(8px)}to{opacity:1;transform:none;filter:none}}
+    @keyframes winning-glow{0%,100%{box-shadow:0 0 0 1px #ffffff16,0 0 18px transparent}50%{box-shadow:0 0 0 2px #fde68a,0 0 28px #fbbf2477}}
+    .roulette-camera{width:min(390px,88vw);aspect-ratio:1;margin:auto;perspective:900px;transition:transform 1.8s cubic-bezier(.16,1,.3,1);transform:rotateX(7deg) scale(.88)}
+    .roulette-camera.zooming{transform:rotateX(3deg) scale(1.12)}
+    .roulette-camera.holding{transform:rotateX(1deg) scale(1.19)}
+    .roulette-shell{position:relative;width:100%;height:100%;border-radius:50%;background:radial-gradient(circle,#191107 0 42%,#5b2e0d 43% 54%,#1c0e05 55% 62%,#8b5423 63% 68%,#2a1206 69%);box-shadow:0 45px 80px #000c,inset 0 0 20px #f5c56c55,0 0 0 2px #d9a441;overflow:hidden}
+    .roulette-shell::after{content:"";position:absolute;inset:2%;border-radius:50%;background:linear-gradient(115deg,#fff3 0 4%,transparent 18% 72%,#0008);pointer-events:none;z-index:15}
+    .roulette-rotor{position:absolute;inset:10%;border-radius:50%;background:radial-gradient(circle,#f6d58b 0 5%,#8a531a 6% 15%,#2c1405 16% 34%,#d5a548 35% 38%,#111827 39% 69%,#d2a34b 70% 73%,#4a2409 74%);box-shadow:inset 0 0 32px #000,0 0 0 3px #e5b958,0 10px 30px #000b;will-change:transform}
+    .roulette-hub{position:absolute;z-index:3;inset:35%;border-radius:50%;background:radial-gradient(circle at 34% 28%,#fff1b9,#d19a38 25%,#6b390c 54%,#180b03 58%,#ba7b22 70%);box-shadow:inset 0 0 16px #0009,0 8px 20px #000}
+    .pocket{position:absolute;z-index:4;left:50%;top:50%;width:22px;height:72px;margin-left:-11px;margin-top:-72px;transform-origin:50% 72px;clip-path:polygon(15% 0,85% 0,100% 100%,0 100%);border-left:1px solid #ffe9a488;border-right:1px solid #422306;display:flex;justify-content:center;padding-top:5px;font-size:9px;font-weight:950;text-shadow:0 1px 2px #000;box-shadow:inset 0 0 8px #0008}
+    .pocket-red{background:linear-gradient(#dc2626,#761515)}.pocket-black{background:linear-gradient(#263248,#070b12)}.pocket-green{background:linear-gradient(#10b981,#065f46)}
+    .pocket.winner{animation:winning-glow .75s ease-in-out 3;filter:brightness(1.4);z-index:6}
+    .roulette-ball{position:absolute;left:50%;top:50%;z-index:12;width:16px;height:16px;margin:-8px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#fff 0 18%,#edf2f7 34%,#a8b2c2 66%,#475569 100%);box-shadow:0 3px 7px #000,0 0 8px #fff8;will-change:transform}
+    .roulette-ball.travelling{box-shadow:0 3px 7px #000,0 0 13px #fff;filter:brightness(1.2)}
+    .roulette-result{animation:result-in .65s cubic-bezier(.16,1,.3,1)}
+    .lightning-stage .roulette-shell{box-shadow:0 45px 80px #000c,inset 0 0 22px #67e8f955,0 0 0 2px #818cf8,0 0 45px #22d3ee33}
     .number-cell{transition:transform .16s,border-color .16s,filter .16s}.number-cell:hover{transform:translateY(-3px);filter:brightness(1.2)}
 </style>
 @endsection
@@ -35,15 +32,24 @@
 
     <div class="grid gap-6 xl:grid-cols-[minmax(360px,.82fr)_minmax(520px,1.18fr)_290px]">
         <section class="game-stage rounded-[1.75rem] border border-white/5 bg-white/[.03] p-5 sm:p-7 {{ $variant === 'lightning' ? 'lightning-stage' : '' }}">
-            <div class="roulette-shell">
-                <div class="pointer-arm" :class="spinning?'':'idle'"></div>
-                <div class="roulette-wheel" :class="spinning?'spinning':''"></div>
-                <div class="roulette-ball" :class="spinning?'spinning':''"></div>
-                <div x-show="lastNumero!==null" class="result-reveal" :class="[revealStage===1?'approaching':'',revealStage===2?'resolved':'',resultClass(lastColor)]" x-text="lastNumero"></div>
+            @php
+                $wheelOrder = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
+                $redNumbers = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+            @endphp
+            <div class="roulette-camera" x-ref="camera" :class="cameraStage===1?'zooming':cameraStage===2?'holding':''">
+                <div class="roulette-shell">
+                    <div class="roulette-rotor" x-ref="rotor">
+                        @foreach($wheelOrder as $index => $number)
+                            <div data-pocket="{{ $number }}" class="pocket {{ $number === 0 ? 'pocket-green' : (in_array($number, $redNumbers) ? 'pocket-red' : 'pocket-black') }}" style="transform:rotate({{ $index * (360 / 37) }}deg)"><span>{{ $number }}</span></div>
+                        @endforeach
+                        <div class="roulette-hub"></div>
+                    </div>
+                    <div class="roulette-ball" x-ref="ball"></div>
+                </div>
             </div>
             <div class="mt-3 min-h-20 text-center">
                 <p class="text-xs font-black uppercase tracking-[.2em]" :class="spinning?'text-cyan-300':'text-slate-500'" x-text="statusText"></p>
-                <div x-show="revealStage===2" class="mt-3"><b class="text-xl" x-text="`Ha salido el ${lastNumero} ${lastColor}`"></b><p class="mt-1 text-sm" :class="ganancia>0?'text-emerald-300':'text-slate-500'" x-text="ganancia>0?'Premio '+money(ganancia):'La próxima puede ser la tuya'"></p></div>
+                <div x-show="resultVisible" class="roulette-result mt-3"><b class="text-xl">Número ganador: <span :class="lastColor==='rojo'?'text-red-400':lastColor==='negro'?'text-slate-300':'text-emerald-400'" x-text="lastNumero"></span></b><p class="mt-1 text-sm capitalize text-slate-400" x-text="lastColor"></p><p class="mt-1 text-sm" :class="ganancia>0?'text-emerald-300':'text-slate-500'" x-text="ganancia>0?'Premio '+money(ganancia):'La próxima puede ser la tuya'"></p></div>
             </div>
         </section>
 
@@ -73,15 +79,48 @@
 @push('scripts')
 <script>
 function rouletteGame(){return{
-    saldo:{{ Auth::user()?->cartera?->saldo ?? 0 }},apuesta:1,tipo:'rojo',valor:null,spinning:false,ganancia:0,lastNumero:null,lastColor:null,revealStage:0,error:'',multipliers:{},
+    saldo:{{ Auth::user()?->cartera?->saldo ?? 0 }},apuesta:1,tipo:'rojo',valor:null,spinning:false,ganancia:0,lastNumero:null,lastColor:null,cameraStage:0,resultVisible:false,error:'',multipliers:{},wheelRotation:0,
+    wheelOrder:@js($wheelOrder),
     historial:@js($partidas->map(fn($p)=>['numero'=>$p->detalles['numero']??0,'color'=>$p->detalles['color']??'verde','tipo'=>$p->detalles['tipo_apuesta']??'','ganancia'=>(float)$p->ganancia,'apuesta'=>(float)$p->apuesta])->all()),
     red:[1,3,5,7,9,11,13,15,17,19,21,23,25,27,30,32,34,36],
     get selectionLabel(){if(this.tipo==='numero')return `Número ${this.valor}`;return {rojo:'Rojo',negro:'Negro',par:'Par',impar:'Impar',docena1:'Primera docena',docena2:'Segunda docena',docena3:'Tercera docena'}[this.tipo]},
-    get statusText(){return this.spinning?(this.revealStage===0?'La bola busca su casilla…':'Acercándonos al resultado…'):(this.lastNumero===null?'Selecciona una apuesta para empezar':'Resultado confirmado')},
+    get statusText(){return this.spinning?(this.cameraStage===0?'La pelota recorre el carril exterior…':this.cameraStage===1?'La pelota pierde velocidad y rebota…':'Confirmando la casilla ganadora…'):(this.lastNumero===null?'Selecciona una apuesta para empezar':'Resultado confirmado')},
     select(tipo,valor=null){if(this.spinning)return;this.tipo=tipo;this.valor=valor},selected(t,v=null){return this.tipo===t&&(t!=='numero'||this.valor===v)},
     numberClass(n){const active=this.selected('numero',n);const red=this.red.includes(n);return [active?'ring-2 ring-cyan-300 border-cyan-300':'border-white/10',red?'bg-red-600/80 text-white':'bg-slate-800 text-white']},
     resultClass(c){return c==='rojo'?'bg-red-600 text-white':c==='negro'?'bg-slate-800 text-white border border-white/20':'bg-emerald-600 text-white'},money(v){return new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(Number(v)||0)},
-    async play(){if(this.spinning||this.apuesta>this.saldo)return;this.spinning=true;this.revealStage=0;this.lastNumero=null;this.ganancia=0;this.error='';try{const r=await fetch(@js($playRoute),{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content},body:JSON.stringify({apuesta:this.apuesta,tipo:this.tipo,valor:this.valor})});const d=await r.json();if(!r.ok)throw new Error(d.error||d.message||'No se pudo completar el giro.');await new Promise(x=>setTimeout(x,1500));this.lastNumero=d.numero;this.lastColor=d.color;this.multipliers=d.multipliers||{};this.revealStage=1;await new Promise(x=>setTimeout(x,1800));this.revealStage=2;await new Promise(x=>setTimeout(x,1300));this.ganancia=Number(d.ganancia);this.saldo=Number(d.saldo);this.$store.wallet.saldo=this.saldo;this.historial.unshift({numero:d.numero,color:d.color,tipo:this.selectionLabel,ganancia:this.ganancia,apuesta:this.apuesta});window.dispatchEvent(new CustomEvent('saldo-updated',{detail:{saldo:this.saldo}}));}catch(e){this.error=e.message;}finally{this.spinning=false;}}
+    wait(ms){return new Promise(resolve=>setTimeout(resolve,ms))},
+    async animateSpin(number){
+        const duration=6500+Math.floor(Math.random()*1800),wheelTurns=5+Math.random()*2.2,ballTurns=9+Math.random()*3;
+        const wheelEnd=this.wheelRotation+wheelTurns*360+(Math.random()*12-6),pocketIndex=this.wheelOrder.indexOf(Number(number));
+        const pocketAngle=pocketIndex*(360/37),targetScreen=(pocketAngle+wheelEnd)%360;
+        const startAngle=Math.random()*360,outerEnd=startAngle-ballTurns*360;
+        const align=(angle,target)=>angle-(((angle-target)%360)+360)%360;
+        const finalAngle=align(outerEnd-250,targetScreen),step=360/37;
+        document.querySelectorAll('.pocket.winner').forEach(el=>el.classList.remove('winner'));
+        this.$refs.ball.classList.add('travelling');
+        const wheelAnimation=this.$refs.rotor.animate([
+            {transform:`rotate(${this.wheelRotation}deg)`,offset:0,easing:'cubic-bezier(.16,.62,.25,1)'},
+            {transform:`rotate(${wheelEnd-22}deg)`,offset:.84,easing:'cubic-bezier(.1,.55,.2,1)'},
+            {transform:`rotate(${wheelEnd}deg)`,offset:1,easing:'ease-out'}
+        ],{duration:duration+700,fill:'forwards'});
+        const ballAnimation=this.$refs.ball.animate([
+            {transform:`rotate(${startAngle}deg) translateY(-174px) scale(1)`,offset:0,easing:'linear'},
+            {transform:`rotate(${startAngle-ballTurns*250}deg) translateY(-173px) scale(1.03)`,offset:.52,easing:'linear'},
+            {transform:`rotate(${outerEnd}deg) translateY(-160px) scale(1)`,offset:.69,easing:'cubic-bezier(.22,.7,.3,1)'},
+            {transform:`rotate(${finalAngle+step*4.2}deg) translateY(-137px) scale(.97)`,offset:.79},
+            {transform:`rotate(${finalAngle+step*2.5}deg) translateY(-124px) scale(1.08)`,offset:.84},
+            {transform:`rotate(${finalAngle+step*1.45}deg) translateY(-132px) scale(.94)`,offset:.88},
+            {transform:`rotate(${finalAngle+step*.72}deg) translateY(-118px) scale(1.05)`,offset:.92},
+            {transform:`rotate(${finalAngle+step*.25}deg) translateY(-126px) scale(.98)`,offset:.96},
+            {transform:`rotate(${finalAngle}deg) translateY(-121px) scale(1)`,offset:1,easing:'ease-out'}
+        ],{duration,fill:'forwards'});
+        await this.wait(duration*.72);this.cameraStage=1;
+        await ballAnimation.finished;this.cameraStage=2;this.$refs.ball.classList.remove('travelling');
+        document.querySelector(`[data-pocket="${number}"]`)?.classList.add('winner');
+        await wheelAnimation.finished;this.wheelRotation=wheelEnd;
+        await this.wait(1500);
+    },
+    async play(){if(this.spinning||this.apuesta>this.saldo)return;this.spinning=true;this.cameraStage=0;this.resultVisible=false;this.lastNumero=null;this.ganancia=0;this.error='';try{const r=await fetch(@js($playRoute),{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content},body:JSON.stringify({apuesta:this.apuesta,tipo:this.tipo,valor:this.valor})});const d=await r.json();if(!r.ok)throw new Error(d.error||d.message||'No se pudo completar el giro.');this.lastNumero=d.numero;this.lastColor=d.color;this.multipliers=d.multipliers||{};await this.animateSpin(d.numero);this.ganancia=Number(d.ganancia);this.saldo=Number(d.saldo);this.$store.wallet.saldo=this.saldo;this.historial.unshift({numero:d.numero,color:d.color,tipo:this.selectionLabel,ganancia:this.ganancia,apuesta:this.apuesta});this.resultVisible=true;window.dispatchEvent(new CustomEvent('saldo-updated',{detail:{saldo:this.saldo}}));await this.wait(900);}catch(e){this.error=e.message;}finally{this.spinning=false;}}
 }}
 </script>
 @endpush

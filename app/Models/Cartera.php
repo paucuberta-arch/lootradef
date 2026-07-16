@@ -16,7 +16,7 @@ class Cartera extends Model
     ];
 
     protected $casts = [
-        'saldo' => 'decimal:2',
+        'saldo' => 'float',
     ];
 
     public function usuario(): BelongsTo
@@ -38,8 +38,10 @@ class Cartera extends Model
 
         if ($updated) {
             $this->refresh();
+
             return true;
         }
+
         return false;
     }
 
