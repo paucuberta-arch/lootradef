@@ -230,7 +230,7 @@ function slotsGame() {
             }, 72 + i * 9));
 
             try {
-                const res = await fetch('{{ route("slots.play") }}', {
+                const res = await fetch(@js(route('games.slots.play', ['slug' => $gameSlug])), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

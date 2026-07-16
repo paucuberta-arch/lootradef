@@ -69,7 +69,7 @@
         @auth
         const refreshWallet = async () => {
             try {
-                const response = await fetch('{{ route('perfil.saldo') }}', {
+                const response = await fetch('{{ route('wallet.balance') }}', {
                     headers: { 'Accept': 'application/json' },
                     cache: 'no-store',
                 });

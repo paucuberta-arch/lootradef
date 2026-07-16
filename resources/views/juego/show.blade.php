@@ -25,7 +25,7 @@
 
     {{-- Breadcrumb --}}
     <nav class="flex items-center gap-2 text-sm text-slate-500 mb-6">
-        <a href="{{ url('/') }}" class="hover:text-white transition">Inicio</a>
+        <a href="{{ route('games.index') }}" class="hover:text-white transition">Juegos</a>
         <span>/</span>
         <span class="text-slate-300">{{ $juego['name'] }}</span>
     </nav>
@@ -93,15 +93,6 @@
             </div>
 
             {{-- Reviews --}}
-            @php
-                $reviews = \App\Models\Review::where('juego_slug', $slug)
-                    ->where('tipo', 'juego')
-                    ->where('estado', 'aprobado')
-                    ->with('usuario')
-                    ->latest()
-                    ->take(10)
-                    ->get();
-            @endphp
             <x-review-widget :slug="$slug" :reviews="$reviews" review-type="juego" />
 
         </div>
@@ -148,15 +139,17 @@
             <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-6">
                 <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Juegos similares</h3>
                 <div class="space-y-3">
-                    @foreach(['Sweet Bonanza', 'Book of Dead', 'Starburst'] as $similar)
-                        <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition cursor-pointer">
-                            <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-lg">&#x1F3B0;</div>
+                    @forelse($similarGames as $similar)
+                        <a href="{{ route('games.show', $similar['slug']) }}" class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition">
+                            <img src="{{ $similar['image'] }}" alt="" class="h-10 w-10 rounded-lg object-cover" loading="lazy">
                             <div>
-                                <p class="text-sm font-semibold text-white">{{ $similar }}</p>
-                                <p class="text-xs text-slate-500">Slots</p>
+                                <p class="text-sm font-semibold text-white">{{ $similar['name'] }}</p>
+                                <p class="text-xs text-slate-500">{{ ucfirst($similar['category']) }}</p>
                             </div>
-                        </div>
-                    @endforeach
+                        </a>
+                    @empty
+                        <p class="text-sm text-slate-500">No hay juegos similares disponibles.</p>
+                    @endforelse
                 </div>
             </div>
 

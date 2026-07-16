@@ -117,7 +117,7 @@ class SlotsController extends Controller
         ],
     ];
 
-    public function index()
+    public function index(?string $slug = null)
     {
         $partidas = Partida::where('usuario_id', Auth::id())
             ->where('juego', 'slots')
@@ -125,7 +125,7 @@ class SlotsController extends Controller
             ->take(10)
             ->get();
 
-        $gameSlug = request()->query('game', 'default');
+        $gameSlug = $slug ?? request()->query('game', 'default');
         $theme = $this->themes[$gameSlug] ?? $this->themes['default'];
 
         return view('games.slots', [
@@ -146,7 +146,7 @@ class SlotsController extends Controller
         ]);
     }
 
-    public function play(Request $request)
+    public function play(Request $request, ?string $slug = null)
     {
         $request->validate([
             'apuesta' => 'required|numeric|min:0.10|max:500',
@@ -155,7 +155,7 @@ class SlotsController extends Controller
 
         $user = Auth::user();
         $apuesta = round($request->apuesta, 2);
-        $gameSlug = $request->input('game', 'default');
+        $gameSlug = $slug ?? $request->input('game', 'default');
         $theme = $this->themes[$gameSlug] ?? $this->themes['default'];
 
         if (! $user->cartera || ! $user->cartera->apostar($apuesta, 'apuesta_slots', ['juego' => $gameSlug])) {

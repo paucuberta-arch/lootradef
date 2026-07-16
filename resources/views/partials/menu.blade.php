@@ -3,7 +3,7 @@
         <div class="flex items-center justify-between h-16">
 
             {{-- LOGO --}}
-            <a href="{{ url('/') }}" class="flex items-center gap-2.5 group shrink-0">
+            <a href="{{ route('inicio') }}" class="flex items-center gap-2.5 group shrink-0">
                 <div class="brand-gem w-10 h-10 rounded-xl bg-gradient-to-br from-fuchsia-400 via-brand-400 to-cyan-400 flex items-center justify-center text-black font-black text-sm shadow-lg shadow-brand-500/20">
                     <span>L</span>
                 </div>
@@ -38,17 +38,17 @@
                         class="absolute top-full left-0 mt-1 w-52 py-2 rounded-xl bg-[#14142a] border border-white/10 shadow-2xl shadow-black/60"
                     >
                         @foreach(['Slots' => 'slots', 'Ruleta' => 'ruleta', 'Blackjack' => 'blackjack', 'Poker' => 'poker', 'Live Casino' => 'live', 'Crash' => 'crash', 'Originales' => 'arcade'] as $label => $catId)
-                            <a href="{{ url('/?cat=' . $catId) }}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-400 hover:text-white hover:bg-white/5 transition">
+                            <a href="{{ route('games.index', ['cat' => $catId]) }}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-400 hover:text-white hover:bg-white/5 transition">
                                 {{ $label }}
                             </a>
                         @endforeach
                     </div>
                 </div>
 
-                <a href="{{ url('/apuestas') }}" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition">
+                <a href="{{ route('sports.index') }}" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition">
                     Apuestas
                 </a>
-                <a href="{{ url('/cajas') }}" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition">
+                <a href="{{ route('cases.index') }}" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition">
                     Cajas
                 </a>
 
@@ -65,7 +65,7 @@
 
                 @auth
                     @if(auth()->user()->hasAnyRole(['super_admin', 'admin', 'moderator']))
-                        <a href="{{ url('/admin') }}" class="px-3 py-2 rounded-lg text-sm font-medium text-brand-400 hover:text-brand-300 hover:bg-brand-500/5 transition">
+                        <a href="{{ route('admin.dashboard') }}" class="px-3 py-2 rounded-lg text-sm font-medium text-brand-400 hover:text-brand-300 hover:bg-brand-500/5 transition">
                             Admin
                         </a>
                     @endif
@@ -115,7 +115,7 @@
                         </div>
                     </div>
 
-                    <a href="{{ route('perfil') }}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition">
+                    <a href="{{ route('profile.show') }}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition">
                         <div class="w-7 h-7 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-black text-xs font-bold">
                             {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                         </div>
@@ -154,14 +154,14 @@
             class="md:hidden pb-4 border-t border-white/5 mt-2 pt-4"
         >
             <div class="flex flex-col gap-1">
-                <a href="{{ url('/') }}" class="px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition">Inicio</a>
-                <a href="{{ url('/apuestas') }}" class="px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition">Apuestas Deportivas</a>
-                <a href="{{ url('/cajas') }}" class="px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition">Cajas de Azar</a>
+                <a href="{{ route('inicio') }}" class="px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition">Inicio</a>
+                <a href="{{ route('sports.index') }}" class="px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition">Apuestas Deportivas</a>
+                <a href="{{ route('cases.index') }}" class="px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition">Cajas de Azar</a>
 
                 <div class="h-px bg-white/5 my-2"></div>
 
                 @foreach(['Slots' => 'slots', 'Ruleta' => 'ruleta', 'Blackjack' => 'blackjack', 'Poker' => 'poker', 'Live Casino' => 'live', 'Originales' => 'arcade'] as $label => $catId)
-                    <a href="{{ url('/?cat=' . $catId) }}" class="px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition">{{ $label }}</a>
+                    <a href="{{ route('games.index', ['cat' => $catId]) }}" class="px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition">{{ $label }}</a>
                 @endforeach
 
                 <div class="h-px bg-white/5 my-2"></div>
@@ -173,7 +173,7 @@
 
                 @auth
                     @if(auth()->user()->hasAnyRole(['super_admin', 'admin', 'moderator']))
-                        <a href="{{ url('/admin') }}" class="px-3 py-2.5 rounded-lg text-sm font-medium text-brand-400 hover:text-brand-300 hover:bg-brand-500/5 transition">Panel Admin</a>
+                        <a href="{{ route('admin.dashboard') }}" class="px-3 py-2.5 rounded-lg text-sm font-medium text-brand-400 hover:text-brand-300 hover:bg-brand-500/5 transition">Panel Admin</a>
                     @endif
 
                     <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-brand-500/10 border border-brand-500/20 text-sm font-bold text-brand-400">
@@ -204,7 +204,7 @@
                         </div>
                     </div>
 
-                    <a href="{{ route('perfil') }}" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition">
+                    <a href="{{ route('profile.show') }}" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition">
                         <div class="w-7 h-7 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-black text-xs font-bold">
                             {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                         </div>
@@ -245,7 +245,7 @@ function navbar() {
 
             var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-            fetch('{{ route("perfil.deposit") }}', {
+            fetch('{{ route("wallet.demo-deposit") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

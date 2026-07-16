@@ -24,7 +24,7 @@ class RuletaController extends Controller
             'partidas' => $partidas,
             'variant' => $variant,
             'gameName' => $variant === 'lightning' ? 'Lightning Roulette' : 'Ruleta Europea',
-            'playRoute' => $variant === 'lightning' ? route('ruleta.lightning.play') : route('ruleta.play'),
+            'playRoute' => $variant === 'lightning' ? route('games.roulette.lightning.play') : route('games.roulette.european.play'),
         ]);
     }
 

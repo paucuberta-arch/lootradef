@@ -155,7 +155,8 @@ function caseCenter() {
             this.opening=true; this.error='';
             const started=Date.now();
             try {
-                const response=await fetch(`{{ url('/cajas') }}/${this.selectedKey}/abrir`, { method:'POST', headers:{'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content,'Accept':'application/json'} });
+                const url=@js(route('cases.open',['caja'=>'__CASE__'])).replace('__CASE__',encodeURIComponent(this.selectedKey));
+                const response=await fetch(url, { method:'POST', headers:{'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content,'Accept':'application/json'} });
                 const data=await response.json();
                 if (!response.ok) throw new Error(data.message || 'No se pudo abrir la caja.');
                 await new Promise(resolve => setTimeout(resolve, Math.max(0, 2400-(Date.now()-started))));
@@ -169,7 +170,8 @@ function caseCenter() {
             if (this.redeeming) return;
             this.redeeming=item.id;
             try {
-                const response=await fetch(`{{ url('/inventario') }}/${item.id}/canjear`, {method:'POST',headers:{'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content,'Accept':'application/json'}});
+                const url=@js(route('inventory.redeem',['item'=>'__ITEM__'])).replace('__ITEM__',encodeURIComponent(item.id));
+                const response=await fetch(url, {method:'POST',headers:{'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content,'Accept':'application/json'}});
                 const data=await response.json();
                 if (!response.ok) throw new Error(data.message || 'No se pudo canjear el premio.');
                 item.estado='canjeado'; Alpine.store('wallet').saldo=Number(data.saldo);

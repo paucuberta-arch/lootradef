@@ -104,7 +104,7 @@
 
 @push('scripts')
 <script>
-function profileWallet(){return{depositOpen:false,amount:50,busy:false,error:'',async deposit(){if(this.busy)return;this.busy=true;this.error='';try{const response=await fetch(@js(route('perfil.deposit')),{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content},body:JSON.stringify({amount:this.amount})});const data=await response.json();if(!response.ok)throw new Error(data.message||data.error||'No se pudo completar el depósito demo.');this.$store.wallet.saldo=Number(data.saldo);window.dispatchEvent(new CustomEvent('saldo-updated',{detail:{saldo:Number(data.saldo)}}));window.location.reload();}catch(error){this.error=error.message;this.busy=false;}}}}
+function profileWallet(){return{depositOpen:false,amount:50,busy:false,error:'',async deposit(){if(this.busy)return;this.busy=true;this.error='';try{const response=await fetch(@js(route('wallet.demo-deposit')),{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content},body:JSON.stringify({amount:this.amount})});const data=await response.json();if(!response.ok)throw new Error(data.message||data.error||'No se pudo completar el depósito demo.');this.$store.wallet.saldo=Number(data.saldo);window.dispatchEvent(new CustomEvent('saldo-updated',{detail:{saldo:Number(data.saldo)}}));window.location.reload();}catch(error){this.error=error.message;this.busy=false;}}}}
 </script>
 @endpush
 @endsection

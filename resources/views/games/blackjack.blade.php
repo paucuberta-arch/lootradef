@@ -28,7 +28,7 @@
                     <h1 class="game-heading font-extrabold">{{ $gameName }}</h1>
                     <p class="text-sm text-slate-500 mt-1">21 puntos — vence al dealer</p>
                 </div>
-                <div class="flex items-center gap-2"><a href="{{ route('blackjack') }}" class="rounded-xl border px-3 py-2 text-xs font-bold {{ $variant === 'vip' ? 'border-amber-400/40 bg-amber-400/10 text-amber-300' : 'border-white/10 text-slate-400' }}">VIP</a><a href="{{ route('blackjack.classic') }}" class="rounded-xl border px-3 py-2 text-xs font-bold {{ $variant === 'classic' ? 'border-cyan-400/40 bg-cyan-400/10 text-cyan-300' : 'border-white/10 text-slate-400' }}">Classic</a>
+                <div class="flex items-center gap-2"><a href="{{ route('games.blackjack.vip') }}" class="rounded-xl border px-3 py-2 text-xs font-bold {{ $variant === 'vip' ? 'border-amber-400/40 bg-amber-400/10 text-amber-300' : 'border-white/10 text-slate-400' }}">VIP</a><a href="{{ route('games.blackjack.classic') }}" class="rounded-xl border px-3 py-2 text-xs font-bold {{ $variant === 'classic' ? 'border-cyan-400/40 bg-cyan-400/10 text-cyan-300' : 'border-white/10 text-slate-400' }}">Classic</a>
                 <div class="px-4 py-2 rounded-xl bg-white/5 border border-white/10">
                     <span class="text-xs text-slate-500">Saldo</span>
                     <span class="ml-2 text-sm font-bold text-brand-400" x-text="'€' + saldo.toFixed(2)"></span>

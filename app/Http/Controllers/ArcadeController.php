@@ -3,16 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Partida;
+use App\Services\GameCatalog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ArcadeController extends Controller
 {
-    public function index(Request $request, string $game): View
+    public function index(Request $request, string $game, GameCatalog $catalog): View
     {
-        $definition = config("arcade_games.{$game}");
-        abort_unless($definition, 404);
+        $definition = $catalog->find($game);
+        abort_unless($definition && isset($definition['mode']), 404);
 
         return view($definition['mode'] === 'poker' ? 'games.poker-live' : 'games.arcade', [
             'game' => $definition,
@@ -21,10 +22,10 @@ class ArcadeController extends Controller
         ]);
     }
 
-    public function play(Request $request, string $game): JsonResponse
+    public function play(Request $request, string $game, GameCatalog $catalog): JsonResponse
     {
-        $definition = config("arcade_games.{$game}");
-        abort_unless($definition, 404);
+        $definition = $catalog->find($game);
+        abort_unless($definition && isset($definition['mode']), 404);
         $data = $request->validate([
             'apuesta' => 'required|numeric|min:0.2|max:500',
             'choice' => 'nullable',

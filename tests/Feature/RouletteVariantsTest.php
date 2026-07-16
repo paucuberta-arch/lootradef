@@ -33,8 +33,8 @@ class RouletteVariantsTest extends TestCase
         $european = $this->actingAs($user)->get(route('juego.show', 'european-roulette'))->assertOk();
         $lightning = $this->actingAs($user)->get(route('juego.show', 'lightning-roulette'))->assertOk();
 
-        $european->assertSee(route('ruleta'), false);
-        $lightning->assertSee(route('ruleta.lightning'), false);
-        $this->assertNotSame(route('ruleta'), route('ruleta.lightning'));
+        $european->assertSee(route('games.roulette.european'), false);
+        $lightning->assertSee(route('games.roulette.lightning'), false);
+        $this->assertNotSame(route('games.roulette.european'), route('games.roulette.lightning'));
     }
 }

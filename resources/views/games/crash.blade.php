@@ -192,7 +192,7 @@ function crashGame() {
 
             this.actionInFlight = true;
             try {
-                const res = await fetch('{{ route("crash.play") }}', {
+                const res = await fetch('{{ route("games.crash.play") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -259,7 +259,7 @@ function crashGame() {
             clearInterval(this.interval);
             this.actionInFlight = true;
             try {
-                const res = await fetch('{{ route("crash.cashout") }}', {
+                const res = await fetch('{{ route("games.crash.cashout") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -284,7 +284,7 @@ function crashGame() {
             if (this.statusInFlight || this.fase !== 'subiendo' || !this.roundId) return;
             this.statusInFlight = true;
             try {
-                const res = await fetch('{{ route("crash.status") }}', {
+                const res = await fetch('{{ route("games.crash.status") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

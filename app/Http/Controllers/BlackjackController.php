@@ -27,9 +27,9 @@ class BlackjackController extends Controller
             'partidas' => $partidas,
             'variant' => $variant,
             'gameName' => $variant === 'vip' ? 'Blackjack VIP' : 'Blackjack Classic',
-            'dealRoute' => $variant === 'vip' ? route('blackjack.deal') : route('blackjack.classic.deal'),
-            'hitRoute' => $variant === 'vip' ? route('blackjack.hit') : route('blackjack.classic.hit'),
-            'standRoute' => $variant === 'vip' ? route('blackjack.stand') : route('blackjack.classic.stand'),
+            'dealRoute' => $variant === 'vip' ? route('games.blackjack.vip.deal') : route('games.blackjack.classic.deal'),
+            'hitRoute' => $variant === 'vip' ? route('games.blackjack.vip.hit') : route('games.blackjack.classic.hit'),
+            'standRoute' => $variant === 'vip' ? route('games.blackjack.vip.stand') : route('games.blackjack.classic.stand'),
             'activeHand' => $active ? $this->handData($active) : null,
         ]);
     }
