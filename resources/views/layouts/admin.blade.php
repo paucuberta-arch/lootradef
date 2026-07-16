@@ -8,38 +8,22 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
-                    colors: {
-                        brand: { 50:'#fffbeb',100:'#fef3c7',200:'#fde68a',300:'#fcd34d',400:'#fbbf24',500:'#f59e0b',600:'#d97706',700:'#b45309',800:'#92400e',900:'#78350f' },
-                    },
-                },
-            },
-        }
-    </script>
-    <style>
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
-    </style>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     @yield('admin-styles')
 </head>
-<body class="min-h-screen bg-[#0a0a12] text-white font-sans antialiased" x-data="{ sidebar: true }">
+<body class="min-h-screen bg-[#090D18] text-white font-sans antialiased" x-data="{ sidebar: false }" @keydown.escape.window="sidebar = false">
 
-    <div class="flex min-h-screen">
+    <div class="flex min-h-screen overflow-x-clip">
+
+        <button x-show="sidebar" x-transition.opacity @click="sidebar=false" class="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm lg:hidden" aria-label="Cerrar menú"></button>
 
         {{-- SIDEBAR --}}
-        <aside class="w-64 bg-[#0d0d18] border-r border-white/5 flex flex-col shrink-0 transition-all duration-300"
-               :class="sidebar ? 'ml-0' : '-ml-64'">
+        <aside class="fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col border-r border-white/10 bg-[#0F1626] shadow-2xl transition-transform duration-300 lg:static lg:z-auto lg:translate-x-0"
+               :class="sidebar ? 'translate-x-0' : '-translate-x-full'">
 
             {{-- Logo --}}
             <div class="h-16 flex items-center gap-3 px-5 border-b border-white/5">
-                <a href="{{ url('/') }}" class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-black font-black text-xs">L</a>
+                <a href="{{ route('inicio') }}" class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-300 to-brand-500 flex items-center justify-center text-black font-black text-xs">L</a>
                 <div>
                     <span class="text-sm font-extrabold text-white">Lootra</span>
                     <span class="text-xs font-bold text-brand-400 ml-1">Admin</span>
@@ -102,33 +86,31 @@
         <div class="flex-1 min-w-0">
 
             {{-- Topbar --}}
-            <header class="h-16 bg-[#0d0d18]/80 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-6 sticky top-0 z-40">
+            <header class="h-16 bg-[#0F1626]/85 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30">
                 <div class="flex items-center gap-4">
-                    <button @click="sidebar = !sidebar" class="text-slate-400 hover:text-white transition">
+                    <button @click="sidebar = !sidebar" class="grid min-h-11 min-w-11 place-items-center rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition lg:hidden" aria-label="Abrir menú" :aria-expanded="sidebar.toString()">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                     </button>
                     <h1 class="text-lg font-bold text-white">@yield('admin-title', 'Dashboard')</h1>
                 </div>
-                <a href="{{ url('/') }}" class="text-sm text-slate-400 hover:text-white transition flex items-center gap-1.5">
+                <a href="{{ route('inicio') }}" class="text-sm text-slate-400 hover:text-white transition flex items-center gap-1.5">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                     Ver web
                 </a>
             </header>
 
             {{-- Content --}}
-            <main class="p-6">
+            <main class="p-4 sm:p-6 lg:p-8">
                 @if(session('success'))
-                    <div class="mb-6 px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium">
-                        {{ session('success') }}
-                    </div>
+                    <x-ui.alert type="success" class="mb-6">{{ session('success') }}</x-ui.alert>
                 @endif
 
                 @if($errors->any())
-                    <div class="mb-6 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium">
+                    <x-ui.alert type="error" class="mb-6">
                         @foreach($errors->all() as $error)
                             <div>{{ $error }}</div>
                         @endforeach
-                    </div>
+                    </x-ui.alert>
                 @endif
 
                 @yield('admin-content')
@@ -136,7 +118,6 @@
         </div>
     </div>
 
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @stack('admin-scripts')
 </body>
 </html>

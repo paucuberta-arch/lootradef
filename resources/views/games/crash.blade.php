@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.game')
 @section('title', 'Crash — Lootra Casino')
 
 @section('styles')
@@ -16,7 +16,7 @@
 </style>
 @endsection
 
-@section('contenido')
+@section('game-content')
 <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10"
      x-data="crashGame()" x-init="init()">
 

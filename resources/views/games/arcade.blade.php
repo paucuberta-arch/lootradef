@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.game')
 @section('title', $game['name'].' — Lootra Originals')
 
 @section('styles')
@@ -19,7 +19,7 @@
 </style>
 @endsection
 
-@section('contenido')
+@section('game-content')
 <div class="max-w-[1200px] mx-auto px-4 sm:px-6 py-8" x-data="originalGame()">
     <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div><p class="text-xs uppercase tracking-[.2em] text-fuchsia-400 font-bold">Lootra Originals · {{ ucfirst($game['mode']) }}</p><h1 class="game-heading font-extrabold mt-2">{{ $game['name'] }}</h1><p class="text-sm text-slate-500 mt-2">{{ $game['description'] }}</p></div>

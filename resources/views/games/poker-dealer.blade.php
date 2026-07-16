@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.game')
 @section('title', "Texas Hold'em contra el Dealer — Lootra")
 
 @section('styles')
@@ -12,7 +12,7 @@
 </style>
 @endsection
 
-@section('contenido')
+@section('game-content')
 <div class="mx-auto max-w-[1450px] px-4 py-8" x-data="dealerPoker()">
     <header class="mb-6 flex flex-wrap items-center justify-between gap-4"><div><p class="text-xs font-black uppercase tracking-[.2em] text-emerald-400">Poker por fases</p><h1 class="game-heading mt-1 font-black">Texas Hold'em contra el Dealer</h1><p class="mt-2 text-sm text-slate-500">Toma una decisión en cada calle y llega al showdown.</p></div><div class="flex gap-2"><a href="{{ route('games.poker.all-in') }}" class="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-400">Poker All-In</a><span class="rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-2 text-sm">Saldo <b class="ml-1 text-emerald-300" x-text="money(saldo)"></b></span></div></header>
 

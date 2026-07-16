@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.auth')
 
 @section('title', 'Crear cuenta — Lootra Casino')
 
@@ -10,7 +10,7 @@
         <div class="relative w-full max-w-md">
 
             <div class="text-center mb-8">
-                <a href="{{ url('/') }}" class="inline-flex items-center gap-2 mb-6">
+                <a href="{{ route('inicio') }}" class="inline-flex items-center gap-2 mb-6">
                     <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-black text-xl font-black shadow-lg shadow-brand-500/20">L</div>
                 </a>
                 <h1 class="text-2xl sm:text-3xl font-bold text-white">Crear una cuenta</h1>
@@ -20,16 +20,16 @@
             <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-6 sm:p-8 backdrop-blur-sm">
 
                 @if($errors->any())
-                    <div class="mb-6 rounded-xl bg-red-500/10 border border-red-500/20 p-4">
+                    <x-ui.alert type="error" class="mb-6">
                         <ul class="list-disc list-inside space-y-1">
                             @foreach($errors->all() as $error)
                                 <li class="text-red-400 text-sm">{{ $error }}</li>
                             @endforeach
                         </ul>
-                    </div>
+                    </x-ui.alert>
                 @endif
 
-                <form action="{{ route('registro.store') }}" method="POST" class="space-y-5">
+                <form action="{{ route('registro.store') }}" method="POST" class="space-y-5" x-data="{ submitting: false }" @submit="submitting = true">
                     @csrf
 
                     <div>
@@ -56,9 +56,7 @@
                             class="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-slate-600 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition">
                     </div>
 
-                    <button type="submit" class="w-full rounded-xl bg-brand-500 hover:bg-brand-400 text-black font-bold py-3.5 transition-all shadow-lg shadow-brand-500/20 hover:shadow-brand-400/30 hover:-translate-y-0.5">
-                        Crear cuenta
-                    </button>
+                    <x-ui.button type="submit" class="w-full" x-bind:disabled="submitting"><span x-text="submitting ? 'Creando cuenta…' : 'Crear cuenta'">Crear cuenta</span></x-ui.button>
                 </form>
 
                 <div class="mt-6 pt-6 border-t border-white/5 text-center">

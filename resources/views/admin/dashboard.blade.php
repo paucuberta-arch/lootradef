@@ -38,8 +38,8 @@
     @foreach($cards as $card)
         <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
             <div class="flex items-center gap-3 mb-3">
-                <div class="w-10 h-10 rounded-xl bg-{{ $card['color'] }}-500/10 flex items-center justify-center">
-                    <svg class="w-5 h-5 text-{{ $card['color'] }}-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="tone-icon tone-{{ $card['color'] }} w-10 h-10 rounded-xl flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="{{ $card['icon'] }}"/>
                     </svg>
                 </div>
@@ -65,8 +65,8 @@
     @foreach($financeCards as $card)
         <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
             <div class="flex items-center gap-3 mb-3">
-                <div class="w-10 h-10 rounded-xl bg-{{ $card['color'] }}-500/10 flex items-center justify-center">
-                    <svg class="w-5 h-5 text-{{ $card['color'] }}-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="tone-icon tone-{{ $card['color'] }} w-10 h-10 rounded-xl flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="{{ $card['icon'] }}"/>
                     </svg>
                 </div>

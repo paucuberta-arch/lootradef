@@ -44,7 +44,7 @@
                         </td>
                         <td class="px-5 py-3">
                             @php $role = $u->roles->first(); @endphp
-                            <span class="px-2 py-1 rounded-lg text-xs font-semibold bg-{{ $role->color ?? 'slate' }}-500/10 text-{{ $role->color ?? 'slate' }}-400 border border-{{ $role->color ?? 'slate' }}-500/20">
+                            <span class="tone-badge tone-{{ $role->color ?? 'slate' }} px-2 py-1 rounded-lg text-xs font-semibold">
                                 {{ $role->label ?? 'Sin rol' }}
                             </span>
                         </td>

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.game')
 @section('title', 'Poker All-In — Lootra')
 @section('styles')
 <style>
@@ -7,7 +7,7 @@
     .poker-card{width:clamp(55px,8vw,82px);aspect-ratio:.7;border-radius:10px;background:linear-gradient(145deg,#fff,#e2e8f0);color:#111827;position:relative;box-shadow:0 14px 28px #0009;border:1px solid white;animation:deal-pro .5s cubic-bezier(.16,1,.3,1) both}.poker-card.red{color:#dc2626}.poker-card.back{background:repeating-linear-gradient(45deg,#111827 0 7px,#312e81 7px 14px);border:4px solid #d4af37}.poker-card b{position:absolute;left:7px;top:5px}.poker-card i{position:absolute;inset:0;display:grid;place-items:center;font-size:30px;font-style:normal}
 </style>
 @endsection
-@section('contenido')
+@section('game-content')
 <div class="mx-auto max-w-[1350px] px-4 py-8" x-data="pokerAllIn()">
     <header class="mb-6 flex flex-wrap items-center justify-between gap-4"><div><p class="text-xs font-black uppercase tracking-[.2em] text-fuchsia-400">Resolución instantánea</p><h1 class="game-heading mt-1 font-black">Poker All-In</h1><p class="mt-2 text-sm text-slate-500">Una apuesta, una mano completa y showdown inmediato.</p></div><div class="flex gap-2"><a href="{{ route('games.poker.dealer') }}" class="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-400">Jugar contra el dealer</a><span class="rounded-xl border border-brand-400/20 bg-brand-400/10 px-4 py-2 text-sm">Saldo <b class="text-brand-300" x-text="money(saldo)"></b></span></div></header>
     <section class="allin-table rounded-[3rem] p-6 sm:p-9">

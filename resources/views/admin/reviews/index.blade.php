@@ -49,7 +49,7 @@
                             @php
                                 $estadoColors = ['pendiente' => 'amber', 'aprobado' => 'emerald', 'rechazado' => 'red'];
                             @endphp
-                            <span class="px-2 py-1 rounded-lg text-xs font-semibold bg-{{ $estadoColors[$r->estado] ?? 'slate' }}-500/10 text-{{ $estadoColors[$r->estado] ?? 'slate' }}-400">
+                            <span class="tone-badge tone-{{ $estadoColors[$r->estado] ?? 'slate' }} px-2 py-1 rounded-lg text-xs font-semibold">
                                 {{ ucfirst($r->estado) }}
                             </span>
                         </td>

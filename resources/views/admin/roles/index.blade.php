@@ -10,7 +10,7 @@
             <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
                 <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center gap-3">
-                        <span class="px-3 py-1 rounded-lg text-xs font-bold bg-{{ $role->color }}-500/10 text-{{ $role->color }}-400 border border-{{ $role->color }}-500/20">{{ $role->label }}</span>
+                        <span class="tone-badge tone-{{ $role->color }} px-3 py-1 rounded-lg text-xs font-bold">{{ $role->label }}</span>
                         <span class="text-xs text-slate-500">{{ $role->users_count }} usuarios</span>
                     </div>
                     @if($role->name !== 'super_admin')

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.game')
 @section('title', $gameName . ' — Lootra Casino')
 
 @section('styles')
@@ -23,7 +23,7 @@
 </style>
 @endsection
 
-@section('contenido')
+@section('game-content')
 <div class="mx-auto max-w-[1450px] px-4 py-7 sm:px-6 sm:py-10" x-data="rouletteGame()">
     <header class="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div><div class="flex items-center gap-3"><span class="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br {{ $variant === 'lightning' ? 'from-cyan-400 to-violet-600' : 'from-amber-300 to-red-600' }} shadow-lg">◆</span><div><h1 class="game-heading font-extrabold">{{ $gameName }}</h1><p class="mt-1 text-sm text-slate-500">Elige una casilla, confirma el boleto y sigue la bola</p></div></div></div>

@@ -23,8 +23,8 @@
                         @endphp
                         <span class="text-lg">{{ $tipoIcons[$fb->tipo] ?? '📝' }}</span>
                         <h3 class="font-bold text-white">{{ $fb->asunto }}</h3>
-                        <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-{{ $prioridadColors[$fb->prioridad] }}-500/10 text-{{ $prioridadColors[$fb->prioridad] }}-400 border border-{{ $prioridadColors[$fb->prioridad] }}-500/20 uppercase">{{ $fb->prioridad }}</span>
-                        <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-{{ $estadoColors[$fb->estado] }}-500/10 text-{{ $estadoColors[$fb->estado] }}-400 border border-{{ $estadoColors[$fb->estado] }}-500/20 uppercase">{{ str_replace('_', ' ', $fb->estado) }}</span>
+                        <span class="tone-badge tone-{{ $prioridadColors[$fb->prioridad] }} px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase">{{ $fb->prioridad }}</span>
+                        <span class="tone-badge tone-{{ $estadoColors[$fb->estado] }} px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase">{{ str_replace('_', ' ', $fb->estado) }}</span>
                     </div>
                     <p class="text-sm text-slate-400 mb-2">{{ $fb->contenido }}</p>
                     <div class="flex items-center gap-3 text-xs text-slate-600">
