@@ -51,8 +51,6 @@ class BlackjackController extends Controller
             if (! $wallet || $wallet->saldo < $bet) {
                 abort(422, 'Saldo insuficiente.');
             }
-            $wallet->decrement('saldo', $bet);
-
             $deck = $this->crearBaraja();
             shuffle($deck);
             $player = [$this->draw($deck), $this->draw($deck)];
@@ -61,6 +59,7 @@ class BlackjackController extends Controller
                 'usuario_id' => $request->user()->id, 'variante' => $variant, 'apuesta' => $bet,
                 'baraja' => $deck, 'mano_jugador' => $player, 'mano_dealer' => $dealer,
             ]);
+            abort_unless($wallet->apostar($bet, 'apuesta_blackjack', ['variante' => $variant], $hand), 422, 'Saldo insuficiente.');
 
             $playerBlackjack = $this->calcularPuntos($player) === 21;
             $dealerBlackjack = $this->calcularPuntos($dealer) === 21;
@@ -139,7 +138,8 @@ class BlackjackController extends Controller
     {
         abort_unless($hand->estado === 'jugando', 409, 'Esta mano ya está finalizada.');
         if ($payout > 0) {
-            ($wallet ?? Cartera::where('usuario_id', $hand->usuario_id)->lockForUpdate()->firstOrFail())->increment('saldo', $payout);
+            ($wallet ?? Cartera::where('usuario_id', $hand->usuario_id)->lockForUpdate()->firstOrFail())
+                ->ganar($payout, 'premio_blackjack', ['resultado' => $state], $hand);
         }
         $hand->update(['estado' => $state, 'ganancia' => $payout, 'finalizada_at' => now()]);
         Partida::create([

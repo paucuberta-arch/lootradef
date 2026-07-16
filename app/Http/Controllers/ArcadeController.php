@@ -35,7 +35,7 @@ class ArcadeController extends Controller
         $bet = round((float) $data['apuesta'], 2);
         $choice = is_scalar($data['choice'] ?? null) ? (string) $data['choice'] : '';
 
-        if (! $user->cartera || ! $user->cartera->apostar($bet)) {
+        if (! $user->cartera || ! $user->cartera->apostar($bet, 'apuesta_original', ['juego' => $game])) {
             return response()->json(['message' => 'Saldo insuficiente.'], 422);
         }
 
@@ -49,7 +49,7 @@ class ArcadeController extends Controller
 
         $win = round($bet * $result['multiplier'], 2);
         if ($win > 0) {
-            $user->cartera->ganar($win);
+            $user->cartera->ganar($win, 'premio_original', ['juego' => $game]);
         }
 
         Partida::create(['usuario_id' => $user->id, 'juego' => $game, 'apuesta' => $bet, 'ganancia' => $win, 'detalles' => $result]);

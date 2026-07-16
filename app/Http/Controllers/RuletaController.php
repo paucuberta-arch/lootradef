@@ -40,7 +40,7 @@ class RuletaController extends Controller
         $user = Auth::user();
         $apuesta = round($request->apuesta, 2);
 
-        if (! $user->cartera || ! $user->cartera->apostar($apuesta)) {
+        if (! $user->cartera || ! $user->cartera->apostar($apuesta, 'apuesta_ruleta', ['variante' => $variant])) {
             return response()->json(['error' => 'Saldo insuficiente.'], 422);
         }
 
@@ -55,7 +55,7 @@ class RuletaController extends Controller
         $resultado = $ganancia > 0 ? 'win' : 'lose';
 
         if ($ganancia > 0) {
-            $user->cartera->ganar($ganancia);
+            $user->cartera->ganar($ganancia, 'premio_ruleta', ['variante' => $variant]);
         }
 
         Partida::create([

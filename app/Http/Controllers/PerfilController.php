@@ -15,6 +15,7 @@ class PerfilController extends Controller
     {
         return view('perfil.index', [
             'usuario' => $request->user(),
+            'movimientos' => $request->user()->movimientosCartera()->latest()->take(20)->get(),
         ]);
     }
 
@@ -31,7 +32,7 @@ class PerfilController extends Controller
             return response()->json(['error' => 'No tienes una cartera activa.'], 422);
         }
 
-        $user->cartera->ganar($amount);
+        $user->cartera->ganar($amount, 'deposito_demo', ['origen' => 'perfil']);
         $this->accountMail->deposit($user, $amount);
 
         return response()->json([

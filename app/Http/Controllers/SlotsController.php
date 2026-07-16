@@ -158,7 +158,7 @@ class SlotsController extends Controller
         $gameSlug = $request->input('game', 'default');
         $theme = $this->themes[$gameSlug] ?? $this->themes['default'];
 
-        if (! $user->cartera || ! $user->cartera->apostar($apuesta)) {
+        if (! $user->cartera || ! $user->cartera->apostar($apuesta, 'apuesta_slots', ['juego' => $gameSlug])) {
             return response()->json(['error' => 'Saldo insuficiente.'], 422);
         }
 
@@ -172,7 +172,7 @@ class SlotsController extends Controller
         $resultado = $ganancia > 0 ? 'win' : 'lose';
 
         if ($ganancia > 0) {
-            $user->cartera->ganar($ganancia);
+            $user->cartera->ganar($ganancia, 'premio_slots', ['juego' => $gameSlug]);
         }
 
         Partida::create([

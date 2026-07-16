@@ -59,7 +59,8 @@ class AuthController extends Controller
             'password' => Hash::make($datos['password']),
         ]);
 
-        $usuario->cartera()->create(['saldo' => 1000.00]);
+        $wallet = $usuario->cartera()->create(['saldo' => 0]);
+        $wallet->ganar(1000, 'bono_registro');
         $usuario->assignRole('user');
 
         Auth::login($usuario);

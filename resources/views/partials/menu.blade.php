@@ -76,7 +76,7 @@
                             <div class="px-3 py-1.5 rounded-lg bg-brand-500/10 border border-brand-500/20 text-sm font-bold text-brand-400 cursor-default">
                                 €<span x-text="$store.wallet.saldo.toFixed(2)">{{ number_format(auth()->user()->saldo, 2) }}</span>
                             </div>
-                            <button @click="depositOpen = !depositOpen" class="px-2 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition text-sm font-bold" title="Depositar">
+                            <button @click="depositOpen = !depositOpen" class="px-2 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition text-sm font-bold" title="Añadir saldo demo">
                                 +
                             </button>
                         </div>
@@ -93,7 +93,7 @@
                             @click.outside="depositOpen = false"
                             class="absolute top-full right-0 mt-2 w-56 p-3 rounded-xl bg-[#14142a] border border-white/10 shadow-2xl shadow-black/60 z-50"
                         >
-                            <p class="text-xs text-slate-500 font-medium mb-2">Depositar rapido</p>
+                            <p class="text-xs text-slate-500 font-medium mb-2">Añadir saldo demo</p>
                             <div class="grid grid-cols-3 gap-2 mb-2">
                                 @foreach([10, 25, 50, 100, 250, 500] as $amt)
                                     <button @click="quickDeposit({{ $amt }})"
@@ -178,11 +178,12 @@
 
                     <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-brand-500/10 border border-brand-500/20 text-sm font-bold text-brand-400">
                         <span>Saldo: €<span x-text="$store.wallet.saldo.toFixed(2)">{{ number_format(auth()->user()->saldo, 2) }}</span></span>
-                        <button @click="depositOpen = !depositOpen" class="px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold">+</button>
+                        <button @click="depositOpen = !depositOpen" class="px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold" aria-label="Añadir saldo demo">+</button>
                     </div>
 
                     {{-- Dropdown deposito movil --}}
                     <div x-show="depositOpen" x-cloak class="px-3 py-2">
+                        <p class="mb-2 text-xs font-medium text-slate-500">Añadir saldo demo</p>
                         <div class="grid grid-cols-3 gap-2 mb-2">
                             @foreach([10, 25, 50, 100, 250, 500] as $amt)
                                 <button @click="quickDeposit({{ $amt }})"

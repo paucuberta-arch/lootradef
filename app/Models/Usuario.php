@@ -58,6 +58,11 @@ class Usuario extends Authenticatable
         return $this->hasMany(ApuestaDeportiva::class, 'usuario_id');
     }
 
+    public function movimientosCartera(): HasMany
+    {
+        return $this->hasMany(WalletMovement::class, 'usuario_id');
+    }
+
     public function getSaldoAttribute(): float
     {
         return $this->cartera?->saldo ?? 0;

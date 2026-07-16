@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
+use App\Services\WalletService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Cartera extends Model
 {
@@ -24,33 +25,23 @@ class Cartera extends Model
         return $this->belongsTo(Usuario::class, 'usuario_id');
     }
 
+    public function movimientos(): HasMany
+    {
+        return $this->hasMany(WalletMovement::class, 'cartera_id');
+    }
+
     public function tieneSaldo(float $cantidad): bool
     {
         return $this->saldo >= $cantidad;
     }
 
-    public function apostar(float $cantidad): bool
+    public function apostar(float $cantidad, string $tipo = 'apuesta', array $metadatos = [], ?Model $referencia = null): bool
     {
-        $updated = DB::table('carteras')
-            ->where('id', $this->id)
-            ->where('saldo', '>=', $cantidad)
-            ->decrement('saldo', $cantidad);
-
-        if ($updated) {
-            $this->refresh();
-
-            return true;
-        }
-
-        return false;
+        return app(WalletService::class)->debit($this, $cantidad, $tipo, $metadatos, $referencia);
     }
 
-    public function ganar(float $cantidad): void
+    public function ganar(float $cantidad, string $tipo = 'premio', array $metadatos = [], ?Model $referencia = null): void
     {
-        DB::table('carteras')
-            ->where('id', $this->id)
-            ->increment('saldo', $cantidad);
-
-        $this->refresh();
+        app(WalletService::class)->credit($this, $cantidad, $tipo, $metadatos, $referencia);
     }
 }

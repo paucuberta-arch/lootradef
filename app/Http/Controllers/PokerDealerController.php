@@ -32,16 +32,18 @@ class PokerDealerController extends Controller
             $wallet = Cartera::where('usuario_id', $request->user()->id)->lockForUpdate()->firstOrFail();
             $ante = round((float) $validated['ante'], 2);
             abort_if($wallet->saldo < $ante, 422, 'Saldo insuficiente.');
-            $wallet->decrement('saldo', $ante);
             $deck = $this->deck();
             shuffle($deck);
 
-            return PokerDealerHand::create([
+            $hand = PokerDealerHand::create([
                 'usuario_id' => $request->user()->id, 'ante' => $ante, 'apostado' => $ante,
                 'mano_jugador' => [array_pop($deck), array_pop($deck)],
                 'mano_dealer' => [array_pop($deck), array_pop($deck)],
                 'comunitarias' => [], 'baraja' => $deck, 'fase' => 'preflop',
             ]);
+            abort_unless($wallet->apostar($ante, 'ante_poker_dealer', [], $hand), 422, 'Saldo insuficiente.');
+
+            return $hand;
         });
 
         return response()->json($this->data($hand), 201);
@@ -63,7 +65,7 @@ class PokerDealerController extends Controller
                 abort_unless($action === 'jugar', 422, 'Primero debes jugar la mano o retirarte.');
                 $wallet = Cartera::where('usuario_id', $hand->usuario_id)->lockForUpdate()->firstOrFail();
                 abort_if($wallet->saldo < $hand->ante, 422, 'Necesitas saldo para igualar el ante.');
-                $wallet->decrement('saldo', $hand->ante);
+                abort_unless($wallet->apostar($hand->ante, 'igualar_poker_dealer', ['fase' => 'preflop'], $hand), 422, 'Necesitas saldo para igualar el ante.');
                 $hand->apostado += $hand->ante;
                 $this->reveal($hand, 3, 'flop');
             } elseif ($hand->fase === 'flop') {
@@ -100,7 +102,8 @@ class PokerDealerController extends Controller
     private function finish(PokerDealerHand $hand, string $result, float $payout, string $phase): void
     {
         if ($payout > 0) {
-            Cartera::where('usuario_id', $hand->usuario_id)->lockForUpdate()->increment('saldo', $payout);
+            $wallet = Cartera::where('usuario_id', $hand->usuario_id)->lockForUpdate()->firstOrFail();
+            $wallet->ganar($payout, 'premio_poker_dealer', ['resultado' => $result], $hand);
         }
         $hand->update(['fase' => $phase, 'resultado' => $result, 'ganancia' => $payout, 'finalizada_at' => now()]);
         Partida::create([

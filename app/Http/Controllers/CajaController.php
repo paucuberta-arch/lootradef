@@ -39,9 +39,6 @@ class CajaController extends Controller
                 return null;
             }
 
-            $cartera->saldo -= $definition['precio'];
-            $cartera->save();
-
             $prize = $this->pickPrize($definition['premios']);
 
             $item = InventarioItem::create([
@@ -53,6 +50,7 @@ class CajaController extends Controller
                 'precio_caja' => $definition['precio'],
                 'valor_canje' => $prize['valor'],
             ]);
+            abort_unless($cartera->apostar($definition['precio'], 'apertura_caja', ['caja' => $caja], $item), 422, 'No tienes saldo suficiente para abrir esta caja.');
 
             ActivityLog::create([
                 'usuario_id' => $request->user()->id,
@@ -90,8 +88,7 @@ class CajaController extends Controller
             }
 
             $cartera = Cartera::where('usuario_id', $request->user()->id)->lockForUpdate()->firstOrFail();
-            $cartera->saldo += $lockedItem->valor_canje;
-            $cartera->save();
+            $cartera->ganar($lockedItem->valor_canje, 'canje_inventario', ['premio' => $lockedItem->nombre], $lockedItem);
 
             $lockedItem->update(['estado' => 'canjeado', 'canjeado_at' => now()]);
 

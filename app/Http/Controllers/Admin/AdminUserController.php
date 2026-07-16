@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Usuario;
+use App\Services\WalletService;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 
 class AdminUserController extends Controller
 {
+    public function __construct(private readonly WalletService $wallets) {}
+
     public function index(Request $request)
     {
         $query = Usuario::with('roles', 'cartera');
@@ -56,10 +59,13 @@ class AdminUserController extends Controller
         $usuario->syncRoles($datos['rol']);
 
         if ($request->filled('saldo')) {
-            $usuario->cartera()->updateOrCreate(
+            $wallet = $usuario->cartera()->firstOrCreate(
                 ['usuario_id' => $usuario->id],
-                ['saldo' => $datos['saldo']]
+                ['saldo' => 0]
             );
+            $this->wallets->setBalance($wallet, (float) $datos['saldo'], 'ajuste_administrador', [
+                'administrador_id' => $request->user()->id,
+            ]);
         }
 
         ActivityLog::log('usuario_editado', 'Usuario', $usuario->id, ['name' => $usuario->name]);

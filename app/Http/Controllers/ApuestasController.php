@@ -65,16 +65,16 @@ class ApuestasController extends Controller
                 'empate' => $match->cuota_empate,
                 'visitante' => $match->cuota_visitante,
             ];
-            $wallet->saldo = round($wallet->saldo - $validated['importe'], 2);
-            $wallet->save();
-
-            return ApuestaDeportiva::create([
+            $bet = ApuestaDeportiva::create([
                 'usuario_id' => $request->user()->id,
                 'partido_id' => $match->id,
                 'seleccion' => $validated['seleccion'],
                 'cuota' => $odds[$validated['seleccion']],
                 'importe' => $validated['importe'],
             ]);
+            abort_unless($wallet->apostar($validated['importe'], 'apuesta_deportiva', ['seleccion' => $validated['seleccion']], $bet), 422, 'No tienes saldo suficiente para realizar esta apuesta.');
+
+            return $bet;
         });
 
         ActivityLog::log('apuesta_deportiva_creada', 'ApuestaDeportiva', $bet->id, [
@@ -185,7 +185,8 @@ class ApuestasController extends Controller
                 $won = $bet->seleccion === $result;
                 $payout = $won ? round($bet->importe * $bet->cuota, 2) : 0;
                 if ($won) {
-                    Cartera::where('usuario_id', $bet->usuario_id)->increment('saldo', $payout);
+                    $wallet = Cartera::where('usuario_id', $bet->usuario_id)->lockForUpdate()->firstOrFail();
+                    $wallet->ganar($payout, 'premio_apuesta_deportiva', ['resultado' => $result], $bet);
                 }
                 $bet->update([
                     'estado' => $won ? 'ganada' : 'perdida',

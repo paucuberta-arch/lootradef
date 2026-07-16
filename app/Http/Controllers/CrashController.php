@@ -54,15 +54,16 @@ class CrashController extends Controller
 
             $bet = round((float) $validated['apuesta'], 2);
             abort_if($wallet->saldo < $bet, 422, 'Saldo insuficiente.');
-            $wallet->decrement('saldo', $bet);
-
-            return CrashRound::create([
+            $round = CrashRound::create([
                 'usuario_id' => $request->user()->id,
                 'apuesta' => $bet,
                 'crash_point' => $this->generateCrashPoint(),
                 'estado' => 'activa',
                 'iniciada_at' => now(),
             ]);
+            abort_unless($wallet->apostar($bet, 'apuesta_crash', [], $round), 422, 'Saldo insuficiente.');
+
+            return $round;
         });
 
         return response()->json($this->roundData($round) + ['ok' => true], 201);
@@ -102,7 +103,8 @@ class CrashController extends Controller
             } else {
                 abort_if($multiplier < 1.01, 422, 'Es demasiado pronto para cobrar.');
                 $payout = round($round->apuesta * $multiplier, 2);
-                Cartera::where('usuario_id', $round->usuario_id)->lockForUpdate()->increment('saldo', $payout);
+                $wallet = Cartera::where('usuario_id', $round->usuario_id)->lockForUpdate()->firstOrFail();
+                $wallet->ganar($payout, 'premio_crash', [], $round);
                 $this->finish($round, 'cobrado', $payout, $multiplier);
             }
 
