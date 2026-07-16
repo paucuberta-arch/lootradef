@@ -7,9 +7,9 @@
     {{-- Roles --}}
     <div class="lg:col-span-2 space-y-4">
         @foreach($roles as $role)
-            <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="flex items-center gap-3">
+            <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-4 sm:p-5">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                    <div class="flex flex-wrap items-center gap-3">
                         <span class="tone-badge tone-{{ $role->color }} px-3 py-1 rounded-lg text-xs font-bold">{{ $role->label }}</span>
                         <span class="text-xs text-slate-500">{{ $role->users_count }} usuarios</span>
                     </div>
@@ -23,15 +23,15 @@
 
                 <form method="POST" action="{{ route('admin.roles.update', $role) }}" class="space-y-3">
                     @csrf @method('PUT')
-                    <div class="flex gap-3">
+                    <div class="flex flex-col sm:flex-row gap-3">
                         <input type="text" name="label" value="{{ $role->label }}" placeholder="Label"
-                               class="flex-1 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-brand-500">
-                        <select name="color" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-brand-500">
+                               class="w-full sm:flex-1 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-brand-500">
+                        <select name="color" class="w-full sm:w-auto px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-brand-500">
                             @foreach(['red','purple','blue','amber','emerald','slate','pink','cyan'] as $c)
                                 <option value="{{ $c }}" {{ $role->color === $c ? 'selected' : '' }} class="bg-[#14142a]">{{ ucfirst($c) }}</option>
                             @endforeach
                         </select>
-                        <button class="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-black text-sm font-bold transition">Guardar</button>
+                        <button class="w-full sm:w-auto px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-black text-sm font-bold transition">Guardar</button>
                     </div>
 
                     <div class="space-y-2">

@@ -24,19 +24,19 @@
 
         <div class="flex-1 min-w-0">
 
-            <div class="flex items-center justify-between mb-6">
-                <div>
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+                <div class="min-w-0">
                     <h1 class="game-heading font-extrabold">Crash Rocket</h1>
                     <p class="text-sm text-slate-500 mt-1">Multiplicador creciente — cobra antes de que explote</p>
                 </div>
-                <div class="px-4 py-2 rounded-xl bg-white/5 border border-white/10">
+                <div class="shrink-0 px-3 sm:px-4 py-2 rounded-xl bg-white/5 border border-white/10 whitespace-nowrap">
                     <span class="text-xs text-slate-500">Saldo</span>
                     <span class="ml-2 text-sm font-bold text-brand-400" x-text="'€' + saldo.toFixed(2)"></span>
                 </div>
             </div>
 
             <div class="game-stage rounded-[1.75rem] bg-white/[0.03] border border-white/5 overflow-hidden mb-6">
-                <div class="relative h-64 sm:h-80 flex items-center justify-center"
+                <div class="relative h-56 sm:h-80 flex items-center justify-center"
                      :class="fase === 'crashed' ? 'crash-shake' : ''">
 
                     <div class="absolute inset-0 p-4">
@@ -58,28 +58,28 @@
                     <div class="relative z-10 text-center">
                         <template x-if="fase === 'esperando'">
                             <div>
-                                <div class="text-5xl sm:text-6xl font-black text-slate-600">1.00x</div>
+                                <div class="text-4xl sm:text-6xl font-black text-slate-600">1.00x</div>
                                 <p class="text-sm text-slate-600 mt-2">Esperando siguiente ronda...</p>
                             </div>
                         </template>
                         <template x-if="fase === 'subiendo'">
                             <div class="pulse-glow rounded-2xl px-8 py-4">
-                                <div class="text-5xl sm:text-6xl font-black text-brand-400" x-text="multiplier.toFixed(2) + 'x'"></div>
+                                <div class="text-4xl sm:text-6xl font-black text-brand-400" x-text="multiplier.toFixed(2) + 'x'"></div>
                                 <p class="text-sm text-emerald-400 mt-2">Subiendo...</p>
                             </div>
                         </template>
                         <template x-if="fase === 'preparando'">
-                            <div><div class="text-6xl font-black text-cyan-300" x-text="countdown"></div><p class="mt-2 text-sm text-slate-400">Preparando lanzamiento…</p></div>
+                            <div><div class="text-5xl sm:text-6xl font-black text-cyan-300" x-text="countdown"></div><p class="mt-2 text-sm text-slate-400">Preparando lanzamiento…</p></div>
                         </template>
                         <template x-if="fase === 'crashed'">
                             <div>
-                                <div class="text-5xl sm:text-6xl font-black text-red-500" x-text="crashAt.toFixed(2) + 'x'"></div>
+                                <div class="text-4xl sm:text-6xl font-black text-red-500" x-text="crashAt.toFixed(2) + 'x'"></div>
                                 <p class="text-sm text-red-400 mt-2">Explotado!</p>
                             </div>
                         </template>
                         <template x-if="fase === 'cobrado'">
                             <div>
-                                <div class="text-5xl sm:text-6xl font-black text-emerald-400" x-text="cashoutAt.toFixed(2) + 'x'"></div>
+                                <div class="text-4xl sm:text-6xl font-black text-emerald-400" x-text="cashoutAt.toFixed(2) + 'x'"></div>
                                 <p class="text-sm text-emerald-400 mt-2">Cobrado!</p>
                                 <p class="text-lg text-emerald-300 font-bold mt-1" x-text="'+€' + ganancia.toFixed(2)"></p>
                             </div>

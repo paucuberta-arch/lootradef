@@ -16,11 +16,11 @@
     <section class="relative overflow-hidden border-b border-white/10">
         <img src="https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=1800&h=700&fit=crop" class="absolute inset-0 h-full w-full object-cover opacity-30" alt="Estadio de fútbol">
         <div class="absolute inset-0 bg-gradient-to-r from-[#07152d] via-[#07152d]/90 to-fuchsia-950/60"></div>
-        <div class="relative mx-auto max-w-[1450px] px-5 py-14 sm:py-20">
+        <div class="relative mx-auto max-w-[1450px] px-4 py-12 sm:px-5 sm:py-20">
             <div class="mb-5 inline-flex items-center gap-3 rounded-full border border-rose-400/30 bg-rose-500/10 px-4 py-2 text-xs font-black uppercase tracking-[.22em] text-rose-300">
                 <span class="live-dot h-2.5 w-2.5 rounded-full bg-rose-400"></span> Simulación en directo
             </div>
-            <h1 class="font-display text-4xl font-bold tracking-tight sm:text-6xl">El partido cambia.<br><span class="bg-gradient-to-r from-cyan-300 via-emerald-300 to-amber-300 bg-clip-text text-transparent">Tu apuesta también se vive.</span></h1>
+            <h1 class="font-display text-3xl font-bold tracking-tight min-[420px]:text-4xl sm:text-6xl">El partido cambia.<br><span class="bg-gradient-to-r from-cyan-300 via-emerald-300 to-amber-300 bg-clip-text text-transparent">Tu apuesta también se vive.</span></h1>
             <p class="mt-5 max-w-2xl text-lg text-slate-300">Sigue cada minuto, gol y ocasión. Los encuentros avanzan en tiempo real acelerado y los premios se ingresan automáticamente al finalizar.</p>
             <div class="mt-8 flex flex-wrap gap-3">
                 <div class="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 backdrop-blur"><b class="text-2xl text-rose-300" x-text="liveCount"></b><span class="ml-2 text-sm text-slate-400">en vivo</span></div>
@@ -30,7 +30,7 @@
         </div>
     </section>
 
-    <div class="mx-auto grid max-w-[1450px] gap-7 px-5 py-9 lg:grid-cols-[1fr_380px]">
+    <div class="mx-auto grid max-w-[1450px] gap-6 px-4 py-7 sm:px-5 sm:py-9 lg:grid-cols-[minmax(0,1fr)_minmax(300px,380px)] lg:gap-7">
         <main>
             <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
                 <div class="flex rounded-xl border border-white/10 bg-white/5 p-1">
@@ -45,15 +45,15 @@
                 <template x-for="match in filteredMatches" :key="match.id">
                     <article class="group relative overflow-hidden rounded-3xl border bg-[#0d1427]/95 shadow-2xl shadow-black/20 transition hover:border-cyan-400/30" :class="match.status==='en_vivo'?'border-rose-400/25':'border-white/10'">
                         <div class="absolute inset-x-0 top-0 h-1 bg-white/5"><div class="h-full bg-gradient-to-r from-cyan-400 to-fuchsia-500 transition-all duration-1000" :style="`width:${match.status==='programado'?0:match.minute/90*100}%`"></div></div>
-                        <div class="p-5 sm:p-7">
+                        <div class="p-4 sm:p-7">
                             <div class="mb-6 flex items-center justify-between gap-3">
                                 <div><p class="text-xs font-black uppercase tracking-[.18em] text-cyan-300" x-text="match.league"></p><p class="mt-1 text-xs text-slate-500" x-text="match.status==='programado'?'Comienza '+match.starts_label:'Fútbol · 1X2'"></p></div>
                                 <span class="rounded-full px-3 py-1.5 text-xs font-black uppercase" :class="statusClass(match.status)" x-text="statusLabel(match)"></span>
                             </div>
-                            <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-8">
-                                <div class="text-center"><div class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-700 font-display text-lg font-black shadow-lg shadow-cyan-500/20" x-text="match.home_short"></div><h2 class="mt-3 font-display text-sm font-bold sm:text-lg" x-text="match.home"></h2></div>
-                                <div class="text-center"><div class="font-display text-3xl font-black sm:text-5xl" x-text="match.status==='programado'?'VS':match.home_score+' : '+match.away_score"></div><p class="mt-2 text-xs font-bold text-slate-500" x-text="match.status==='en_vivo'?match.minute+' / 90 min':(match.status==='finalizado'?'Resultado final':'Próximamente')"></p></div>
-                                <div class="text-center"><div class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-fuchsia-400 to-rose-700 font-display text-lg font-black shadow-lg shadow-fuchsia-500/20" x-text="match.away_short"></div><h2 class="mt-3 font-display text-sm font-bold sm:text-lg" x-text="match.away"></h2></div>
+                            <div class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-8">
+                                <div class="min-w-0 text-center"><div class="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-700 font-display text-base font-black shadow-lg shadow-cyan-500/20 sm:h-14 sm:w-14 sm:rounded-2xl sm:text-lg" x-text="match.home_short"></div><h2 class="mt-3 break-words font-display text-xs font-bold sm:text-lg" x-text="match.home"></h2></div>
+                                <div class="text-center"><div class="font-display text-2xl font-black min-[420px]:text-3xl sm:text-5xl" x-text="match.status==='programado'?'VS':match.home_score+' : '+match.away_score"></div><p class="mt-2 text-[10px] font-bold text-slate-500 sm:text-xs" x-text="match.status==='en_vivo'?match.minute+' / 90 min':(match.status==='finalizado'?'Resultado final':'Próximamente')"></p></div>
+                                <div class="min-w-0 text-center"><div class="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br from-fuchsia-400 to-rose-700 font-display text-base font-black shadow-lg shadow-fuchsia-500/20 sm:h-14 sm:w-14 sm:rounded-2xl sm:text-lg" x-text="match.away_short"></div><h2 class="mt-3 break-words font-display text-xs font-bold sm:text-lg" x-text="match.away"></h2></div>
                             </div>
 
                             <div class="mt-7 grid grid-cols-3 gap-2 sm:gap-3">

@@ -26,7 +26,7 @@
 
 {{-- KPI Cards — visibles segun permisos --}}
 @if($user->hasAnyRole(['super_admin', 'admin']))
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+<div class="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
     @php
         $cards = [
             ['label' => 'Usuarios totales', 'value' => number_format($stats['usuarios']), 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'color' => 'blue'],
@@ -53,7 +53,7 @@
 
 {{-- KPI Financieros — solo super_admin --}}
 @if($user->hasPermissionTo('stats.revenue'))
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+<div class="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
     @php
         $financeCards = [
             ['label' => "Volumen apostado ({$days}d)", 'value' => '€' . number_format($stats['apostado_periodo'], 2), 'trend' => $stats['tendencia_apuestas'], 'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'color' => 'purple'],
@@ -82,7 +82,7 @@
     @endforeach
 </div>
 
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+<div class="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
     @foreach([
         ['label' => 'Jugadores activos', 'value' => number_format($stats['jugadores_periodo']), 'meta' => ($stats['tendencia_jugadores'] >= 0 ? '+' : '') . number_format($stats['tendencia_jugadores'], 1) . '%'],
         ['label' => 'Partidas jugadas', 'value' => number_format($stats['partidas_periodo']), 'meta' => number_format($stats['partidas_periodo'] / max($days, 1), 1) . ' por día'],
@@ -106,7 +106,7 @@
             <div><p class="text-[10px] font-black uppercase tracking-[.2em] text-cyan-400">Sportsbook</p><h3 class="text-lg font-extrabold text-white mt-1">Apuestas deportivas</h3></div>
             <span class="rounded-xl bg-cyan-400/10 px-3 py-2 text-sm font-black text-cyan-300">{{ number_format($stats['apuestas_deportivas']) }}</span>
         </div>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
             @foreach([
                 ['Volumen', '€'.number_format($stats['volumen_deportivo'], 2), 'text-purple-300'],
                 ['Premios pagados', '€'.number_format($stats['premios_deportivos'], 2), 'text-emerald-300'],
@@ -122,7 +122,7 @@
             <div><p class="text-[10px] font-black uppercase tracking-[.2em] text-fuchsia-400">Loot boxes</p><h3 class="text-lg font-extrabold text-white mt-1">Rendimiento de cajas</h3></div>
             <span class="rounded-xl bg-fuchsia-400/10 px-3 py-2 text-sm font-black text-fuchsia-300">{{ number_format($stats['cajas_abiertas']) }}</span>
         </div>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
             @foreach([
                 ['Ingresos', '€'.number_format($stats['ingresos_cajas'], 2), 'text-purple-300'],
                 ['Canjeado', '€'.number_format($stats['pagado_canje'], 2).' · '.$stats['cajas_canjeadas'], 'text-emerald-300'],
@@ -163,9 +163,9 @@
         <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Partidas por juego</h3>
         <div class="space-y-3">
             @forelse($partidasPorJuego as $pj)
-                <div class="flex items-center justify-between">
-                    <span class="text-sm text-slate-300 capitalize">{{ $pj->juego }}</span>
-                    <div class="flex items-center gap-4 text-xs">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span class="min-w-0 break-words text-sm text-slate-300 capitalize">{{ $pj->juego }}</span>
+                    <div class="flex flex-wrap items-center gap-2 sm:gap-4 text-xs">
                         <span class="text-slate-500">{{ $pj->total }} partidas</span>
                         <span class="text-emerald-400 font-semibold">€{{ number_format($pj->apuestas, 2) }}</span>
                     </div>

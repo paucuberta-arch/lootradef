@@ -43,12 +43,15 @@
 html { background: var(--casino-bg); scroll-behavior: smooth; }
 body {
     min-width: 320px;
+    overflow-x: clip;
     background:
         radial-gradient(circle at 15% 5%, rgba(155, 135, 245, .14), transparent 30rem),
         radial-gradient(circle at 90% 25%, rgba(54, 197, 216, .10), transparent 34rem),
         var(--casino-bg);
     color: var(--casino-text);
 }
+main, .game-page, input, select, textarea { min-width: 0; }
+input, select, textarea { max-width: 100%; }
 ::selection { background: rgba(214, 168, 75, .38); color: white; }
 .font-display, h1, h2, h3 { font-family: var(--font-display); }
 button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
@@ -120,4 +123,9 @@ img, svg { max-width: 100%; }
 }
 
 @media (max-width: 640px) { .featured-card { border-radius: 16px; } .game-card { border-radius: 14px; } }
+@media (max-width: 639px) {
+    .game-stage { border-radius: 1.25rem !important; }
+    .game-heading { overflow-wrap: anywhere; }
+    .ui-card { border-radius: 1rem; }
+}
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *,*::before,*::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; } }

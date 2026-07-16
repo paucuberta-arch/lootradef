@@ -11,6 +11,11 @@
     .casino-table::before{content:"";position:absolute;inset:12%;border:2px solid #f8e7a622;border-radius:45%}
     .table-vip{--felt-light:#174c3b;--felt-dark:#031d16;--rail:#3a1609}.table-classic{--felt-light:#17456d;--felt-dark:#061426;--rail:#6b3f16}
     .card-corner{position:absolute;left:7px;top:5px;display:flex;flex-direction:column;align-items:center;line-height:.9}.card-center{font-size:2rem;filter:drop-shadow(0 2px 1px #0002)}
+    @media (max-width:639px) {
+        .casino-table{border-width:6px;border-bottom-width:10px;border-radius:1.5rem;box-shadow:inset 0 0 45px #0009,0 22px 45px #0008}
+        .casino-table::before{inset:7%}
+        .card-center{font-size:1.5rem}
+    }
 </style>
 @endsection
 
@@ -23,13 +28,13 @@
         <div class="flex-1 min-w-0">
 
             {{-- Header --}}
-            <div class="flex items-center justify-between mb-6">
-                <div>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div class="min-w-0">
                     <h1 class="game-heading font-extrabold">{{ $gameName }}</h1>
                     <p class="text-sm text-slate-500 mt-1">21 puntos — vence al dealer</p>
                 </div>
-                <div class="flex items-center gap-2"><a href="{{ route('games.blackjack.vip') }}" class="rounded-xl border px-3 py-2 text-xs font-bold {{ $variant === 'vip' ? 'border-amber-400/40 bg-amber-400/10 text-amber-300' : 'border-white/10 text-slate-400' }}">VIP</a><a href="{{ route('games.blackjack.classic') }}" class="rounded-xl border px-3 py-2 text-xs font-bold {{ $variant === 'classic' ? 'border-cyan-400/40 bg-cyan-400/10 text-cyan-300' : 'border-white/10 text-slate-400' }}">Classic</a>
-                <div class="px-4 py-2 rounded-xl bg-white/5 border border-white/10">
+                <div class="flex flex-wrap items-center gap-2"><a href="{{ route('games.blackjack.vip') }}" class="rounded-xl border px-3 py-2 text-xs font-bold {{ $variant === 'vip' ? 'border-amber-400/40 bg-amber-400/10 text-amber-300' : 'border-white/10 text-slate-400' }}">VIP</a><a href="{{ route('games.blackjack.classic') }}" class="rounded-xl border px-3 py-2 text-xs font-bold {{ $variant === 'classic' ? 'border-cyan-400/40 bg-cyan-400/10 text-cyan-300' : 'border-white/10 text-slate-400' }}">Classic</a>
+                <div class="px-3 sm:px-4 py-2 rounded-xl bg-white/5 border border-white/10 whitespace-nowrap">
                     <span class="text-xs text-slate-500">Saldo</span>
                     <span class="ml-2 text-sm font-bold text-brand-400" x-text="'€' + saldo.toFixed(2)"></span>
                 </div>
@@ -37,7 +42,7 @@
             </div>
 
             {{-- Mesa --}}
-            <div class="casino-table {{ $variant === 'vip' ? 'table-vip' : 'table-classic' }} game-stage rounded-[3rem] p-6 sm:p-8 mb-6 relative overflow-hidden min-h-[520px]">
+            <div class="casino-table {{ $variant === 'vip' ? 'table-vip' : 'table-classic' }} game-stage rounded-[3rem] p-3 sm:p-8 mb-6 relative overflow-hidden min-h-[440px] sm:min-h-[520px]">
                 {{-- Felt texture --}}
                 <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle, #fff 1px, transparent 1px); background-size: 20px 20px;"></div>
 
@@ -112,15 +117,15 @@
             {{-- Controles --}}
             <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
                 <template x-if="fase === ''">
-                    <div class="flex items-center gap-4">
+                    <div class="flex flex-col min-[420px]:flex-row min-[420px]:items-center gap-4">
                         <div class="flex-1">
                             <label class="text-xs text-slate-500 mb-1 block">Apuesta (€)</label>
                             <input type="number" x-model.number="apuesta" min="{{ $variant === 'vip' ? 5 : 1 }}" max="{{ $variant === 'vip' ? 5000 : 2000 }}" step="1"
                                    class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-brand-500 transition">
                         </div>
-                        <div class="mt-5">
+                        <div class="min-[420px]:mt-5">
                             <button @click="deal()" :disabled="busy || apuesta > saldo"
-                                    class="px-8 py-3 rounded-xl bg-brand-500 hover:bg-brand-400 text-black font-bold transition shadow-lg shadow-brand-500/20 disabled:opacity-50">
+                                    class="w-full min-[420px]:w-auto px-8 py-3 rounded-xl bg-brand-500 hover:bg-brand-400 text-black font-bold transition shadow-lg shadow-brand-500/20 disabled:opacity-50">
                                 Repartir
                             </button>
                         </div>

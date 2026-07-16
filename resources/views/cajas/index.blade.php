@@ -36,13 +36,13 @@
 
 @section('contenido')
 <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10" x-data="caseCenter()" x-init="init()">
-    <section class="case-hero relative min-h-[390px] rounded-[2rem] overflow-hidden border border-white/10 mb-10 flex items-center">
+    <section class="case-hero relative mb-8 flex min-h-[340px] items-center overflow-hidden rounded-3xl border border-white/10 sm:mb-10 sm:min-h-[390px] sm:rounded-[2rem]">
         <img src="https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?auto=format&fit=crop&w=1800&q=85" alt="Colección de premios" class="absolute inset-0 w-full h-full object-cover opacity-20">
         <div class="absolute inset-0 bg-gradient-to-r from-[#090719] via-[#0b0920]/85 to-transparent"></div>
-        <div class="relative z-10 p-8 sm:p-12 lg:p-16 max-w-3xl">
+        <div class="relative z-10 max-w-3xl p-6 sm:p-12 lg:p-16">
             <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-fuchsia-400/10 border border-fuchsia-300/20 text-fuchsia-200 text-xs font-bold uppercase tracking-[.18em] mb-5"><i class="w-2 h-2 rounded-full bg-cyan-300 animate-pulse"></i> Lootra Drops</span>
-            <h1 class="font-display text-4xl sm:text-6xl font-bold tracking-[-.06em] leading-[.95] mb-5">Abre. Descubre.<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 via-brand-300 to-cyan-300">Hazlo tuyo.</span></h1>
-            <p class="text-slate-300 text-lg max-w-xl leading-relaxed">Cada apertura genera un premio real en el servidor. Guárdalo en tu inventario o conviértelo en saldo cuando quieras.</p>
+            <h1 class="font-display text-3xl min-[420px]:text-4xl sm:text-6xl font-bold tracking-[-.06em] leading-[.95] mb-5">Abre. Descubre.<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 via-brand-300 to-cyan-300">Hazlo tuyo.</span></h1>
+            <p class="max-w-xl text-base leading-relaxed text-slate-300 sm:text-lg">Cada apertura genera un premio real en el servidor. Guárdalo en tu inventario o conviértelo en saldo cuando quieras.</p>
             <div class="flex flex-wrap gap-3 mt-7">
                 <button @click="document.querySelector('#cajas').scrollIntoView({behavior:'smooth'})" class="cta-shine px-6 py-3 rounded-xl bg-gradient-to-r from-fuchsia-500 to-brand-400 text-black font-extrabold">Ver cajas</button>
                 @auth
@@ -55,7 +55,7 @@
     <div id="cajas" class="scroll-mt-24">
         <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
             <div><p class="text-xs font-bold uppercase tracking-[.2em] text-fuchsia-400">Colección activa</p><h2 class="text-3xl font-bold mt-1">Elige tu drop</h2></div>
-            <div class="flex gap-2">
+            <div class="flex flex-wrap gap-2">
                 @foreach(['all' => 'Todas', 'low' => 'Starter', 'mid' => 'Premium', 'high' => 'Exclusivas'] as $key => $label)
                     <button @click="filter='{{ $key }}'" :class="filter==='{{ $key }}' ? 'bg-white text-slate-950' : 'bg-white/5 text-slate-400 border-white/10'" class="px-4 py-2 rounded-xl border border-transparent text-xs font-bold transition">{{ $label }}</button>
                 @endforeach
@@ -95,7 +95,7 @@
 
     @auth
     <section id="inventario" class="scroll-mt-24 mb-16">
-        <div class="flex items-end justify-between mb-6">
+        <div class="mb-6 flex flex-col items-start justify-between gap-3 min-[480px]:flex-row min-[480px]:items-end">
             <div><p class="text-xs font-bold uppercase tracking-[.2em] text-cyan-400">Tu colección</p><h2 class="text-3xl font-bold mt-1">Inventario</h2></div>
             <div class="text-right"><p class="text-xs text-slate-500">Valor canjeable</p><p class="font-display text-xl font-bold text-emerald-400" x-text="money(inventoryValue)"></p></div>
         </div>
@@ -113,7 +113,7 @@
 
     <div x-show="selected" x-cloak class="fixed inset-0 z-[200] grid place-items-center p-4">
         <div class="absolute inset-0 bg-[#03030a]/90 backdrop-blur-xl" @click="!opening && closeModal()"></div>
-        <div class="relative w-full max-w-lg rounded-[2rem] bg-gradient-to-b from-[#191132] to-[#090914] border border-white/15 p-7 sm:p-9 text-center overflow-hidden shadow-2xl shadow-fuchsia-950/60">
+        <div class="relative max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-3xl bg-gradient-to-b from-[#191132] to-[#090914] border border-white/15 p-5 sm:rounded-[2rem] sm:p-9 text-center shadow-2xl shadow-fuchsia-950/60">
             <button x-show="!opening" @click="closeModal()" class="absolute right-5 top-5 z-20 w-9 h-9 rounded-full bg-white/5 text-slate-400 hover:text-white">×</button>
             <template x-if="!prize">
                 <div>
@@ -122,13 +122,13 @@
                     <h2 class="text-2xl font-bold" x-text="selected?.nombre"></h2>
                     <p class="text-slate-500 text-sm mt-2" x-text="opening ? 'Generando y guardando tu premio...' : 'El premio se añadirá automáticamente a tu inventario.'"></p>
                     <p x-show="error" class="mt-4 text-sm text-red-400" x-text="error"></p>
-                    <button x-show="!opening" @click="openSelected()" class="cta-shine mt-6 px-8 py-3 rounded-xl bg-gradient-to-r from-fuchsia-500 to-brand-400 text-black font-extrabold">Confirmar apertura · <span x-text="money(selected?.precio || 0)"></span></button>
+                    <button x-show="!opening" @click="openSelected()" class="cta-shine mt-6 w-full px-5 py-3 rounded-xl bg-gradient-to-r from-fuchsia-500 to-brand-400 text-black font-extrabold sm:w-auto sm:px-8">Confirmar apertura · <span x-text="money(selected?.precio || 0)"></span></button>
                 </div>
             </template>
             <template x-if="prize">
                 <div class="prize-reveal">
                     <p class="text-xs uppercase tracking-[.25em] text-fuchsia-300 font-bold mb-4">Nuevo premio</p>
-                    <div class="relative w-56 h-56 mx-auto rounded-3xl overflow-hidden border-2" :class="'rarity-'+prize.rareza"><img :src="prize.imagen" :alt="prize.nombre" class="w-full h-full object-cover"><div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div></div>
+                    <div class="relative mx-auto aspect-square w-44 overflow-hidden rounded-3xl border-2 sm:w-56" :class="'rarity-'+prize.rareza"><img :src="prize.imagen" :alt="prize.nombre" class="w-full h-full object-cover"><div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div></div>
                     <span class="inline-block mt-5 px-3 py-1 rounded-full border text-[10px] uppercase font-bold" :class="'rarity-'+prize.rareza" x-text="rarityName(prize.rareza)"></span>
                     <h2 class="text-2xl font-bold mt-3" x-text="prize.nombre"></h2>
                     <p class="text-sm text-slate-400 mt-2">Valor de canje: <strong class="text-emerald-400" x-text="money(prize.valor_canje)"></strong></p>
@@ -139,7 +139,7 @@
     </div>
 
     <div x-show="confirming" x-cloak class="fixed inset-0 z-[220] grid place-items-center p-4"><div class="absolute inset-0 bg-black/80" @click="confirming=null"></div><div class="relative max-w-sm rounded-2xl border border-white/15 bg-[#111827] p-6 text-center"><h2 class="text-xl font-bold">Confirmar canje</h2><p class="mt-3 text-sm text-slate-400">Convertirás <b class="text-white" x-text="confirming?.nombre"></b> en <b class="text-emerald-300" x-text="money(confirming?.valor_canje)"></b>. No se puede deshacer.</p><div class="mt-6 grid grid-cols-2 gap-3"><button @click="confirming=null" class="rounded-xl bg-white/5 py-3">Cancelar</button><button @click="redeem(confirming)" class="rounded-xl bg-emerald-400 py-3 font-bold text-slate-950">Confirmar</button></div></div></div>
-    <div x-show="toast" x-transition class="fixed right-5 bottom-5 z-[250] max-w-sm px-5 py-4 rounded-xl bg-emerald-950/95 border border-emerald-400/30 text-emerald-200 shadow-2xl" x-text="toast"></div>
+    <div x-show="toast" x-transition class="fixed inset-x-4 bottom-4 z-[250] max-w-sm px-5 py-4 rounded-xl bg-emerald-950/95 border border-emerald-400/30 text-emerald-200 shadow-2xl sm:inset-x-auto sm:bottom-5 sm:right-5" x-text="toast"></div>
 </div>
 
 @push('scripts')

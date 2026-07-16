@@ -20,7 +20,7 @@
     <textarea id="review-content-{{ $slug }}" x-model="contenido" rows="3" placeholder="Escribe tu opinión..."
               class="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-slate-600 outline-none focus:border-brand-500 transition mb-3 resize-none"></textarea>
 
-    <div class="flex items-center gap-3">
+    <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
         <button @click="submit()" :disabled="!contenido || submitting"
                 class="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-400 text-black text-sm font-bold transition disabled:opacity-50">
             <span x-text="submitting ? 'Enviando...' : 'Publicar review'"></span>
@@ -39,7 +39,7 @@
                         {{ strtoupper(substr($rev->usuario->name ?? '?', 0, 1)) }}
                     </div>
                     <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2 mb-1">
+                        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mb-1">
                             <span class="text-sm font-semibold text-white">{{ $rev->usuario->name ?? 'Anonimo' }}</span>
                             <div class="flex gap-0.5">
                                 @for($i = 1; $i <= 5; $i++)

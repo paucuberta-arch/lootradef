@@ -6,7 +6,7 @@
     <form method="POST" action="{{ route('admin.users.update', $usuario) }}" class="space-y-6">
         @csrf @method('PUT')
 
-        <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-6 space-y-5">
+        <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-4 sm:p-6 space-y-5">
             <h3 class="text-sm font-bold text-white uppercase tracking-wider">Datos del usuario</h3>
 
             <div>
@@ -37,9 +37,9 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-3">
-            <button class="px-6 py-3 rounded-xl bg-brand-500 hover:bg-brand-400 text-black font-bold transition">Guardar</button>
-            <a href="{{ route('admin.users') }}" class="px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-sm text-slate-400 hover:text-white transition">Cancelar</a>
+        <div class="flex flex-col min-[420px]:flex-row min-[420px]:items-center gap-3">
+            <button class="w-full min-[420px]:w-auto px-6 py-3 rounded-xl bg-brand-500 hover:bg-brand-400 text-black font-bold transition">Guardar</button>
+            <a href="{{ route('admin.users') }}" class="w-full min-[420px]:w-auto px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-center text-sm text-slate-400 hover:text-white transition">Cancelar</a>
         </div>
     </form>
 </div>

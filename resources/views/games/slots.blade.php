@@ -11,7 +11,7 @@
         background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.25), rgba(3,7,18,.94));
         box-shadow: inset 0 0 30px rgba(0,0,0,.85), inset 0 2px 2px rgba(255,255,255,.35), 0 12px 30px rgba(0,0,0,.45);
     }
-    .reel-strip { position:absolute; inset:8%; transition:filter .2s ease; }
+    .reel-strip { position:absolute; inset:7%; display:grid; place-items:center; transition:filter .2s ease; }
     .reel-strip.spinning { animation:reel-scroll .13s linear infinite alternate; filter:blur(5px) saturate(1.35) brightness(1.25); }
     .reel-strip.stopping { animation:reel-lock .58s cubic-bezier(.16,1,.3,1); }
     @keyframes win-flash { 0%,100% { box-shadow: 0 0 0 rgba(245,158,11,0); } 50% { box-shadow: 0 0 25px rgba(245,158,11,0.5); } }
@@ -31,9 +31,11 @@
     .slot-cabinet { background:linear-gradient(145deg,rgba(29,11,55,.94),rgba(5,8,25,.98));box-shadow:inset 0 0 55px rgba(217,70,239,.18),0 35px 90px rgba(0,0,0,.65); }
     .slot-cabinet::before { content:""; position:absolute; inset:0; background:var(--game-art) center/cover; opacity:.22; mix-blend-mode:screen;filter:saturate(1.2); }
     .slot-cabinet::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 25%,rgba(255,255,255,.13),transparent 38%);pointer-events:none}
-    .slot-symbol-art{width:100%;height:100%;border-radius:14px;background-repeat:no-repeat;filter:drop-shadow(0 10px 8px rgba(0,0,0,.48));transform:translateZ(0)}
+    .slot-symbol-art{display:block;width:100%;aspect-ratio:1;border-radius:14px;background-repeat:no-repeat;background-color:rgba(2,6,23,.2);filter:drop-shadow(0 10px 8px rgba(0,0,0,.48));transform:translateZ(0)}
+    .slot-symbol-frame{display:grid;aspect-ratio:1;place-items:center;overflow:hidden;border:1px solid rgba(255,255,255,.08);background:radial-gradient(circle,rgba(255,255,255,.08),rgba(2,6,23,.28));}
     .reel-shine { position:absolute; inset:0; background:linear-gradient(110deg,transparent 25%,rgba(255,255,255,.45) 48%,transparent 70%); transform:translateX(-100%); pointer-events:none; z-index:3; }
     .reel-strip.spinning ~ .reel-shine { animation:shimmer .7s linear infinite; }
+    @media (max-width:639px){.slot-cabinet{border-radius:1.15rem}.slot-symbol-art{border-radius:10px}.reel-strip{inset:5%}}
 </style>
 @endsection
 
@@ -46,22 +48,22 @@
         <div class="flex-1 min-w-0">
 
             {{-- Header --}}
-            <div class="flex items-center justify-between mb-6">
-                <div>
+            <div class="mb-6 flex flex-wrap items-start justify-between gap-3">
+                <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-3"><span class="w-11 h-11 rounded-xl bg-gradient-to-br from-fuchsia-500 to-cyan-400 grid place-items-center shadow-lg shadow-fuchsia-500/20"><svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M13 2 4 14h7l-1 8 10-13h-7V2Z" stroke-width="2" stroke-linejoin="round"/></svg></span><h1 class="game-heading font-extrabold">{{ $gameName }}</h1></div>
                     <p class="text-sm text-slate-500 mt-1">{{ $gameTagline }}</p>
                 </div>
-                <div class="balance-chip px-4 py-2 rounded-xl">
+                <div class="balance-chip shrink-0 px-3 py-2 sm:px-4 rounded-xl">
                     <span class="text-xs text-slate-500">Saldo</span>
                     <span class="ml-2 text-sm font-bold text-brand-400" x-text="'€' + saldo.toFixed(2)"></span>
                 </div>
             </div>
 
             {{-- Maquina tragaperras --}}
-            <div class="game-stage rounded-[1.75rem] bg-white/[0.03] border border-white/5 p-6 sm:p-8 mb-6 overflow-hidden">
+            <div class="game-stage rounded-[1.75rem] bg-white/[0.03] border border-white/5 p-3 min-[420px]:p-5 sm:p-8 mb-6 overflow-hidden">
                 <div class="max-w-md mx-auto">
                     {{-- Carretes --}}
-                    <div class="slot-cabinet rounded-[1.6rem] border-2 border-fuchsia-400/20 p-5 mb-6 relative overflow-hidden"
+                    <div class="slot-cabinet rounded-[1.6rem] border-2 border-fuchsia-400/20 p-3 min-[420px]:p-5 mb-6 relative overflow-hidden"
                          style="--game-art:url('{{ $gameHero }}')"
                          :class="ganancia > 0 && !spinning ? 'win-flash' : ''">
                         <div class="grid grid-cols-3 gap-3">
@@ -104,26 +106,26 @@
                     <p x-show="error" class="text-red-400 text-sm text-center mb-4" x-text="error"></p>
 
                     {{-- Controles --}}
-                    <div class="flex items-center gap-4">
+                    <div class="flex flex-col gap-3 min-[420px]:flex-row min-[420px]:items-end">
                         <div class="flex-1">
                             <label class="text-xs text-slate-500 mb-1 block">Apuesta (€)</label>
                             <input type="number" x-model.number="apuesta" min="0.10" max="500" step="0.10"
                                    :disabled="spinning"
                                    class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-brand-500 transition disabled:opacity-50">
                         </div>
-                        <div class="mt-5">
+                        <div>
                             <button @click="spin()" :disabled="spinning || apuesta > saldo"
-                                    class="cta-shine px-8 py-3 rounded-xl bg-gradient-to-r from-brand-400 via-orange-400 to-fuchsia-500 hover:scale-105 text-black font-bold transition shadow-lg shadow-fuchsia-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    class="cta-shine w-full min-[420px]:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-brand-400 via-orange-400 to-fuchsia-500 hover:scale-105 text-black font-bold transition shadow-lg shadow-fuchsia-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
                                 <span x-text="spinning ? 'Girando...' : 'Girar'"></span>
                             </button>
                         </div>
                     </div>
 
                     {{-- Botones apuesta rapida --}}
-                    <div class="flex gap-2 mt-3">
+                    <div class="grid grid-cols-3 gap-2 mt-3 min-[420px]:grid-cols-5">
                         <template x-for="val in [0.50, 1, 2, 5, 10]" :key="val">
                             <button @click="apuesta = val" :disabled="spinning"
-                                    class="flex-1 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-slate-400 hover:text-white hover:bg-white/10 transition disabled:opacity-50"
+                                    class="py-2 rounded-lg bg-white/5 border border-white/10 text-xs text-slate-400 hover:text-white hover:bg-white/10 transition disabled:opacity-50"
                                     x-text="'€' + val">
                             </button>
                         </template>
@@ -134,12 +136,12 @@
             {{-- Paytable --}}
             <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
                 <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Tabla de pagos</h3>
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+                <div class="grid auto-rows-fr grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
                     <template x-for="p in paytable" :key="p.label">
-                        <div class="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-center">
-                            <div class="mx-auto mb-2 h-12 w-12 rounded-lg slot-symbol-art" :style="symbolStyle(p.icon)"></div>
-                            <div class="mb-1 text-[10px] uppercase tracking-wider text-slate-500" x-text="p.symbols === 'X X X' ? 'Cualquier pareja' : '3 símbolos'"></div>
-                            <div class="text-brand-400 font-bold" x-text="p.label"></div>
+                        <div class="flex h-full flex-col items-center rounded-xl bg-white/[0.02] border border-white/5 p-3 text-center">
+                            <div class="slot-symbol-frame mx-auto mb-3 h-14 w-14 rounded-xl"><div class="slot-symbol-art" :style="symbolStyle(p.icon)"></div></div>
+                            <div class="mb-1 mt-auto text-[10px] uppercase tracking-wider text-slate-500" x-text="p.symbols === 'X X X' ? 'Cualquier pareja' : '3 símbolos'"></div>
+                            <div class="font-bold text-brand-400" x-text="p.label"></div>
                         </div>
                     </template>
                 </div>
@@ -169,7 +171,7 @@
                 <div class="space-y-2">
                     <template x-for="(h, i) in historial.slice(0, 8)" :key="i">
                         <div class="flex items-center justify-between text-xs">
-                            <span class="flex gap-1"><template x-for="symbol in h.reels"><i class="slot-symbol-art h-6 w-6 rounded" :style="symbolStyle(symbol)"></i></template></span>
+                            <span class="flex gap-1"><template x-for="symbol in h.reels"><span class="slot-symbol-frame h-7 w-7 rounded-md"><i class="slot-symbol-art" :style="symbolStyle(symbol)"></i></span></template></span>
                             <span :class="h.ganancia > 0 ? 'text-emerald-400' : 'text-red-400'"
                                   x-text="h.ganancia > 0 ? '+€' + h.ganancia.toFixed(2) : '-€' + h.apuesta.toFixed(2)"></span>
                         </div>

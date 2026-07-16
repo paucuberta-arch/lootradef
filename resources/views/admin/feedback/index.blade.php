@@ -12,22 +12,22 @@
 
 <div class="space-y-4">
     @forelse($feedback as $fb)
-        <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
-            <div class="flex items-start justify-between gap-4">
+        <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-4 sm:p-5">
+            <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
                 <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2 mb-2">
+                    <div class="flex flex-wrap items-center gap-2 mb-2">
                         @php
                             $tipoIcons = ['sugerencia' => '💡', 'bug' => '🐛', 'mejora' => '⚡', 'otro' => '📝'];
                             $prioridadColors = ['baja' => 'slate', 'normal' => 'blue', 'alta' => 'amber', 'urgente' => 'red'];
                             $estadoColors = ['abierto' => 'blue', 'en_progreso' => 'amber', 'resuelto' => 'emerald', 'cerrado' => 'slate'];
                         @endphp
                         <span class="text-lg">{{ $tipoIcons[$fb->tipo] ?? '📝' }}</span>
-                        <h3 class="font-bold text-white">{{ $fb->asunto }}</h3>
+                        <h3 class="min-w-0 break-words font-bold text-white">{{ $fb->asunto }}</h3>
                         <span class="tone-badge tone-{{ $prioridadColors[$fb->prioridad] }} px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase">{{ $fb->prioridad }}</span>
                         <span class="tone-badge tone-{{ $estadoColors[$fb->estado] }} px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase">{{ str_replace('_', ' ', $fb->estado) }}</span>
                     </div>
                     <p class="text-sm text-slate-400 mb-2">{{ $fb->contenido }}</p>
-                    <div class="flex items-center gap-3 text-xs text-slate-600">
+                    <div class="flex flex-wrap items-center gap-3 text-xs text-slate-600">
                         <span>{{ $fb->usuario?->name ?? 'Anonimo' }}</span>
                         <span>{{ $fb->created_at->diffForHumans() }}</span>
                     </div>
@@ -40,7 +40,7 @@
                     @endif
                 </div>
 
-                <div class="shrink-0">
+                <div class="w-full shrink-0 md:w-auto">
                     <form method="POST" action="{{ route('admin.feedback.update', $fb) }}" class="space-y-2" x-data="{ open: false }">
                         @csrf @method('PUT')
                         <button type="button" @click="open = !open" class="text-xs text-brand-400 hover:text-brand-300 transition">Responder</button>

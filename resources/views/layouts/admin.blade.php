@@ -89,15 +89,15 @@
 
             {{-- Topbar --}}
             <header class="h-16 bg-[#0F1626]/85 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30">
-                <div class="flex items-center gap-4">
+                <div class="flex min-w-0 items-center gap-2 sm:gap-4">
                     <button x-ref="sidebarToggle" @click="toggleSidebar(!sidebar)" class="grid min-h-11 min-w-11 place-items-center rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition lg:hidden" aria-label="Abrir menú" :aria-expanded="sidebar.toString()">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                     </button>
-                    <h1 class="text-lg font-bold text-white">@yield('admin-title', 'Dashboard')</h1>
+                    <h1 class="truncate text-base sm:text-lg font-bold text-white">@yield('admin-title', 'Dashboard')</h1>
                 </div>
                 <a href="{{ route('inicio') }}" class="text-sm text-slate-400 hover:text-white transition flex items-center gap-1.5">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                    Ver web
+                    <span class="hidden min-[420px]:inline">Ver web</span>
                 </a>
             </header>
 

@@ -4,8 +4,8 @@
 
 @section('contenido')
 
-    <div class="relative min-h-[80vh] flex items-center justify-center px-4 py-16">
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-brand-500/5 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="relative min-h-[80vh] flex items-center justify-center px-4 py-8 sm:py-16">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[min(500px,90vw)] w-[min(500px,90vw)] bg-brand-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 
         <div class="relative w-full max-w-md">
 

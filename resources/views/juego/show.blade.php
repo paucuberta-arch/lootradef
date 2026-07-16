@@ -20,7 +20,7 @@
 
             {{-- Hero del juego --}}
             <div class="rounded-2xl overflow-hidden mb-8 {{ $juego['grad'] }}" x-data="{ imageLoaded: false }">
-                <div class="relative h-full min-h-[350px] flex flex-col justify-end p-6 sm:p-10">
+                <div class="relative flex min-h-[290px] h-full flex-col justify-end p-5 sm:min-h-[350px] sm:p-10">
                     <div x-show="!imageLoaded" class="absolute inset-0 animate-pulse bg-gradient-to-br from-white/5 to-transparent" aria-hidden="true"></div>
                     @if(!empty($juego['image']))
                         <img src="{{ $juego['image'] }}" alt="{{ $juego['name'] }}" class="absolute inset-0 w-full h-full object-cover" loading="eager" x-on:load="imageLoaded=true" x-on:error="$event.currentTarget.src=@js(asset('images/game-fallback.svg')); imageLoaded=true">
@@ -56,7 +56,7 @@
             {{-- Caracteristicas --}}
             <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-6 sm:p-8">
                 <h2 class="text-xl font-bold text-white mb-5">Caracteristicas</h2>
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
                     @foreach([
                         ['label' => 'Proveedor', 'value' => $juego['provider']],
                         ['label' => 'Categoria', 'value' => $juego['cat']],

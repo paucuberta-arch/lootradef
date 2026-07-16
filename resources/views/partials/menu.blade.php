@@ -13,7 +13,7 @@
                 <span class="hidden font-display text-lg font-extrabold tracking-tight sm:block">Lootra<span class="text-brand-300">Casino</span></span>
             </a>
 
-            <div class="hidden items-center gap-1 md:flex">
+            <div class="hidden items-center gap-1 lg:flex">
                 <div class="relative" @mouseenter="catOpen=true" @mouseleave="catOpen=false">
                     <button @click="catOpen=!catOpen" class="flex min-h-11 items-center gap-1.5 rounded-xl border px-3 text-sm font-medium {{ $navLink(request()->routeIs('games.*')) }}" :aria-expanded="catOpen.toString()">
                         Juegos
@@ -30,7 +30,7 @@
                 <a href="{{ route('cases.index') }}" class="flex min-h-11 items-center rounded-xl border px-3 text-sm font-medium {{ $navLink(request()->routeIs('cases.*') || request()->routeIs('inventory.*')) }}">Cajas</a>
             </div>
 
-            <div class="hidden items-center gap-2 md:flex">
+            <div class="hidden items-center gap-2 lg:flex">
                 @guest
                     <a href="{{ route('login') }}" class="rounded-xl px-3 py-2 text-sm font-medium text-slate-300 hover:bg-white/5">Iniciar sesión</a>
                     <a href="{{ route('registro') }}" class="rounded-xl bg-gradient-to-r from-brand-300 to-brand-500 px-4 py-2.5 text-sm font-bold text-slate-950 shadow-lg shadow-brand-500/20">Crear cuenta</a>
@@ -46,14 +46,14 @@
                 @endguest
             </div>
 
-            <button @click="open=!open" class="grid min-h-11 min-w-11 place-items-center rounded-xl text-slate-300 hover:bg-white/5 md:hidden" :aria-expanded="open.toString()" aria-controls="mobile-navigation" aria-label="Abrir navegación">
+            <button @click="open=!open" class="grid min-h-11 min-w-11 place-items-center rounded-xl text-slate-300 hover:bg-white/5 lg:hidden" :aria-expanded="open.toString()" aria-controls="mobile-navigation" aria-label="Abrir navegación">
                 <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path x-show="!open" stroke-linecap="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/><path x-show="open" stroke-linecap="round" stroke-width="2" d="m6 6 12 12M18 6 6 18"/></svg>
             </button>
         </div>
     </div>
 
-    <button x-show="open" x-cloak x-transition.opacity @click="open=false" class="fixed inset-0 top-16 z-40 bg-black/65 backdrop-blur-sm md:hidden" aria-label="Cerrar navegación"></button>
-    <div id="mobile-navigation" x-show="open" x-cloak x-transition:enter="transition duration-200" x-transition:enter-start="translate-x-full" x-transition:leave="transition duration-150" x-transition:leave-end="translate-x-full" class="fixed bottom-0 right-0 top-16 z-50 w-[min(88vw,22rem)] overflow-y-auto border-l border-white/10 bg-[#0f1626] p-4 shadow-2xl md:hidden">
+    <button x-show="open" x-cloak x-transition.opacity @click="open=false" class="fixed inset-0 top-16 z-40 bg-black/65 backdrop-blur-sm lg:hidden" aria-label="Cerrar navegación"></button>
+    <div id="mobile-navigation" x-show="open" x-cloak x-transition:enter="transition duration-200" x-transition:enter-start="translate-x-full" x-transition:leave="transition duration-150" x-transition:leave-end="translate-x-full" class="fixed bottom-0 right-0 top-16 z-50 w-[min(92vw,24rem)] overflow-y-auto border-l border-white/10 bg-[#0f1626] p-4 shadow-2xl lg:hidden">
         <div class="space-y-1">
             <a href="{{ route('games.index') }}" class="block min-h-11 rounded-xl px-3 py-3 text-sm text-slate-200 hover:bg-white/5">Todos los juegos</a>
             <a href="{{ route('sports.index') }}" class="block min-h-11 rounded-xl px-3 py-3 text-sm text-slate-300 hover:bg-white/5">Apuestas deportivas</a>

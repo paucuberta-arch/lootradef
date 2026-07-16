@@ -4,8 +4,8 @@
 
 @section('contenido')
 
-    <div class="relative min-h-[80vh] flex items-center justify-center px-4 py-16" x-data="profileWallet()">
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-brand-500/5 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="relative min-h-[80vh] flex items-center justify-center px-4 py-8 sm:py-16" x-data="profileWallet()">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[min(500px,90vw)] w-[min(500px,90vw)] bg-brand-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 
         <div class="relative w-full max-w-6xl">
 
@@ -17,7 +17,7 @@
 
             <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 @foreach([['Saldo', number_format($usuario->saldo, 2, ',', '.').' €'], ['Partidas', $resumen['partidas']], ['Inventario', $resumen['inventario']], ['Apuestas', $resumen['apuestas']]] as [$label, $value])
-                    <x-ui.card padding="p-4"><p class="text-xs font-bold uppercase tracking-wider text-slate-500">{{ $label }}</p><p class="mt-2 font-display text-xl font-bold text-white">{{ $value }}</p></x-ui.card>
+                    <x-ui.card padding="p-3 min-[420px]:p-4"><p class="text-[10px] min-[420px]:text-xs font-bold uppercase tracking-wider text-slate-500">{{ $label }}</p><p class="mt-2 break-words font-display text-lg min-[420px]:text-xl font-bold text-white">{{ $value }}</p></x-ui.card>
                 @endforeach
             </div>
 
@@ -41,7 +41,7 @@
                     <div class="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/5">
                         <div>
                             <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Correo electronico</p>
-                            <p class="text-white font-semibold mt-0.5">{{ $usuario->email }}</p>
+                            <p class="break-all text-white font-semibold mt-0.5">{{ $usuario->email }}</p>
                         </div>
                     </div>
                     <div class="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/5">
@@ -50,7 +50,7 @@
                             <p class="text-white font-semibold mt-0.5">{{ $usuario->created_at->format('d/m/Y') }}</p>
                         </div>
                     </div>
-                    <div class="flex items-center justify-between p-4 rounded-xl bg-brand-500/5 border border-brand-500/20">
+                    <div class="flex flex-col items-start gap-3 p-4 rounded-xl bg-brand-500/5 border border-brand-500/20 min-[480px]:flex-row min-[480px]:items-center min-[480px]:justify-between">
                         <div>
                             <p class="text-xs font-medium text-brand-400 uppercase tracking-wider">Saldo</p>
                             <p class="text-white font-semibold mt-0.5">€<span x-text="$store.wallet.saldo.toFixed(2)">{{ number_format($usuario->saldo, 2) }}</span></p>
@@ -97,17 +97,17 @@
             </div>
 
             <section class="mt-6 rounded-2xl bg-white/[0.03] border border-white/5 p-6 sm:p-8">
-                <div class="mb-5 flex items-center justify-between gap-3">
+                <div class="mb-5 flex flex-col items-start justify-between gap-3 min-[480px]:flex-row min-[480px]:items-center">
                     <div><h2 class="text-lg font-bold">Movimientos de cartera</h2><p class="mt-1 text-xs text-slate-500">Registro confirmado de débitos y créditos.</p></div>
                     <span class="rounded-lg border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-xs font-bold text-amber-300">Saldo demo</span>
                 </div>
                 <div class="space-y-2">
-                    <template x-if="lastMovement"><div class="flex items-center gap-3 rounded-xl border border-emerald-400/20 bg-emerald-500/10 p-3"><span class="grid h-9 w-9 place-items-center rounded-lg bg-emerald-500/15 text-emerald-300">+</span><div class="flex-1"><p class="text-sm font-semibold" x-text="lastMovement.label"></p><p class="text-xs text-slate-500" x-text="lastMovement.created_at+' · Saldo '+money(lastMovement.balance)"></p></div><b class="text-sm text-emerald-300" x-text="'+'+money(lastMovement.amount)"></b></div></template>
+                    <template x-if="lastMovement"><div class="flex items-center gap-3 rounded-xl border border-emerald-400/20 bg-emerald-500/10 p-3"><span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-emerald-500/15 text-emerald-300">+</span><div class="min-w-0 flex-1"><p class="text-sm font-semibold" x-text="lastMovement.label"></p><p class="break-words text-xs text-slate-500" x-text="lastMovement.created_at+' · Saldo '+money(lastMovement.balance)"></p></div><b class="shrink-0 text-sm text-emerald-300" x-text="'+'+money(lastMovement.amount)"></b></div></template>
                     @forelse($movimientos as $movimiento)
                         <div class="flex items-center gap-3 rounded-xl border border-white/5 bg-black/15 p-3">
                             <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg {{ $movimiento->direccion === 'credito' ? 'bg-emerald-500/10 text-emerald-300' : 'bg-red-500/10 text-red-300' }}">{{ $movimiento->direccion === 'credito' ? '+' : '−' }}</span>
-                            <div class="min-w-0 flex-1"><p class="truncate text-sm font-semibold">{{ $movimiento->etiqueta }}</p><p class="text-xs text-slate-500">{{ $movimiento->created_at->format('d/m/Y H:i') }} · Saldo {{ number_format($movimiento->saldo_posterior, 2, ',', '.') }} €</p></div>
-                            <b class="text-sm {{ $movimiento->direccion === 'credito' ? 'text-emerald-300' : 'text-red-300' }}">{{ $movimiento->direccion === 'credito' ? '+' : '−' }}{{ number_format($movimiento->importe, 2, ',', '.') }} €</b>
+                            <div class="min-w-0 flex-1"><p class="truncate text-sm font-semibold">{{ $movimiento->etiqueta }}</p><p class="break-words text-xs text-slate-500">{{ $movimiento->created_at->format('d/m/Y H:i') }} · Saldo {{ number_format($movimiento->saldo_posterior, 2, ',', '.') }} €</p></div>
+                            <b class="shrink-0 text-sm {{ $movimiento->direccion === 'credito' ? 'text-emerald-300' : 'text-red-300' }}">{{ $movimiento->direccion === 'credito' ? '+' : '−' }}{{ number_format($movimiento->importe, 2, ',', '.') }} €</b>
                         </div>
                     @empty
                         <p class="rounded-xl border border-dashed border-white/10 py-8 text-center text-sm text-slate-500">Todavía no hay movimientos registrados.</p>

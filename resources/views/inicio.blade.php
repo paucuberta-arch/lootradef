@@ -57,18 +57,18 @@
          }
      }">
 
-    <section class="relative overflow-hidden rounded-[2rem] border border-white/10 min-h-[420px] mb-10 flex items-end hero-casino">
+    <section class="relative mb-8 flex min-h-[360px] items-end overflow-hidden rounded-3xl border border-white/10 hero-casino sm:mb-10 sm:min-h-[420px] sm:rounded-[2rem]">
         <img src="{{ asset('images/lootra-hero.webp') }}"
              alt="Mesa de casino premium iluminada" class="absolute inset-0 w-full h-full object-cover" fetchpriority="high">
         <div class="absolute inset-0 bg-gradient-to-r from-[#070712] via-[#09081a]/90 to-fuchsia-950/25"></div>
         <div class="absolute inset-0 bg-gradient-to-t from-[#070712] via-transparent to-cyan-500/10"></div>
         <div class="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-fuchsia-500/25 blur-[90px]"></div>
-        <div class="relative z-10 p-7 sm:p-12 lg:p-16 max-w-3xl">
+        <div class="relative z-10 max-w-3xl p-6 sm:p-12 lg:p-16">
             <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-400/10 border border-cyan-300/20 text-cyan-200 text-xs font-bold uppercase tracking-[.18em] mb-5">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 Casino de nueva generación
             </div>
-            <h1 class="font-display text-4xl sm:text-6xl lg:text-7xl font-bold tracking-[-.06em] leading-[.95] text-white mb-5">
+            <h1 class="font-display text-3xl min-[420px]:text-4xl sm:text-6xl lg:text-7xl font-bold tracking-[-.06em] leading-[.95] text-white mb-5">
                 Tu próxima gran <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-300 via-fuchsia-400 to-cyan-300">jugada</span> empieza aquí.
             </h1>
             <p class="text-slate-300 text-base sm:text-lg max-w-xl leading-relaxed mb-7">Juegos con ritmo, recompensas instantáneas y una experiencia visual creada para que cada ronda se sienta única.</p>
@@ -107,16 +107,16 @@
                 </div>
 
                 {{-- Categorias --}}
-                <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
+                <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-4 sm:p-5">
                     <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Categorias</h3>
-                    <div class="space-y-1">
+                    <div class="grid grid-cols-2 gap-1 sm:grid-cols-3 lg:block lg:space-y-1">
                         @foreach($cats as $cat)
                             <button
                                 @click="selectCat('{{ $cat['id'] }}')"
                                 :class="selected === '{{ $cat['id'] }}'
                                     ? 'bg-brand-500/10 border-brand-500/30 text-brand-400'
                                     : 'text-slate-400 hover:text-white hover:bg-white/5 border-transparent'"
-                                class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium border transition-all"
+                                class="w-full flex items-center justify-between gap-1 px-2 min-[420px]:px-3 py-2.5 rounded-xl text-xs min-[420px]:text-sm font-medium border transition-all"
                             >
                                 <span class="flex items-center gap-2.5">
                                     <span class="text-base">{!! $cat['icon'] !!}</span>
@@ -129,9 +129,9 @@
                 </div>
 
                 {{-- Ordenar --}}
-                <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
+                <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-4 sm:p-5">
                     <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Ordenar por</h3>
-                    <div class="space-y-1">
+                    <div class="grid grid-cols-2 gap-1 lg:block lg:space-y-1">
                         @php
                             $sortOpts = [
                                 ['id' => 'default', 'label' => 'Predeterminado'],
@@ -196,9 +196,9 @@
                                 <span class="text-xs text-slate-500">Slots</span>
                             </div>
                             <h3 class="text-xl sm:text-2xl font-extrabold text-white mb-3">Gates of Olympus</h3>
-                            <div class="flex items-center gap-3">
-                                <span class="px-5 py-2.5 rounded-xl bg-brand-500 text-black text-sm font-bold">Jugar ahora</span>
-                                <span class="px-5 py-2.5 rounded-xl bg-white/10 text-white text-sm font-semibold border border-white/10">Ver detalles</span>
+                            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                                <span class="px-3 min-[420px]:px-5 py-2.5 rounded-xl bg-brand-500 text-black text-xs min-[420px]:text-sm font-bold">Jugar ahora</span>
+                                <span class="px-3 min-[420px]:px-5 py-2.5 rounded-xl bg-white/10 text-white text-xs min-[420px]:text-sm font-semibold border border-white/10">Ver detalles</span>
                             </div>
                         </div>
                     </a>
@@ -213,9 +213,9 @@
                                 <span class="text-xs text-slate-500">Poker Live</span>
                             </div>
                             <h3 class="text-xl sm:text-2xl font-extrabold text-white mb-3">Texas Hold'em Live</h3>
-                            <div class="flex items-center gap-3">
-                                <span class="px-5 py-2.5 rounded-xl bg-brand-500 text-black text-sm font-bold">Jugar ahora</span>
-                                <span class="px-5 py-2.5 rounded-xl bg-white/10 text-white text-sm font-semibold border border-white/10">Ver detalles</span>
+                            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                                <span class="px-3 min-[420px]:px-5 py-2.5 rounded-xl bg-brand-500 text-black text-xs min-[420px]:text-sm font-bold">Jugar ahora</span>
+                                <span class="px-3 min-[420px]:px-5 py-2.5 rounded-xl bg-white/10 text-white text-xs min-[420px]:text-sm font-semibold border border-white/10">Ver detalles</span>
                             </div>
                         </div>
                     </a>
