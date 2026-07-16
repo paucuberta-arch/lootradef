@@ -29,31 +29,33 @@
                     </x-ui.alert>
                 @endif
 
-                <form action="{{ route('registro.store') }}" method="POST" class="space-y-5" x-data="{ submitting: false }" @submit="submitting = true">
+                <form action="{{ route('registro.store') }}" method="POST" class="space-y-5" x-data="{ submitting: false, showPassword: false, showConfirmation: false, password: '' }" @submit="submitting = true">
                     @csrf
 
                     <div>
                         <label for="name" class="block text-sm font-medium text-slate-300 mb-2">Nombre</label>
                         <input id="name" type="text" name="name" value="{{ old('name') }}" required autocomplete="name" placeholder="Tu nombre"
-                            class="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-slate-600 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition">
+                            class="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-slate-600 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition" @error('name') aria-invalid="true" aria-describedby="name-error" @enderror>
+                        @error('name')<p id="name-error" class="mt-2 text-sm text-red-300">{{ $message }}</p>@enderror
                     </div>
 
                     <div>
-                        <label for="email" class="block text-sm font-medium text-slate-300 mb-2">Correo electronico</label>
+                        <label for="email" class="block text-sm font-medium text-slate-300 mb-2">Correo electrónico</label>
                         <input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="email" placeholder="tu@email.com"
-                            class="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-slate-600 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition">
+                            class="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-slate-600 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition" @error('email') aria-invalid="true" aria-describedby="register-email-error" @enderror>
+                        @error('email')<p id="register-email-error" class="mt-2 text-sm text-red-300">{{ $message }}</p>@enderror
                     </div>
 
                     <div>
-                        <label for="password" class="block text-sm font-medium text-slate-300 mb-2">Contrasena</label>
-                        <input id="password" type="password" name="password" required autocomplete="new-password" placeholder="Minimo 8 caracteres"
-                            class="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-slate-600 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition">
+                        <label for="password" class="block text-sm font-medium text-slate-300 mb-2">Contraseña</label>
+                        <div class="relative"><input id="password" x-model="password" :type="showPassword ? 'text' : 'password'" name="password" required autocomplete="new-password" placeholder="Mínimo 8 caracteres" class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 pr-20 text-white outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30"><button type="button" @click="showPassword=!showPassword" class="absolute inset-y-0 right-0 min-w-16 px-3 text-xs font-bold text-slate-400 hover:text-white" x-text="showPassword ? 'Ocultar' : 'Mostrar'"></button></div>
+                        <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-white/5"><span class="block h-full rounded-full transition-all" :class="password.length >= 12 ? 'bg-emerald-400' : password.length >= 8 ? 'bg-amber-400' : 'bg-red-400'" :style="`width:${Math.min(100,password.length/12*100)}%`"></span></div>
+                        @error('password')<p class="mt-2 text-sm text-red-300">{{ $message }}</p>@enderror
                     </div>
 
                     <div>
-                        <label for="password_confirmation" class="block text-sm font-medium text-slate-300 mb-2">Repite la contrasena</label>
-                        <input id="password_confirmation" type="password" name="password_confirmation" required autocomplete="new-password" placeholder="Confirma tu contrasena"
-                            class="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-slate-600 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition">
+                        <label for="password_confirmation" class="block text-sm font-medium text-slate-300 mb-2">Repite la contraseña</label>
+                        <div class="relative"><input id="password_confirmation" :type="showConfirmation ? 'text' : 'password'" name="password_confirmation" required autocomplete="new-password" placeholder="Confirma tu contraseña" class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 pr-20 text-white outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30"><button type="button" @click="showConfirmation=!showConfirmation" class="absolute inset-y-0 right-0 min-w-16 px-3 text-xs font-bold text-slate-400 hover:text-white" x-text="showConfirmation ? 'Ocultar' : 'Mostrar'"></button></div>
                     </div>
 
                     <x-ui.button type="submit" class="w-full" x-bind:disabled="submitting"><span x-text="submitting ? 'Creando cuenta…' : 'Crear cuenta'">Crear cuenta</span></x-ui.button>

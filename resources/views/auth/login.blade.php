@@ -27,19 +27,19 @@
                     </x-ui.alert>
                 @endif
 
-                <form action="{{ route('login.store') }}" method="POST" class="space-y-5" x-data="{ submitting: false }" @submit="submitting = true">
+                <form action="{{ route('login.store') }}" method="POST" class="space-y-5" x-data="{ submitting: false, showPassword: false }" @submit="submitting = true">
                     @csrf
 
                     <div>
-                        <label for="email" class="block text-sm font-medium text-slate-300 mb-2">Correo electronico</label>
+                        <label for="email" class="block text-sm font-medium text-slate-300 mb-2">Correo electrónico</label>
                         <input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="email" placeholder="tu@email.com"
-                            class="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-slate-600 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition">
+                            @class(['w-full rounded-xl bg-white/5 border px-4 py-3 text-white placeholder-slate-600 outline-none focus:ring-1 transition', 'border-red-400/50 focus:border-red-400 focus:ring-red-400/20' => $errors->has('email'), 'border-white/10 focus:border-brand-500 focus:ring-brand-500/30' => !$errors->has('email')]) aria-invalid="{{ $errors->has('email') ? 'true' : 'false' }}" @error('email') aria-describedby="email-error" @enderror>
+                        @error('email')<p id="email-error" class="mt-2 text-sm text-red-300">{{ $message }}</p>@enderror
                     </div>
 
                     <div>
-                        <label for="password" class="block text-sm font-medium text-slate-300 mb-2">Contrasena</label>
-                        <input id="password" type="password" name="password" required autocomplete="current-password" placeholder="••••••••"
-                            class="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-slate-600 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition">
+                        <label for="password" class="block text-sm font-medium text-slate-300 mb-2">Contraseña</label>
+                        <div class="relative"><input id="password" :type="showPassword ? 'text' : 'password'" name="password" required autocomplete="current-password" placeholder="••••••••" class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 pr-20 text-white outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30"><button type="button" @click="showPassword=!showPassword" class="absolute inset-y-0 right-0 min-w-16 px-3 text-xs font-bold text-slate-400 hover:text-white" :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'" x-text="showPassword ? 'Ocultar' : 'Mostrar'"></button></div>
                     </div>
 
                     <label class="flex items-center gap-3 text-sm text-slate-400 cursor-pointer">

@@ -13,9 +13,18 @@ class PerfilController extends Controller
 
     public function index(Request $request): View
     {
+        $user = $request->user()->load('cartera');
+
         return view('perfil.index', [
-            'usuario' => $request->user(),
-            'movimientos' => $request->user()->movimientosCartera()->latest()->take(20)->get(),
+            'usuario' => $user,
+            'movimientos' => $user->movimientosCartera()->latest()->take(20)->get(),
+            'inventario' => $user->inventario()->where('estado', 'disponible')->latest()->take(4)->get(),
+            'ultimasPartidas' => $user->partidas()->latest()->take(5)->get(),
+            'resumen' => [
+                'partidas' => $user->partidas()->count(),
+                'inventario' => $user->inventario()->where('estado', 'disponible')->count(),
+                'apuestas' => $user->apuestasDeportivas()->count(),
+            ],
         ]);
     }
 
@@ -33,12 +42,19 @@ class PerfilController extends Controller
         }
 
         $user->cartera->ganar($amount, 'deposito_demo', ['origen' => 'perfil']);
+        $movement = $user->movimientosCartera()->latest()->first();
         $this->accountMail->deposit($user, $amount);
 
         return response()->json([
             'ok' => true,
             'saldo' => $user->cartera->saldo,
             'message' => "€{$amount} anadidos a tu cartera.",
+            'movement' => [
+                'label' => $movement?->etiqueta,
+                'amount' => $movement?->importe,
+                'balance' => $movement?->saldo_posterior,
+                'created_at' => $movement?->created_at?->format('d/m/Y H:i'),
+            ],
         ]);
     }
 

@@ -63,6 +63,11 @@ class Usuario extends Authenticatable
         return $this->hasMany(WalletMovement::class, 'usuario_id');
     }
 
+    public function partidas(): HasMany
+    {
+        return $this->hasMany(Partida::class, 'usuario_id');
+    }
+
     public function getSaldoAttribute(): float
     {
         return $this->cartera?->saldo ?? 0;

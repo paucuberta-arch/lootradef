@@ -26,7 +26,7 @@ class AccountActivityMailTest extends TestCase
             'email' => 'new@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
-        ])->assertRedirect(route('perfil'));
+        ])->assertRedirect(route('profile.show'));
 
         Mail::assertSent(AccountActivityMail::class, fn ($mail) => $mail->event === 'registered'
             && $mail->hasTo('new@example.com'));
@@ -38,7 +38,7 @@ class AccountActivityMailTest extends TestCase
         $user = $this->player();
 
         $this->post(route('login.store'), ['email' => $user->email, 'password' => 'password123'])
-            ->assertRedirect(route('perfil'));
+            ->assertRedirect(route('profile.show'));
         $this->actingAs($user)->postJson(route('perfil.deposit'), ['amount' => 25])->assertOk();
 
         Mail::assertSent(AccountActivityMail::class, 2);

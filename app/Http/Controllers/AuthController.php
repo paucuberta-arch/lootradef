@@ -17,7 +17,7 @@ class AuthController extends Controller
     public function mostrarRegistro(): View|RedirectResponse
     {
         if (Auth::check()) {
-            return redirect()->route('perfil');
+            return redirect()->route('profile.show');
         }
 
         return view('auth.register');
@@ -69,14 +69,14 @@ class AuthController extends Controller
         $this->accountMail->registered($usuario);
 
         return redirect()
-            ->route('perfil')
+            ->route('profile.show')
             ->with('success', 'Tu cuenta se ha creado correctamente.');
     }
 
     public function mostrarLogin(): View|RedirectResponse
     {
         if (Auth::check()) {
-            return redirect()->route('perfil');
+            return redirect()->route('profile.show');
         }
 
         return view('auth.login');
@@ -101,7 +101,7 @@ class AuthController extends Controller
             $request->session()->regenerate();
             $this->accountMail->login($request->user(), $request->ip());
 
-            return redirect()->intended(route('perfil'));
+            return redirect()->intended(route('profile.show'));
         }
 
         return back()
