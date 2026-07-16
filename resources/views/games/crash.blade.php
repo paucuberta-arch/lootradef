@@ -8,11 +8,11 @@
     .pulse-glow { animation: pulse-glow 1.5s ease-in-out infinite; }
     @keyframes crash-shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
     .crash-shake { animation: crash-shake 0.3s ease-in-out 3; }
-    @keyframes rocket-flame { 50% { transform:scaleX(1.45); filter:brightness(1.5); } }
-    .rocket-craft { width:54px; height:24px; border-radius:70% 45% 45% 70%; background:linear-gradient(180deg,#f8fafc,#67e8f9 45%,#2563eb); border:2px solid rgba(255,255,255,.75); box-shadow:0 0 24px rgba(34,211,238,.65); transform:rotate(-28deg); transition:left .12s linear,bottom .12s linear; }
-    .rocket-craft::before { content:""; position:absolute; width:17px; height:17px; left:-13px; top:2px; border-radius:60% 0 0 60%; background:linear-gradient(90deg,transparent,#fb7185,#fbbf24); filter:drop-shadow(-5px 0 8px #ef4444); animation:rocket-flame .16s infinite; }
-    .rocket-craft::after { content:""; position:absolute; right:8px; bottom:-9px; border-left:13px solid #7c3aed; border-top:8px solid transparent; }
-    .rocket-window { position:absolute; width:10px; height:10px; border-radius:50%; right:12px; top:5px; background:#0f172a; border:2px solid #a5f3fc; }
+    @keyframes rocket-flame { 50% { transform:scaleY(1.45); filter:brightness(1.5); } }
+    .rocket-craft { width:30px; height:62px; border-radius:55% 55% 35% 35%; background:linear-gradient(90deg,#2563eb,#f8fafc 48%,#67e8f9); border:2px solid rgba(255,255,255,.75); box-shadow:0 0 24px rgba(34,211,238,.65); transition:bottom .1s linear; }
+    .rocket-craft::before { content:""; position:absolute; width:15px; height:25px; left:6px; bottom:-23px; border-radius:0 0 60% 60%; background:linear-gradient(180deg,#fbbf24,#fb7185 55%,transparent); filter:drop-shadow(0 7px 8px #ef4444); transform-origin:top; animation:rocket-flame .16s infinite; }
+    .rocket-craft::after { content:""; position:absolute; left:-8px; bottom:4px; width:42px; height:20px; background:linear-gradient(90deg,#7c3aed 0 22%,transparent 23% 77%,#7c3aed 78%); clip-path:polygon(0 100%,20% 0,80% 0,100% 100%,72% 68%,28% 68%); }
+    .rocket-window { position:absolute; z-index:1; width:11px; height:11px; border-radius:50%; left:8px; top:17px; background:#0f172a; border:2px solid #a5f3fc; }
 </style>
 @endsection
 
@@ -85,7 +85,7 @@
 
                     <template x-if="fase === 'subiendo'">
                         <div class="absolute z-10 rocket-craft"
-                             :style="'left:' + Math.min(90, (multiplier - 1) * 5 + 5) + '%; bottom:' + Math.min(85, (multiplier - 1) * 8 + 10) + '%'">
+                             :style="'left:calc(12% - 15px);bottom:' + Math.min(78, (multiplier - 1) * 10 + 8) + '%'">
                             <span class="rocket-window"></span>
                         </div>
                     </template>
@@ -220,11 +220,7 @@ function crashGame() {
             let pointIndex = 0;
 
             this.interval = setInterval(() => {
-                const increment = Math.min(
-                    (this.serverCrashPoint - current) * 0.08,
-                    (Math.random() * 0.08) + 0.02
-                );
-                current += Math.max(0.01, increment);
+                current += 0.01;
                 current = Math.round(current * 100) / 100;
 
                 if (current >= this.serverCrashPoint) {
@@ -272,25 +268,7 @@ function crashGame() {
                 Alpine.store('wallet').saldo = this.saldo;
                 window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: this.saldo } }));
                 this.fase = 'crashed';
-
-                const crashTarget = data.crash_point || this.serverCrashPoint;
-                this.graphPoints = '0,58';
-                let c = 1.00;
-                let pi = 0;
-                const crashAnim = setInterval(() => {
-                    c += (Math.random() * 0.15) + 0.05;
-                    c = Math.round(c * 100) / 100;
-                    if (c >= crashTarget) {
-                        clearInterval(crashAnim);
-                        this.multiplier = crashTarget;
-                    } else {
-                        this.multiplier = c;
-                        pi++;
-                        const x = Math.min(95, pi * 1.5);
-                        const y = Math.max(5, 58 - (c - 1) * 8);
-                        this.graphPoints += ` ${x},${y}`;
-                    }
-                }, 30);
+                this.multiplier = this.crashAt;
 
                 if (data.crash_point) {
                     this.historial.unshift(data.crash_point);
@@ -330,23 +308,7 @@ function crashGame() {
 
                 if (data.resultado === 'crash') {
                     this.fase = 'crashed';
-                    this.graphPoints = '0,58';
-                    let c = 1.00;
-                    let pi = 0;
-                    const crashAnim = setInterval(() => {
-                        c += (Math.random() * 0.15) + 0.05;
-                        c = Math.round(c * 100) / 100;
-                        if (c >= data.crash_point) {
-                            clearInterval(crashAnim);
-                            this.fase = 'crashed';
-                        } else {
-                            this.multiplier = c;
-                            pi++;
-                            const x = Math.min(95, pi * 1.5);
-                            const y = Math.max(5, 58 - (c - 1) * 8);
-                            this.graphPoints += ` ${x},${y}`;
-                        }
-                    }, 30);
+                    this.multiplier = data.crash_point;
                 } else {
                     this.fase = 'cobrado';
                 }
