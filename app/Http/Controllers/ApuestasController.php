@@ -6,6 +6,7 @@ use App\Models\ActivityLog;
 use App\Models\ApuestaDeportiva;
 use App\Models\Cartera;
 use App\Models\PartidoDeportivo;
+use App\Services\AccountMailService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +14,8 @@ use Illuminate\View\View;
 
 class ApuestasController extends Controller
 {
+    public function __construct(private readonly AccountMailService $accountMail) {}
+
     public function index(Request $request): View
     {
         $this->ensureFixtures();
@@ -170,26 +173,31 @@ class ApuestasController extends Controller
 
     private function settle(PartidoDeportivo $match): void
     {
-        DB::transaction(function () use ($match) {
+        $settledBets = DB::transaction(function () use ($match) {
             $locked = PartidoDeportivo::lockForUpdate()->find($match->id);
             $result = $locked->goles_local === $locked->goles_visitante
                 ? 'empate'
                 : ($locked->goles_local > $locked->goles_visitante ? 'local' : 'visitante');
 
-            ApuestaDeportiva::where('partido_id', $locked->id)->where('estado', 'pendiente')
-                ->lockForUpdate()->get()->each(function ($bet) use ($result) {
-                    $won = $bet->seleccion === $result;
-                    $payout = $won ? round($bet->importe * $bet->cuota, 2) : 0;
-                    if ($won) {
-                        Cartera::where('usuario_id', $bet->usuario_id)->increment('saldo', $payout);
-                    }
-                    $bet->update([
-                        'estado' => $won ? 'ganada' : 'perdida',
-                        'ganancia' => $payout,
-                        'liquidada_at' => now(),
-                    ]);
-                });
+            $bets = ApuestaDeportiva::where('partido_id', $locked->id)->where('estado', 'pendiente')
+                ->lockForUpdate()->get();
+            $bets->each(function ($bet) use ($result) {
+                $won = $bet->seleccion === $result;
+                $payout = $won ? round($bet->importe * $bet->cuota, 2) : 0;
+                if ($won) {
+                    Cartera::where('usuario_id', $bet->usuario_id)->increment('saldo', $payout);
+                }
+                $bet->update([
+                    'estado' => $won ? 'ganada' : 'perdida',
+                    'ganancia' => $payout,
+                    'liquidada_at' => now(),
+                ]);
+            });
+
+            return $bets;
         });
+
+        $settledBets->each(fn (ApuestaDeportiva $bet) => $this->accountMail->sportsBetSettled($bet));
     }
 
     private function matchData(PartidoDeportivo $match): array

@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\AccountMailService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class PerfilController extends Controller
 {
+    public function __construct(private readonly AccountMailService $accountMail) {}
+
     public function index(Request $request): View
     {
         return view('perfil.index', [
@@ -29,6 +32,7 @@ class PerfilController extends Controller
         }
 
         $user->cartera->ganar($amount);
+        $this->accountMail->deposit($user, $amount);
 
         return response()->json([
             'ok' => true,
