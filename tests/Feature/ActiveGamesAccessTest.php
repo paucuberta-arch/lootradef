@@ -46,6 +46,7 @@ class ActiveGamesAccessTest extends TestCase
             route('ruleta'),
             route('ruleta.lightning'),
             route('blackjack'),
+            route('blackjack.classic'),
             route('crash'),
         ];
 

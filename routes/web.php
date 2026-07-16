@@ -56,7 +56,7 @@ Route::get('/juego/{slug}', function ($slug) use ($uegos) {
         'european-roulette' => route('ruleta'),
         'lightning-roulette' => route('ruleta.lightning'),
         'blackjack-vip' => route('blackjack'),
-        'blackjack-classic' => route('blackjack'),
+        'blackjack-classic' => route('blackjack.classic'),
     ];
 
     if (config("arcade_games.{$slug}")) {
@@ -176,10 +176,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/jugar/ruleta/lightning', [RuletaController::class, 'index'])->defaults('variant', 'lightning')->name('ruleta.lightning');
     Route::post('/jugar/ruleta/lightning', [RuletaController::class, 'play'])->defaults('variant', 'lightning')->name('ruleta.lightning.play');
 
-    Route::get('/jugar/blackjack', [BlackjackController::class, 'index'])->name('blackjack');
-    Route::post('/jugar/blackjack/deal', [BlackjackController::class, 'deal'])->name('blackjack.deal');
-    Route::post('/jugar/blackjack/hit', [BlackjackController::class, 'hit'])->name('blackjack.hit');
-    Route::post('/jugar/blackjack/stand', [BlackjackController::class, 'stand'])->name('blackjack.stand');
+    Route::get('/jugar/blackjack/vip', [BlackjackController::class, 'index'])->defaults('variant', 'vip')->name('blackjack');
+    Route::post('/jugar/blackjack/vip/repartir', [BlackjackController::class, 'deal'])->defaults('variant', 'vip')->name('blackjack.deal');
+    Route::post('/jugar/blackjack/vip/pedir', [BlackjackController::class, 'hit'])->defaults('variant', 'vip')->name('blackjack.hit');
+    Route::post('/jugar/blackjack/vip/plantarse', [BlackjackController::class, 'stand'])->defaults('variant', 'vip')->name('blackjack.stand');
+    Route::get('/jugar/blackjack/clasico', [BlackjackController::class, 'index'])->defaults('variant', 'classic')->name('blackjack.classic');
+    Route::post('/jugar/blackjack/clasico/repartir', [BlackjackController::class, 'deal'])->defaults('variant', 'classic')->name('blackjack.classic.deal');
+    Route::post('/jugar/blackjack/clasico/pedir', [BlackjackController::class, 'hit'])->defaults('variant', 'classic')->name('blackjack.classic.hit');
+    Route::post('/jugar/blackjack/clasico/plantarse', [BlackjackController::class, 'stand'])->defaults('variant', 'classic')->name('blackjack.classic.stand');
 
     Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
 });
