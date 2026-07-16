@@ -47,6 +47,8 @@ class ActiveGamesAccessTest extends TestCase
             route('ruleta.lightning'),
             route('blackjack'),
             route('blackjack.classic'),
+            route('poker.dealer'),
+            route('arcade', ['game' => 'texas-holdem']),
             route('crash'),
         ];
 

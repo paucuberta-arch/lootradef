@@ -15,6 +15,7 @@ use App\Http\Controllers\CajaController;
 use App\Http\Controllers\CrashController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\PerfilController;
+use App\Http\Controllers\PokerDealerController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\RuletaController;
 use App\Http\Controllers\SlotsController;
@@ -61,6 +62,9 @@ Route::get('/juego/{slug}', function ($slug) use ($uegos) {
 
     if (config("arcade_games.{$slug}")) {
         $gameRoutes[$slug] = route('arcade', ['game' => $slug]);
+    }
+    if ($slug === 'dealer-poker') {
+        $gameRoutes[$slug] = route('poker.dealer');
     }
 
     return view('juego.show', [
@@ -153,6 +157,9 @@ Route::get('/iniciar-sesion', [AuthController::class, 'mostrarLogin'])->name('lo
 Route::post('/iniciar-sesion', [AuthController::class, 'iniciarSesion'])->name('login.store');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/jugar/poker/dealer', [PokerDealerController::class, 'index'])->name('poker.dealer');
+    Route::post('/jugar/poker/dealer/iniciar', [PokerDealerController::class, 'start'])->name('poker.dealer.start');
+    Route::post('/jugar/poker/dealer/accion', [PokerDealerController::class, 'action'])->name('poker.dealer.action');
     Route::post('/apuestas/{partido}', [ApuestasController::class, 'place'])->name('apuestas.place');
     Route::get('/jugar/originales/{game}', [ArcadeController::class, 'index'])->name('arcade');
     Route::post('/jugar/originales/{game}', [ArcadeController::class, 'play'])->name('arcade.play');

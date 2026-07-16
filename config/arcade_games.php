@@ -10,7 +10,8 @@ $game = static fn (string $slug, string $name, string $cat, string $mode, string
 
 return [
     'crazy-time' => $game('crazy-time', 'Crazy Time Neon', 'live', 'wheel', 'https://images.unsplash.com/photo-1596838132731-3301c3fd4317?auto=format&fit=crop&w=900&q=85', 'Una rueda física de multiplicadores con segmentos sorpresa y premios instantáneos.', 'Live'),
-    'texas-holdem' => $game('texas-holdem', "Texas Hold'em Live", 'poker', 'poker', 'https://images.unsplash.com/photo-1541278107931-e006523892df?auto=format&fit=crop&w=900&q=85', 'Enfréntate al dealer en una mesa cinematográfica de Texas Hold’em con evaluación completa de manos.', 'Premium'),
+    'texas-holdem' => $game('texas-holdem', 'Poker All-In', 'poker', 'poker', 'https://images.unsplash.com/photo-1541278107931-e006523892df?auto=format&fit=crop&w=900&q=85', 'Una mano completa e instantánea: elige el importe, ve all-in y descubre el showdown.', 'Rápido'),
+    'dealer-poker' => $game('dealer-poker', "Texas Hold'em contra el Dealer", 'poker', 'poker_dealer', 'https://images.unsplash.com/photo-1511193311914-0346f16efe90?auto=format&fit=crop&w=900&q=85', 'Juega una partida por fases contra el dealer: preflop, flop, turn, river y showdown.', 'Mesa real'),
     'neon-mines' => $game('neon-mines', 'Neon Mines', 'arcade', 'mines', 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=900&q=85', 'Escanea una cuadrícula de energía y evita las minas para multiplicar la apuesta.'),
     'dice-arena' => $game('dice-arena', 'Dice Arena', 'arcade', 'dice', 'https://images.unsplash.com/photo-1551431009-a802eeec77b1?auto=format&fit=crop&w=900&q=85', 'Predice si la tirada será alta o baja y ajusta riesgo y recompensa.'),
     'high-low' => $game('high-low', 'Higher or Lower', 'cartas', 'hilo', 'https://images.unsplash.com/photo-1529480780361-c8cb81eb5735?auto=format&fit=crop&w=900&q=85', 'Lee la carta visible y decide si la siguiente será mayor o menor.'),

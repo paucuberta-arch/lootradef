@@ -8,7 +8,7 @@
     .deal-card:nth-child(2) { animation-delay: 0.15s; }
     .deal-card:nth-child(3) { animation-delay: 0.3s; }
     .casino-table{background:radial-gradient(ellipse at 50% 45%,var(--felt-light),var(--felt-dark) 70%);box-shadow:inset 0 0 80px #0009,0 30px 70px #0008;border:12px solid var(--rail);border-bottom-width:22px}
-    .casino-table::before{content:"BLACKJACK PAYS 3 TO 2";position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);font-size:clamp(.7rem,2vw,1rem);font-weight:900;letter-spacing:.25em;color:#f8e7a633;border:2px solid #f8e7a622;border-radius:50%;padding:28px 50px;white-space:nowrap}
+    .casino-table::before{content:"";position:absolute;inset:12%;border:2px solid #f8e7a622;border-radius:45%}
     .table-vip{--felt-light:#174c3b;--felt-dark:#031d16;--rail:#3a1609}.table-classic{--felt-light:#17456d;--felt-dark:#061426;--rail:#6b3f16}
     .card-corner{position:absolute;left:7px;top:5px;display:flex;flex-direction:column;align-items:center;line-height:.9}.card-center{font-size:2rem;filter:drop-shadow(0 2px 1px #0002)}
 </style>

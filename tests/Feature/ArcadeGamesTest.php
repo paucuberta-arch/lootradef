@@ -13,12 +13,12 @@ class ArcadeGamesTest extends TestCase
 
     public function test_catalog_contains_twenty_distinct_playable_games(): void
     {
-        $this->assertCount(10, config('arcade_games'));
-        $this->assertSame(20, 12 + count(config('arcade_games')) - 2);
+        $this->assertCount(11, config('arcade_games'));
+        $this->assertSame(21, 12 + count(config('arcade_games')) - 2);
 
         $this->get(route('inicio'))
             ->assertOk()
-            ->assertSee('20')
+            ->assertSee('21')
             ->assertSee('Lootra Originals');
     }
 
