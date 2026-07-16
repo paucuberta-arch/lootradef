@@ -36,7 +36,12 @@ class GameCatalogTest extends TestCase
         $this->get(route('games.index'))
             ->assertOk()
             ->assertSee('Gates of Olympus')
-            ->assertSee('Crazy Time Neon');
+            ->assertSee('Crazy Time Neon')
+            ->assertSee(':href="j.detail_url"', false)
+            ->assertDontSee(":href=''", false)
+            ->assertViewHas('juegos', fn ($games) => $games->every(
+                fn (array $game) => $game['detail_url'] === route('games.show', $game['slug'])
+            ));
 
         $this->actingAs($user)->get(route('games.show', 'texas-holdem'))
             ->assertOk()

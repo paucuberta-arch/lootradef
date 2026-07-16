@@ -231,7 +231,7 @@
 
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                     <template x-for="j in filtered" :key="j.slug">
-                        <a :href='@js(route('games.show', '__SLUG__')).replace("__SLUG__", encodeURIComponent(j.slug))' class="game-card aspect-[3/4]" :class="j.grad">
+                        <a :href="j.detail_url" class="game-card aspect-[3/4]" :class="j.grad">
                             <img :src="j.image" :alt="j.name" class="absolute inset-0 w-full h-full object-cover" loading="lazy" x-on:error="$event.currentTarget.src=@js(asset('images/game-fallback.svg'))">
                             <div class="game-overlay"></div>
 

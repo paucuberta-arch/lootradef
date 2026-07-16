@@ -9,6 +9,13 @@ class HomeController extends Controller
 {
     public function __invoke(GameCatalog $catalog): View
     {
-        return view('inicio', ['juegos' => $catalog->active()->values()]);
+        $games = $catalog->active()
+            ->map(fn (array $game) => [
+                ...$game,
+                'detail_url' => route('games.show', $game['slug']),
+            ])
+            ->values();
+
+        return view('inicio', ['juegos' => $games]);
     }
 }

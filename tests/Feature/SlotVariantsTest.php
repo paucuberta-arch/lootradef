@@ -18,7 +18,11 @@ class SlotVariantsTest extends TestCase
         $user->cartera()->create(['saldo' => 100]);
         $variants = ['gates-of-olympus', 'sweet-bonanza', 'book-of-dead', 'starburst', 'big-bass-bonanza'];
         foreach ($variants as $variant) {
-            $this->actingAs($user)->get(route('games.slots.show', $variant))->assertOk()->assertSee('symbols-v2.png');
+            $this->actingAs($user)->get(route('games.slots.show', $variant))
+                ->assertOk()
+                ->assertSee('symbols-v2.png')
+                ->assertSee('webCrypto.getRandomValues(bytes)', false)
+                ->assertSee('request_token: this.requestToken()', false);
         }
 
         $token = Str::uuid()->toString();

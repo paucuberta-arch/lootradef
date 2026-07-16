@@ -216,6 +216,21 @@ function slotsGame() {
             ];
         },
 
+        requestToken() {
+            const webCrypto = globalThis.crypto;
+            if (typeof webCrypto?.randomUUID === 'function') {
+                return webCrypto.randomUUID();
+            }
+
+            const bytes = new Uint8Array(16);
+            webCrypto.getRandomValues(bytes);
+            bytes[6] = (bytes[6] & 0x0f) | 0x40;
+            bytes[8] = (bytes[8] & 0x3f) | 0x80;
+            const hex = Array.from(bytes, byte => byte.toString(16).padStart(2, '0'));
+
+            return `${hex.slice(0, 4).join('')}-${hex.slice(4, 6).join('')}-${hex.slice(6, 8).join('')}-${hex.slice(8, 10).join('')}-${hex.slice(10).join('')}`;
+        },
+
         async spin() {
             if (this.spinning || this.apuesta > this.saldo) return;
             this.spinning = true;
@@ -237,16 +252,12 @@ function slotsGame() {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'Accept': 'application/json',
                     },
-                    body: JSON.stringify({ apuesta: this.apuesta, game: '{{ $gameSlug }}', request_token: crypto.randomUUID() }),
+                    body: JSON.stringify({ apuesta: this.apuesta, game: '{{ $gameSlug }}', request_token: this.requestToken() }),
                 });
                 const data = await res.json();
 
-                if (data.error) {
-                    this.error = data.error;
-                    this.spinTimers.forEach(clearInterval);
-                    this.reelSpinning = [false, false, false];
-                    this.spinning = false;
-                    return;
+                if (!res.ok) {
+                    throw new Error(data.message || data.error || 'No se pudo completar el giro.');
                 }
 
                 // Frenado escalonado con inercia: cada carrete bloquea el resultado por separado.
@@ -277,7 +288,7 @@ function slotsGame() {
                     this.spawnCoins();
                 }
             } catch (e) {
-                this.error = 'Error de conexion.';
+                this.error = e.message || 'No se pudo conectar con el servidor.';
                 this.spinTimers.forEach(clearInterval);
                 this.reelSpinning = [false, false, false];
             }
