@@ -237,7 +237,7 @@ function slotsGame() {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'Accept': 'application/json',
                     },
-                    body: JSON.stringify({ apuesta: this.apuesta, game: '{{ $gameSlug }}' }),
+                    body: JSON.stringify({ apuesta: this.apuesta, game: '{{ $gameSlug }}', request_token: crypto.randomUUID() }),
                 });
                 const data = await res.json();
 
@@ -297,6 +297,9 @@ function slotsGame() {
             }
             this.showCoins = true;
             setTimeout(() => { this.showCoins = false; }, 2000);
+        },
+        destroy() {
+            this.spinTimers.forEach(clearInterval);
         },
     };
 }

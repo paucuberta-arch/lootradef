@@ -38,7 +38,7 @@ class ArcadeGamesTest extends TestCase
         foreach ($payloads as $slug => $payload) {
             $this->actingAs($usuario)->get(route('arcade', $slug))->assertOk();
             $this->actingAs($usuario)
-                ->postJson(route('arcade.play', $slug), ['apuesta' => 1, ...$payload])
+                ->postJson(route('arcade.play', $slug), ['apuesta' => 1, 'request_token' => fake()->uuid(), ...$payload])
                 ->assertOk()
                 ->assertJsonStructure(['multiplier', 'ganancia', 'saldo']);
         }

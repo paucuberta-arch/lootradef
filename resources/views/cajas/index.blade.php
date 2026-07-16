@@ -28,11 +28,14 @@
     .rarity-raro { color:#c084fc;background:rgba(168,85,247,.12);border-color:rgba(192,132,252,.3); }
     .rarity-epico { color:#fbbf24;background:rgba(245,158,11,.12);border-color:rgba(251,191,36,.3); }
     .rarity-legendario { color:#fb7185;background:rgba(244,63,94,.12);border-color:rgba(251,113,133,.35);box-shadow:0 0 35px rgba(244,63,94,.15); }
+    .case-reel{overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+    .case-reel__track{display:flex;gap:12px;will-change:transform;transition:transform 2.25s cubic-bezier(.12,.72,.12,1)}
+    .case-reel__item{flex:0 0 112px;border:1px solid rgba(255,255,255,.12);background:#101426;border-radius:14px;padding:8px}
 </style>
 @endsection
 
 @section('contenido')
-<div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10" x-data="caseCenter()">
+<div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10" x-data="caseCenter()" x-init="init()">
     <section class="case-hero relative min-h-[390px] rounded-[2rem] overflow-hidden border border-white/10 mb-10 flex items-center">
         <img src="https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?auto=format&fit=crop&w=1800&q=85" alt="Colección de premios" class="absolute inset-0 w-full h-full object-cover opacity-20">
         <div class="absolute inset-0 bg-gradient-to-r from-[#090719] via-[#0b0920]/85 to-transparent"></div>
@@ -101,7 +104,7 @@
             <template x-for="item in inventory.filter(i => i.estado === 'disponible')" :key="item.id">
                 <article class="rounded-2xl bg-white/[0.035] border border-white/10 overflow-hidden prize-reveal">
                     <div class="h-40 relative"><img :src="item.imagen" :alt="item.nombre" class="w-full h-full object-cover"><span class="absolute top-3 left-3 px-2 py-1 rounded-lg border text-[10px] uppercase font-bold" :class="'rarity-'+item.rareza" x-text="rarityName(item.rareza)"></span></div>
-                    <div class="p-4"><h3 class="font-bold text-white" x-text="item.nombre"></h3><p class="text-xs text-slate-500 mt-1">Obtenido <span x-text="item.created_at"></span></p><button @click="redeem(item)" :disabled="redeeming===item.id" class="w-full mt-4 py-2.5 rounded-xl bg-emerald-500/15 border border-emerald-400/25 text-emerald-300 text-sm font-bold hover:bg-emerald-500/25 disabled:opacity-50 transition"><span x-text="redeeming===item.id ? 'Canjeando...' : 'Canjear por '+money(item.valor_canje)"></span></button></div>
+                    <div class="p-4"><h3 class="font-bold text-white" x-text="item.nombre"></h3><p class="text-xs text-slate-500 mt-1">Obtenido <span x-text="item.created_at"></span></p><button @click="confirming=item" :disabled="redeeming===item.id" class="w-full mt-4 py-2.5 rounded-xl bg-emerald-500/15 border border-emerald-400/25 text-emerald-300 text-sm font-bold hover:bg-emerald-500/25 disabled:opacity-50 transition"><span x-text="redeeming===item.id ? 'Canjeando...' : 'Canjear por '+money(item.valor_canje)"></span></button></div>
                 </article>
             </template>
         </div>
@@ -115,6 +118,7 @@
             <template x-if="!prize">
                 <div>
                     <div class="loot-box my-8" :class="opening && 'is-opening'"><div class="loot-box__lid"></div><div class="loot-box__base"></div></div>
+                    <div x-show="opening" class="case-reel relative my-5 rounded-2xl border border-white/10 bg-black/25 p-3"><div class="absolute left-1/2 top-0 bottom-0 z-10 w-0.5 bg-amber-300 shadow-[0_0_12px_#fbbf24]"></div><div class="case-reel__track" x-ref="caseTrack"><template x-for="(item,index) in reelItems" :key="index"><div class="case-reel__item"><img :src="item.imagen" :alt="item.nombre" class="h-20 w-full rounded-lg object-cover"><p class="mt-2 truncate text-[10px]" x-text="item.nombre"></p></div></template></div></div>
                     <h2 class="text-2xl font-bold" x-text="selected?.nombre"></h2>
                     <p class="text-slate-500 text-sm mt-2" x-text="opening ? 'Generando y guardando tu premio...' : 'El premio se añadirá automáticamente a tu inventario.'"></p>
                     <p x-show="error" class="mt-4 text-sm text-red-400" x-text="error"></p>
@@ -134,6 +138,7 @@
         </div>
     </div>
 
+    <div x-show="confirming" x-cloak class="fixed inset-0 z-[220] grid place-items-center p-4"><div class="absolute inset-0 bg-black/80" @click="confirming=null"></div><div class="relative max-w-sm rounded-2xl border border-white/15 bg-[#111827] p-6 text-center"><h2 class="text-xl font-bold">Confirmar canje</h2><p class="mt-3 text-sm text-slate-400">Convertirás <b class="text-white" x-text="confirming?.nombre"></b> en <b class="text-emerald-300" x-text="money(confirming?.valor_canje)"></b>. No se puede deshacer.</p><div class="mt-6 grid grid-cols-2 gap-3"><button @click="confirming=null" class="rounded-xl bg-white/5 py-3">Cancelar</button><button @click="redeem(confirming)" class="rounded-xl bg-emerald-400 py-3 font-bold text-slate-950">Confirmar</button></div></div></div>
     <div x-show="toast" x-transition class="fixed right-5 bottom-5 z-[250] max-w-sm px-5 py-4 rounded-xl bg-emerald-950/95 border border-emerald-400/30 text-emerald-200 shadow-2xl" x-text="toast"></div>
 </div>
 
@@ -143,23 +148,27 @@ function caseCenter() {
     return {
         cases: @js($cajas),
         inventory: @js($inventario->map(fn ($item) => ['id' => $item->id, 'nombre' => $item->nombre, 'imagen' => $item->imagen, 'rareza' => $item->rareza, 'valor_canje' => $item->valor_canje, 'estado' => $item->estado, 'created_at' => $item->created_at->diffForHumans()])),
-        filter: 'all', selectedKey: null, selected: null, opening: false, prize: null, error: '', redeeming: null, toast: '',
+        filter: 'all', selectedKey: null, selected: null, opening: false, prize: null, error: '', redeeming: null, confirming: null, toast: '', reelItems: [],
         get availableCount() { return this.inventory.filter(item => item.estado === 'disponible').length; },
         get inventoryValue() { return this.inventory.filter(item => item.estado === 'disponible').reduce((sum, item) => sum + Number(item.valor_canje), 0); },
         money(value) { return new Intl.NumberFormat('es-ES', { style:'currency', currency:'EUR' }).format(Number(value || 0)); },
         rarityName(value) { return ({comun:'Común', poco_comun:'Poco común', raro:'Raro', epico:'Épico', legendario:'Legendario'})[value] || value; },
+        init(){this.escapeHandler=e=>{if(e.key==='Escape'&&!this.opening){this.confirming=null;this.closeModal()}};document.addEventListener('keydown',this.escapeHandler)},
+        destroy(){document.removeEventListener('keydown',this.escapeHandler);document.body.style.overflow=''},
         selectCase(key) { this.selectedKey=key; this.selected=this.cases[key]; this.prize=null; this.error=''; document.body.style.overflow='hidden'; },
         closeModal() { if (this.opening) return; this.selected=null; this.selectedKey=null; this.prize=null; this.error=''; document.body.style.overflow=''; },
         async openSelected() {
             if (this.opening || !this.selectedKey) return;
-            this.opening=true; this.error='';
+            this.opening=true; this.error='';this.reelItems=Array.from({length:18},()=>this.selected.premios[Math.floor(Math.random()*this.selected.premios.length)]);
             const started=Date.now();
             try {
                 const url=@js(route('cases.open',['caja'=>'__CASE__'])).replace('__CASE__',encodeURIComponent(this.selectedKey));
                 const response=await fetch(url, { method:'POST', headers:{'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content,'Accept':'application/json'} });
                 const data=await response.json();
                 if (!response.ok) throw new Error(data.message || 'No se pudo abrir la caja.');
-                await new Promise(resolve => setTimeout(resolve, Math.max(0, 2400-(Date.now()-started))));
+                this.reelItems[15]=data.item;await this.$nextTick();
+                if(this.$refs.caseTrack)this.$refs.caseTrack.style.transform='translateX(calc(50% - 1916px))';
+                await new Promise(resolve => setTimeout(resolve, Math.max(0, 2450-(Date.now()-started))));
                 this.prize=data.item; this.inventory.unshift(data.item);
                 Alpine.store('wallet').saldo=Number(data.saldo);
                 window.dispatchEvent(new CustomEvent('saldo-updated',{detail:{saldo:Number(data.saldo)}}));
@@ -168,7 +177,7 @@ function caseCenter() {
         },
         async redeem(item) {
             if (this.redeeming) return;
-            this.redeeming=item.id;
+            this.redeeming=item.id;this.confirming=null;
             try {
                 const url=@js(route('inventory.redeem',['item'=>'__ITEM__'])).replace('__ITEM__',encodeURIComponent(item.id));
                 const response=await fetch(url, {method:'POST',headers:{'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content,'Accept':'application/json'}});

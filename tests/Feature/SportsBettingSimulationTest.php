@@ -30,6 +30,7 @@ class SportsBettingSimulationTest extends TestCase
     {
         [, $match] = $this->scenario(now()->subSeconds(180));
 
+        $this->artisan('sports:sync')->assertSuccessful();
         $this->getJson(route('apuestas.feed'))->assertOk()
             ->assertJsonPath('matches.0.status', 'en_vivo')
             ->assertJsonPath('matches.0.home_score', 1);
@@ -46,8 +47,8 @@ class SportsBettingSimulationTest extends TestCase
             'cuota' => 2, 'importe' => 10,
         ]);
 
-        $this->actingAs($user)->getJson(route('apuestas.feed'))->assertOk();
-        $this->actingAs($user)->getJson(route('apuestas.feed'))->assertOk();
+        $this->artisan('sports:sync')->assertSuccessful();
+        $this->artisan('sports:sync')->assertSuccessful();
 
         $this->assertEquals(110, $user->cartera->fresh()->saldo);
         $this->assertDatabaseHas('apuestas_deportivas', ['partido_id' => $match->id, 'estado' => 'ganada', 'ganancia' => 20]);

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cartera;
 use App\Models\Partida;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class SlotsController extends Controller
 {
@@ -151,6 +153,7 @@ class SlotsController extends Controller
         $request->validate([
             'apuesta' => 'required|numeric|min:0.10|max:500',
             'game' => 'nullable|string',
+            'request_token' => 'required|uuid',
         ]);
 
         $user = Auth::user();
@@ -158,40 +161,36 @@ class SlotsController extends Controller
         $gameSlug = $slug ?? $request->input('game', 'default');
         $theme = $this->themes[$gameSlug] ?? $this->themes['default'];
 
-        if (! $user->cartera || ! $user->cartera->apostar($apuesta, 'apuesta_slots', ['juego' => $gameSlug])) {
-            return response()->json(['error' => 'Saldo insuficiente.'], 422);
-        }
+        $round = DB::transaction(function () use ($request, $user, $apuesta, $gameSlug, $theme) {
+            $wallet = Cartera::where('usuario_id', $user->id)->lockForUpdate()->first();
+            $existing = Partida::where('usuario_id', $user->id)->where('juego', 'slots')
+                ->where('request_token', $request->request_token)->lockForUpdate()->first();
+            if ($existing) {
+                return $existing;
+            }
+            abort_unless($wallet?->apostar($apuesta, 'apuesta_slots', ['juego' => $gameSlug]), 422, 'Saldo insuficiente.');
+            $reels = [
+                $this->spin($theme['symbols'], $theme['weights']),
+                $this->spin($theme['symbols'], $theme['weights']),
+                $this->spin($theme['symbols'], $theme['weights']),
+            ];
+            $ganancia = $this->calculateWin($reels, $apuesta, $gameSlug);
+            if ($ganancia > 0) {
+                $wallet->ganar($ganancia, 'premio_slots', ['juego' => $gameSlug]);
+            }
 
-        $reels = [
-            $this->spin($theme['symbols'], $theme['weights']),
-            $this->spin($theme['symbols'], $theme['weights']),
-            $this->spin($theme['symbols'], $theme['weights']),
-        ];
-
-        $ganancia = $this->calculateWin($reels, $apuesta, $gameSlug);
-        $resultado = $ganancia > 0 ? 'win' : 'lose';
-
-        if ($ganancia > 0) {
-            $user->cartera->ganar($ganancia, 'premio_slots', ['juego' => $gameSlug]);
-        }
-
-        Partida::create([
-            'usuario_id' => $user->id,
-            'juego' => 'slots',
-            'apuesta' => $apuesta,
-            'ganancia' => $ganancia,
-            'detalles' => [
-                'reels' => $reels,
-                'resultado' => $resultado,
-                'game' => $gameSlug,
-            ],
-        ]);
+            return Partida::create([
+                'usuario_id' => $user->id, 'juego' => 'slots', 'request_token' => $request->request_token,
+                'apuesta' => $apuesta, 'ganancia' => $ganancia,
+                'detalles' => ['reels' => $reels, 'resultado' => $ganancia > 0 ? 'win' : 'lose', 'game' => $gameSlug],
+            ]);
+        });
 
         return response()->json([
-            'reels' => $reels,
-            'ganancia' => $ganancia,
-            'resultado' => $resultado,
-            'saldo' => $user->cartera?->saldo ?? 0,
+            'reels' => $round->detalles['reels'],
+            'ganancia' => (float) $round->ganancia,
+            'resultado' => $round->detalles['resultado'],
+            'saldo' => (float) $user->cartera()->value('saldo'),
         ]);
     }
 

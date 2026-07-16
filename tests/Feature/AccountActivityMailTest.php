@@ -63,8 +63,8 @@ class AccountActivityMailTest extends TestCase
             'cuota' => 2, 'importe' => 10,
         ]);
 
-        $this->actingAs($user)->getJson(route('apuestas.feed'))->assertOk();
-        $this->actingAs($user)->getJson(route('apuestas.feed'))->assertOk();
+        $this->artisan('sports:sync')->assertSuccessful();
+        $this->artisan('sports:sync')->assertSuccessful();
 
         Mail::assertSent(AccountActivityMail::class, 1);
         Mail::assertSent(AccountActivityMail::class, fn ($mail) => $mail->event === 'sports_bet_settled'

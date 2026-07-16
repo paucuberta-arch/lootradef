@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cartera;
 use App\Models\Partida;
 use App\Services\GameCatalog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class ArcadeController extends Controller
@@ -31,31 +33,37 @@ class ArcadeController extends Controller
             'choice' => 'nullable',
             'numbers' => 'nullable|array|max:5',
             'numbers.*' => 'integer|between:1,30',
+            'request_token' => 'required|uuid',
         ]);
         $user = $request->user();
         $bet = round((float) $data['apuesta'], 2);
         $choice = is_scalar($data['choice'] ?? null) ? (string) $data['choice'] : '';
+        $this->validateChoice($definition['mode'], $choice, $data['numbers'] ?? []);
 
-        if (! $user->cartera || ! $user->cartera->apostar($bet, 'apuesta_original', ['juego' => $game])) {
-            return response()->json(['message' => 'Saldo insuficiente.'], 422);
-        }
+        $round = DB::transaction(function () use ($user, $bet, $game, $definition, $choice, $data) {
+            $wallet = Cartera::where('usuario_id', $user->id)->lockForUpdate()->first();
+            $existing = Partida::where('usuario_id', $user->id)->where('juego', $game)
+                ->where('request_token', $data['request_token'])->lockForUpdate()->first();
+            if ($existing) {
+                return $existing;
+            }
+            abort_unless($wallet?->apostar($bet, 'apuesta_original', ['juego' => $game]), 422, 'Saldo insuficiente.');
+            $result = match ($definition['mode']) {
+                'wheel' => $this->wheel(), 'mines' => $this->mines($choice),
+                'dice' => $this->dice($choice), 'hilo' => $this->hiLo($choice),
+                'plinko' => $this->plinko(), 'keno' => $this->keno($data['numbers'] ?? []),
+                'coin' => $this->coin($choice), 'baccarat' => $this->baccarat($choice),
+                'nebula' => $this->nebula($choice), 'poker' => $this->poker(),
+            };
+            $win = round($bet * $result['multiplier'], 2);
+            if ($win > 0) {
+                $wallet->ganar($win, 'premio_original', ['juego' => $game]);
+            }
 
-        $result = match ($definition['mode']) {
-            'wheel' => $this->wheel(), 'mines' => $this->mines($choice ?: 3),
-            'dice' => $this->dice($choice ?: 'high'), 'hilo' => $this->hiLo($choice ?: 'higher'),
-            'plinko' => $this->plinko(), 'keno' => $this->keno($data['numbers'] ?? []),
-            'coin' => $this->coin($choice ?: 'heads'), 'baccarat' => $this->baccarat($choice ?: 'player'),
-            'nebula' => $this->nebula($choice ?: 'violet'), 'poker' => $this->poker(),
-        };
+            return Partida::create(['usuario_id' => $user->id, 'juego' => $game, 'request_token' => $data['request_token'], 'apuesta' => $bet, 'ganancia' => $win, 'detalles' => $result]);
+        });
 
-        $win = round($bet * $result['multiplier'], 2);
-        if ($win > 0) {
-            $user->cartera->ganar($win, 'premio_original', ['juego' => $game]);
-        }
-
-        Partida::create(['usuario_id' => $user->id, 'juego' => $game, 'apuesta' => $bet, 'ganancia' => $win, 'detalles' => $result]);
-
-        return response()->json([...$result, 'ganancia' => $win, 'saldo' => (float) $user->cartera->saldo]);
+        return response()->json([...$round->detalles, 'ganancia' => (float) $round->ganancia, 'saldo' => (float) $user->cartera()->value('saldo')]);
     }
 
     private function wheel(): array
@@ -104,9 +112,6 @@ class ArcadeController extends Controller
     private function keno(array $numbers): array
     {
         $chosen = array_values(array_unique(array_map('intval', $numbers)));
-        if (count($chosen) !== 5 || min($chosen) < 1 || max($chosen) > 30) {
-            $chosen = [1, 7, 13, 21, 28];
-        }
         $draw = collect(range(1, 30))->shuffle()->take(10)->sort()->values()->all();
         $hits = count(array_intersect($chosen, $draw));
 
@@ -167,6 +172,22 @@ class ArcadeController extends Controller
         $multiplier = $playerScore['score'] > $dealerScore['score'] ? 2 : ($playerScore['score'] === $dealerScore['score'] ? 1 : 0);
 
         return compact('multiplier', 'player', 'dealer', 'community') + ['player_hand' => $playerScore['name'], 'dealer_hand' => $dealerScore['name']];
+    }
+
+    private function validateChoice(string $mode, string $choice, array $numbers): void
+    {
+        $allowed = [
+            'mines' => ['1', '3', '5', '8'], 'dice' => ['high', 'low'],
+            'hilo' => ['higher', 'lower'], 'coin' => ['heads', 'tails'],
+            'baccarat' => ['player', 'banker', 'tie'], 'nebula' => ['violet', 'cyan', 'gold'],
+        ];
+        if (isset($allowed[$mode])) {
+            abort_unless(in_array($choice, $allowed[$mode], true), 422, 'La selección no es válida para este juego.');
+        }
+        if ($mode === 'keno') {
+            $unique = array_unique(array_map('intval', $numbers));
+            abort_unless(count($unique) === 5, 422, 'Debes elegir exactamente cinco números distintos.');
+        }
     }
 
     private function pokerScore(array $cards): array

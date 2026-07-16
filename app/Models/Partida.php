@@ -12,6 +12,7 @@ class Partida extends Model
     protected $fillable = [
         'usuario_id',
         'juego',
+        'request_token',
         'apuesta',
         'ganancia',
         'detalles',
