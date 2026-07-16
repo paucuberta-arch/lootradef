@@ -5,17 +5,19 @@
     {{-- Star rating --}}
     <div class="flex items-center gap-1 mb-4" x-data="{ hover: 0 }">
         <template x-for="i in 5">
-            <button @click="puntuacion = i" @mouseenter="hover = i" @mouseleave="hover = 0"
+            <button type="button" @click="puntuacion = i" @mouseenter="hover = i" @mouseleave="hover = 0" :aria-label="`Puntuar con ${i} estrellas`"
                     class="text-2xl transition"
                     :class="(hover >= i || puntuacion >= i) ? 'text-brand-400' : 'text-slate-700'">★</button>
         </template>
         <span class="ml-2 text-sm text-slate-500" x-text="puntuacion ? puntuacion + '/5' : ''"></span>
     </div>
 
-    <input x-model="titulo" type="text" placeholder="Titulo (opcional)"
+    <label for="review-title-{{ $slug }}" class="sr-only">Título de la opinión</label>
+    <input id="review-title-{{ $slug }}" x-model="titulo" type="text" placeholder="Título (opcional)"
            class="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-slate-600 outline-none focus:border-brand-500 transition mb-3">
 
-    <textarea x-model="contenido" rows="3" placeholder="Escribe tu opinion..."
+    <label for="review-content-{{ $slug }}" class="sr-only">Tu opinión</label>
+    <textarea id="review-content-{{ $slug }}" x-model="contenido" rows="3" placeholder="Escribe tu opinión..."
               class="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-slate-600 outline-none focus:border-brand-500 transition mb-3 resize-none"></textarea>
 
     <div class="flex items-center gap-3">
@@ -23,8 +25,8 @@
                 class="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-400 text-black text-sm font-bold transition disabled:opacity-50">
             <span x-text="submitting ? 'Enviando...' : 'Publicar review'"></span>
         </button>
-        <span x-show="success" class="text-sm text-emerald-400" x-text="success"></span>
-        <span x-show="error" class="text-sm text-red-400" x-text="error"></span>
+        <span x-show="success" class="text-sm text-emerald-400" x-text="success" role="status" aria-live="polite"></span>
+        <span x-show="error" class="text-sm text-red-400" x-text="error" role="alert"></span>
     </div>
 
     {{-- Reviews existentes --}}

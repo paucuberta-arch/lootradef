@@ -2,23 +2,6 @@
 
 @section('title', 'Lootra Casino — Juegos de Casino Online')
 
-@section('styles')
-<style>
-    .game-gradient-1 { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
-    .game-gradient-2 { background: linear-gradient(135deg, #2d1b69 0%, #11998e 100%); }
-    .game-gradient-3 { background: linear-gradient(135deg, #c31432 0%, #240b36 100%); }
-    .game-gradient-4 { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); }
-    .game-gradient-5 { background: linear-gradient(135deg, #f12711 0%, #f5af19 100%); }
-    .game-gradient-6 { background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%); }
-    .game-gradient-7 { background: linear-gradient(135deg, #7f00ff 0%, #e100ff 100%); }
-    .game-gradient-8 { background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%); }
-    .game-gradient-9 { background: linear-gradient(135deg, #1f1c2c 0%, #928dab 100%); }
-    .game-gradient-10 { background: linear-gradient(135deg, #e44d26 0%, #f16529 100%); }
-    .game-gradient-11 { background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%); }
-    .game-gradient-12 { background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); }
-</style>
-@endsection
-
 @section('contenido')
 
 @php
@@ -39,13 +22,23 @@
 <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10"
      x-data="{
          selected: new URLSearchParams(window.location.search).get('cat') || 'todos',
-         search: '',
-         sort: 'default',
+         search: new URLSearchParams(window.location.search).get('q') || '',
+         sort: new URLSearchParams(window.location.search).get('sort') || 'default',
          juegos: @js($juegos->values()),
          init() {
              const cat = new URLSearchParams(window.location.search).get('cat');
              if (cat && this.juegos.some(j => j.cat === cat)) this.selected = cat;
          },
+         syncUrl() {
+             const params = new URLSearchParams();
+             if (this.selected !== 'todos') params.set('cat', this.selected);
+             if (this.search.trim()) params.set('q', this.search.trim());
+             if (this.sort !== 'default') params.set('sort', this.sort);
+             history.replaceState({}, '', `${location.pathname}${params.size ? '?' + params : ''}#catalogo`);
+         },
+         selectCat(category) { this.selected = category; this.syncUrl(); },
+         selectSort(value) { this.sort = value; this.syncUrl(); },
+         resetFilters() { this.selected='todos'; this.search=''; this.sort='default'; this.syncUrl(); },
          get filtered() {
              let list = this.juegos;
              if (this.selected !== 'todos') list = list.filter(j => j.cat === this.selected);
@@ -80,7 +73,7 @@
             </h1>
             <p class="text-slate-300 text-base sm:text-lg max-w-xl leading-relaxed mb-7">Juegos con ritmo, recompensas instantáneas y una experiencia visual creada para que cada ronda se sienta única.</p>
             <div class="flex flex-wrap gap-3">
-                <button @click="selected = 'slots'; $nextTick(() => document.querySelector('#catalogo').scrollIntoView({behavior:'smooth'}))" class="cta-shine px-6 py-3.5 rounded-xl bg-gradient-to-r from-brand-400 via-orange-400 to-fuchsia-500 text-black font-extrabold shadow-xl shadow-fuchsia-500/20 hover:scale-105 transition-transform">Explorar juegos</button>
+                <button @click="selectCat('slots'); $nextTick(() => document.querySelector('#catalogo').scrollIntoView({behavior:'smooth'}))" class="cta-shine px-6 py-3.5 rounded-xl bg-gradient-to-r from-brand-300 via-brand-400 to-emerald-400 text-black font-extrabold shadow-xl shadow-brand-500/20 hover:scale-105 transition-transform">Explorar juegos</button>
                 @guest
                     <a href="{{ route('registro') }}" class="px-6 py-3.5 rounded-xl bg-white/10 border border-white/15 text-white font-bold backdrop-blur-xl hover:bg-white/15 hover:border-cyan-300/30 transition">Crear cuenta</a>
                 @else
@@ -109,7 +102,7 @@
                     <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
-                    <input x-model="search" type="text" placeholder="Buscar juegos..."
+                    <input x-model.debounce.250ms="search" @input.debounce.300ms="syncUrl()" type="search" aria-label="Buscar juegos" placeholder="Buscar juegos..."
                         class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-slate-500 outline-none focus:border-brand-500 transition">
                 </div>
 
@@ -119,7 +112,7 @@
                     <div class="space-y-1">
                         @foreach($cats as $cat)
                             <button
-                                @click="selected = '{{ $cat['id'] }}'"
+                                @click="selectCat('{{ $cat['id'] }}')"
                                 :class="selected === '{{ $cat['id'] }}'
                                     ? 'bg-brand-500/10 border-brand-500/30 text-brand-400'
                                     : 'text-slate-400 hover:text-white hover:bg-white/5 border-transparent'"
@@ -149,7 +142,7 @@
                         @endphp
                         @foreach($sortOpts as $opt)
                             <button
-                                @click="sort = '{{ $opt['id'] }}'"
+                                @click="selectSort('{{ $opt['id'] }}')"
                                 :class="sort === '{{ $opt['id'] }}'
                                     ? 'bg-brand-500/10 border-brand-500/30 text-brand-400'
                                     : 'text-slate-400 hover:text-white hover:bg-white/5 border-transparent'"
@@ -182,7 +175,7 @@
                 <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
-                <input x-model="search" type="text" placeholder="Buscar por nombre o proveedor..."
+                <input x-model.debounce.250ms="search" @input.debounce.300ms="syncUrl()" type="search" aria-label="Buscar juegos" placeholder="Buscar por nombre o proveedor..."
                     class="w-full pl-12 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition">
             </div>
 
@@ -205,7 +198,7 @@
                             <h3 class="text-xl sm:text-2xl font-extrabold text-white mb-3">Gates of Olympus</h3>
                             <div class="flex items-center gap-3">
                                 <span class="px-5 py-2.5 rounded-xl bg-brand-500 text-black text-sm font-bold">Jugar ahora</span>
-                                <span class="px-5 py-2.5 rounded-xl bg-white/10 text-white text-sm font-semibold border border-white/10">Demo</span>
+                                <span class="px-5 py-2.5 rounded-xl bg-white/10 text-white text-sm font-semibold border border-white/10">Ver detalles</span>
                             </div>
                         </div>
                     </a>
@@ -222,7 +215,7 @@
                             <h3 class="text-xl sm:text-2xl font-extrabold text-white mb-3">Texas Hold'em Live</h3>
                             <div class="flex items-center gap-3">
                                 <span class="px-5 py-2.5 rounded-xl bg-brand-500 text-black text-sm font-bold">Jugar ahora</span>
-                                <span class="px-5 py-2.5 rounded-xl bg-white/10 text-white text-sm font-semibold border border-white/10">Demo</span>
+                                <span class="px-5 py-2.5 rounded-xl bg-white/10 text-white text-sm font-semibold border border-white/10">Ver detalles</span>
                             </div>
                         </div>
                     </a>
@@ -239,7 +232,7 @@
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                     <template x-for="j in filtered" :key="j.slug">
                         <a :href='@js(route('games.show', '__SLUG__')).replace("__SLUG__", encodeURIComponent(j.slug))' class="game-card aspect-[3/4]" :class="j.grad">
-                            <img :src="j.image" :alt="j.name" class="absolute inset-0 w-full h-full object-cover" loading="lazy" onerror="this.style.display='none'">
+                            <img :src="j.image" :alt="j.name" class="absolute inset-0 w-full h-full object-cover" loading="lazy" x-on:error="$event.currentTarget.src=@js(asset('images/game-fallback.svg'))">
                             <div class="game-overlay"></div>
 
                             <template x-if="j.badge">
@@ -250,7 +243,7 @@
 
                             <div class="game-actions z-10">
                                 <span class="block w-full text-center rounded-xl bg-brand-500 hover:bg-brand-400 text-black text-sm font-bold py-2.5 transition mb-2">Jugar</span>
-                                <span class="block w-full text-center rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold py-2 transition border border-white/10">Demo</span>
+                                <span class="block w-full text-center rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold py-2 transition border border-white/10">Ver detalles</span>
                             </div>
 
                             <div class="absolute bottom-0 left-0 right-0 p-3 sm:p-4 z-10">
@@ -262,8 +255,9 @@
                 </div>
 
                 <div x-show="filtered.length === 0" class="text-center py-20">
-                    <div class="text-4xl mb-3">&#x1F50D;</div>
-                    <p class="text-slate-500">No se encontraron juegos.</p>
+                    <svg class="mx-auto mb-4 h-10 w-10 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="1.5" d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"/></svg>
+                    <p class="text-slate-400">No encontramos juegos con esos filtros.</p>
+                    <button @click="resetFilters()" class="mt-4 rounded-xl border border-white/10 px-4 py-2 text-sm text-cyan-300 hover:bg-white/5">Limpiar filtros</button>
                 </div>
             </div>
 

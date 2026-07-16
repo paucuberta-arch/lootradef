@@ -2,23 +2,6 @@
 
 @section('title', $juego['name'] . ' — Lootra Casino')
 
-@section('styles')
-<style>
-    .game-gradient-1 { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
-    .game-gradient-2 { background: linear-gradient(135deg, #2d1b69 0%, #11998e 100%); }
-    .game-gradient-3 { background: linear-gradient(135deg, #c31432 0%, #240b36 100%); }
-    .game-gradient-4 { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); }
-    .game-gradient-5 { background: linear-gradient(135deg, #f12711 0%, #f5af19 100%); }
-    .game-gradient-6 { background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%); }
-    .game-gradient-7 { background: linear-gradient(135deg, #7f00ff 0%, #e100ff 100%); }
-    .game-gradient-8 { background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%); }
-    .game-gradient-9 { background: linear-gradient(135deg, #1f1c2c 0%, #928dab 100%); }
-    .game-gradient-10 { background: linear-gradient(135deg, #e44d26 0%, #f16529 100%); }
-    .game-gradient-11 { background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%); }
-    .game-gradient-12 { background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); }
-</style>
-@endsection
-
 @section('contenido')
 
 <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
@@ -36,10 +19,11 @@
         <div class="flex-1 min-w-0">
 
             {{-- Hero del juego --}}
-            <div class="rounded-2xl overflow-hidden mb-8 {{ $juego['grad'] }}" style="min-height: 350px;">
+            <div class="rounded-2xl overflow-hidden mb-8 {{ $juego['grad'] }}" x-data="{ imageLoaded: false }">
                 <div class="relative h-full min-h-[350px] flex flex-col justify-end p-6 sm:p-10">
+                    <div x-show="!imageLoaded" class="absolute inset-0 animate-pulse bg-gradient-to-br from-white/5 to-transparent" aria-hidden="true"></div>
                     @if(!empty($juego['image']))
-                        <img src="{{ $juego['image'] }}" alt="{{ $juego['name'] }}" class="absolute inset-0 w-full h-full object-cover" loading="lazy">
+                        <img src="{{ $juego['image'] }}" alt="{{ $juego['name'] }}" class="absolute inset-0 w-full h-full object-cover" loading="eager" x-on:load="imageLoaded=true" x-on:error="$event.currentTarget.src=@js(asset('images/game-fallback.svg')); imageLoaded=true">
                     @endif
                     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
                     <div class="relative z-10">
@@ -140,8 +124,8 @@
                 <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Juegos similares</h3>
                 <div class="space-y-3">
                     @forelse($similarGames as $similar)
-                        <a href="{{ route('games.show', $similar['slug']) }}" class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition">
-                            <img src="{{ $similar['image'] }}" alt="" class="h-10 w-10 rounded-lg object-cover" loading="lazy">
+                        <a href="{{ route('games.show', $similar['slug']) }}" x-data class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition">
+                            <img src="{{ $similar['image'] }}" alt="" class="h-10 w-10 rounded-lg object-cover" loading="lazy" x-on:error="$event.currentTarget.src=@js(asset('images/game-fallback.svg'))">
                             <div>
                                 <p class="text-sm font-semibold text-white">{{ $similar['name'] }}</p>
                                 <p class="text-xs text-slate-500">{{ ucfirst($similar['category']) }}</p>
