@@ -30,6 +30,8 @@ class SlotsController extends Controller
             'emoji' => '⚡',
             'tagline' => 'Viaja al Monte del Olimpo con Zeus',
             'provider' => 'Pragmatic Play',
+            'atlas' => 'images/slots/olympus-symbols-v2.png',
+            'hero' => 'https://images.unsplash.com/photo-1603565816030-6b389eeb23cb?auto=format&fit=crop&w=1400&q=85',
             'symbols' => ['👑', '⚡', '💎', '🏆', '🏺', '🪙', '🔴', '🔵'],
             'weights' => ['👑' => 5, '⚡' => 8, '💎' => 10, '🏆' => 12, '🏺' => 18, '🪙' => 20, '🔴' => 25, '🔵' => 25],
             'paytable' => [
@@ -46,6 +48,8 @@ class SlotsController extends Controller
             'emoji' => '🍬',
             'tagline' => 'Un mundo de dulces y frutas te espera',
             'provider' => 'Pragmatic Play',
+            'atlas' => 'images/slots/sweet-symbols-v2.png',
+            'hero' => 'https://images.unsplash.com/photo-1575224300306-1b8da36134ec?auto=format&fit=crop&w=1400&q=85',
             'symbols' => ['🍭', '🍫', '🍬', '🍰', '🍩', '🍒', '🫐', '🟣'],
             'weights' => ['🍭' => 8, '🍫' => 10, '🍬' => 15, '🍰' => 15, '🍩' => 20, '🍒' => 22, '🫐' => 25, '🟣' => 25],
             'paytable' => [
@@ -62,6 +66,8 @@ class SlotsController extends Controller
             'emoji' => '📖',
             'tagline' => 'Aventura por el antiguo Egipto con Rich Wilde',
             'provider' => "Play'n GO",
+            'atlas' => 'images/slots/book-symbols-v2.png',
+            'hero' => 'https://images.unsplash.com/photo-1539768942893-daf53e736b68?auto=format&fit=crop&w=1400&q=85',
             'symbols' => ['📖', '💀', '🧔', '🦅', '🏛️', '🃏', '🔟', '👑'],
             'weights' => ['📖' => 5, '💀' => 8, '🧔' => 10, '🦅' => 15, '🏛️' => 18, '🃏' => 20, '🔟' => 25, '👑' => 25],
             'paytable' => [
@@ -78,6 +84,8 @@ class SlotsController extends Controller
             'emoji' => '💫',
             'tagline' => 'La slot mas iconica de NetEnt',
             'provider' => 'NetEnt',
+            'atlas' => 'images/slots/starburst-symbols-v2.png',
+            'hero' => 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=1400&q=85',
             'symbols' => ['💎', '⭐', '🌟', '✨', '🔵', '🟢', '🔴', '🟠'],
             'weights' => ['💎' => 5, '⭐' => 8, '🌟' => 12, '✨' => 15, '🔵' => 20, '🟢' => 22, '🔴' => 25, '🟠' => 25],
             'paytable' => [
@@ -94,6 +102,8 @@ class SlotsController extends Controller
             'emoji' => '🐟',
             'tagline' => 'Salva de pesca en esta slot acuatica',
             'provider' => 'Pragmatic Play',
+            'atlas' => 'images/slots/bass-symbols-v2.png',
+            'hero' => 'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=1400&q=85',
             'symbols' => ['🐟', '🎣', '🪣', '🦞', '🐡', '🌊', '⚓', '🐠'],
             'weights' => ['🐟' => 5, '🎣' => 8, '🪣' => 12, '🦞' => 15, '🐡' => 20, '🌊' => 22, '⚓' => 25, '🐠' => 25],
             'paytable' => [
@@ -126,7 +136,12 @@ class SlotsController extends Controller
             'gameTagline' => $theme['tagline'],
             'gameProvider' => $theme['provider'],
             'symbols' => $theme['symbols'],
-            'paytable' => $theme['paytable'],
+            'paytable' => collect($theme['paytable'])->map(fn (array $row, int $index) => [
+                ...$row,
+                'icon' => $theme['symbols'][min($index, 4)],
+            ])->all(),
+            'symbolAtlas' => asset($theme['atlas'] ?? 'images/slots/olympus-symbols-v2.png'),
+            'gameHero' => $theme['hero'] ?? null,
             'saldo' => Auth::user()?->cartera?->saldo ?? 0,
         ]);
     }

@@ -3,27 +3,17 @@
 
 @section('styles')
 <style>
-    @keyframes reel-scroll {
-        0% { transform: translateY(0); }
-        100% { transform: translateY(-100%); }
-    }
+    @keyframes reel-scroll { 0% { transform:translateY(-34%) scale(.96); } 100% { transform:translateY(34%) scale(1.04); } }
+    @keyframes reel-lock { 0%{transform:translateY(-55%) scale(.92)} 65%{transform:translateY(8%) scale(1.05)} 82%{transform:translateY(-4%) scale(.98)} 100%{transform:none} }
     .reel-container {
         overflow: hidden;
         position: relative;
-        background: linear-gradient(155deg, rgba(255,255,255,.96), rgba(203,213,225,.9));
-        box-shadow: inset 0 0 22px rgba(15,23,42,.28), 0 8px 24px rgba(0,0,0,.32);
+        background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.25), rgba(3,7,18,.94));
+        box-shadow: inset 0 0 30px rgba(0,0,0,.85), inset 0 2px 2px rgba(255,255,255,.35), 0 12px 30px rgba(0,0,0,.45);
     }
-    .reel-strip {
-        display: flex;
-        flex-direction: column;
-        transition: transform 0.1s linear;
-    }
-    .reel-strip.spinning {
-        animation: reel-scroll 0.15s linear infinite;
-    }
-    .reel-strip.stopping {
-        transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    }
+    .reel-strip { position:absolute; inset:8%; transition:filter .2s ease; }
+    .reel-strip.spinning { animation:reel-scroll .13s linear infinite alternate; filter:blur(5px) saturate(1.35) brightness(1.25); }
+    .reel-strip.stopping { animation:reel-lock .58s cubic-bezier(.16,1,.3,1); }
     @keyframes win-flash { 0%,100% { box-shadow: 0 0 0 rgba(245,158,11,0); } 50% { box-shadow: 0 0 25px rgba(245,158,11,0.5); } }
     .win-flash { animation: win-flash 0.5s ease-in-out 3; border-color: rgba(245,158,11,0.5) !important; }
     @keyframes win-bounce { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
@@ -36,11 +26,12 @@
         animation: coin-rain 1.2s ease-in forwards;
         position: absolute;
         pointer-events: none;
-        font-size: 1.2rem;
+        width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff7a8,#f59e0b 48%,#92400e);box-shadow:0 0 12px #fbbf24;
     }
-    .slot-cabinet { background: linear-gradient(145deg, rgba(29,11,55,.97), rgba(5,8,25,.98)); box-shadow: inset 0 0 55px rgba(217,70,239,.12), 0 30px 80px rgba(0,0,0,.5); }
-    .slot-cabinet::before { content:""; position:absolute; inset:0; background:var(--game-art) center/cover; opacity:.14; mix-blend-mode:screen; }
-    .slot-symbol { width:100%; aspect-ratio:1; display:grid; place-items:center; color:#111827; font-size:clamp(2.2rem,6vw,4.2rem); filter:drop-shadow(0 7px 7px rgba(15,23,42,.25)); text-shadow:0 2px 0 white; }
+    .slot-cabinet { background:linear-gradient(145deg,rgba(29,11,55,.94),rgba(5,8,25,.98));box-shadow:inset 0 0 55px rgba(217,70,239,.18),0 35px 90px rgba(0,0,0,.65); }
+    .slot-cabinet::before { content:""; position:absolute; inset:0; background:var(--game-art) center/cover; opacity:.22; mix-blend-mode:screen;filter:saturate(1.2); }
+    .slot-cabinet::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 25%,rgba(255,255,255,.13),transparent 38%);pointer-events:none}
+    .slot-symbol-art{width:100%;height:100%;border-radius:14px;background-repeat:no-repeat;filter:drop-shadow(0 10px 8px rgba(0,0,0,.48));transform:translateZ(0)}
     .reel-shine { position:absolute; inset:0; background:linear-gradient(110deg,transparent 25%,rgba(255,255,255,.45) 48%,transparent 70%); transform:translateX(-100%); pointer-events:none; z-index:3; }
     .reel-strip.spinning ~ .reel-shine { animation:shimmer .7s linear infinite; }
 </style>
@@ -71,7 +62,7 @@
                 <div class="max-w-md mx-auto">
                     {{-- Carretes --}}
                     <div class="slot-cabinet rounded-[1.6rem] border-2 border-fuchsia-400/20 p-5 mb-6 relative overflow-hidden"
-                         style="--game-art:url('https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1000&q=80')"
+                         style="--game-art:url('{{ $gameHero }}')"
                          :class="ganancia > 0 && !spinning ? 'win-flash' : ''">
                         <div class="grid grid-cols-3 gap-3">
                             <template x-for="(reel, i) in reels" :key="i">
@@ -79,7 +70,7 @@
                                      :class="ganancia > 0 && !spinning ? 'win-bounce border-brand-500/50' : ''">
                                     <div class="reel-strip" :id="'reel-' + i"
                                          :class="reelSpinning[i] ? 'spinning' : (reelStopping[i] ? 'stopping' : '')">
-                                        <div class="slot-symbol" x-text="reel"></div>
+                                        <div class="slot-symbol-art" :style="symbolStyle(reel)"></div>
                                     </div>
                                     <div class="reel-shine"></div>
                                 </div>
@@ -93,7 +84,7 @@
                         <template x-if="showCoins">
                             <div class="absolute inset-0 pointer-events-none">
                                 <template x-for="c in coinParticles" :key="c.id">
-                                    <span class="coin-particle" :style="'left:' + c.x + '%; top:' + c.y + '%; animation-delay:' + c.delay + 's'" x-text="c.emoji"></span>
+                                    <span class="coin-particle" :style="'left:' + c.x + '%; top:' + c.y + '%; animation-delay:' + c.delay + 's'"></span>
                                 </template>
                             </div>
                         </template>
@@ -146,7 +137,8 @@
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
                     <template x-for="p in paytable" :key="p.label">
                         <div class="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-center">
-                            <div class="text-2xl mb-1" x-text="p.symbols"></div>
+                            <div class="mx-auto mb-2 h-12 w-12 rounded-lg slot-symbol-art" :style="symbolStyle(p.icon)"></div>
+                            <div class="mb-1 text-[10px] uppercase tracking-wider text-slate-500" x-text="p.symbols === 'X X X' ? 'Cualquier pareja' : '3 símbolos'"></div>
                             <div class="text-brand-400 font-bold" x-text="p.label"></div>
                         </div>
                     </template>
@@ -177,7 +169,7 @@
                 <div class="space-y-2">
                     <template x-for="(h, i) in historial.slice(0, 8)" :key="i">
                         <div class="flex items-center justify-between text-xs">
-                            <span x-text="h.reels.join(' ')"></span>
+                            <span class="flex gap-1"><template x-for="symbol in h.reels"><i class="slot-symbol-art h-6 w-6 rounded" :style="symbolStyle(symbol)"></i></template></span>
                             <span :class="h.ganancia > 0 ? 'text-emerald-400' : 'text-red-400'"
                                   x-text="h.ganancia > 0 ? '+€' + h.ganancia.toFixed(2) : '-€' + h.apuesta.toFixed(2)"></span>
                         </div>
@@ -194,7 +186,7 @@ function slotsGame() {
     return {
         saldo: {{ $saldo }},
         apuesta: 1,
-        reels: ['🍒', '🍋', '🍊'],
+        reels: [],
         reelSpinning: [false, false, false],
         reelStopping: [false, false, false],
         spinning: false,
@@ -206,6 +198,15 @@ function slotsGame() {
         historial: @js($partidas->map(fn($p) => ['reels' => $p->detalles['reels'] ?? ['?','?','?'], 'ganancia' => $p->ganancia, 'apuesta' => $p->apuesta])->take(10)->all()),
         paytable: @js($paytable),
         symbols: @js($symbols),
+        atlas: @js($symbolAtlas),
+        spinTimers: [],
+
+        symbolStyle(symbol) {
+            const index = Math.max(0, this.symbols.indexOf(symbol));
+            const x = (index % 4) * 33.333333;
+            const y = Math.floor(index / 4) * 100;
+            return `background-image:url('${this.atlas}');background-size:400% 200%;background-position:${x}% ${y}%`;
+        },
 
         initReels() {
             this.reels = [
@@ -223,6 +224,11 @@ function slotsGame() {
             this.error = '';
             this.showCoins = false;
 
+            this.reelSpinning = [true, true, true];
+            this.spinTimers = this.reels.map((_, i) => setInterval(() => {
+                this.reels[i] = this.symbols[Math.floor(Math.random() * this.symbols.length)];
+            }, 72 + i * 9));
+
             try {
                 const res = await fetch('{{ route("slots.play") }}', {
                     method: 'POST',
@@ -237,25 +243,25 @@ function slotsGame() {
 
                 if (data.error) {
                     this.error = data.error;
+                    this.spinTimers.forEach(clearInterval);
+                    this.reelSpinning = [false, false, false];
                     this.spinning = false;
                     return;
                 }
 
-                // Start all reels spinning
-                this.reelSpinning = [true, true, true];
-
-                // Staggered stop: reel 0 at 600ms, reel 1 at 1000ms, reel 2 at 1400ms
-                const delays = [600, 1000, 1400];
+                // Frenado escalonado con inercia: cada carrete bloquea el resultado por separado.
+                const delays = [850, 1350, 1900];
                 for (let i = 0; i < 3; i++) {
                     await new Promise(r => setTimeout(r, delays[i] - (i > 0 ? delays[i-1] : 0)));
                     this.reelSpinning[i] = false;
+                    clearInterval(this.spinTimers[i]);
                     this.reelStopping[i] = true;
 
                     // Animate to final position
                     await new Promise(r => setTimeout(r, 50));
                     this.reels[i] = data.reels[i];
 
-                    await new Promise(r => setTimeout(r, 500));
+                    await new Promise(r => setTimeout(r, 580));
                     this.reelStopping[i] = false;
                 }
 
@@ -272,18 +278,18 @@ function slotsGame() {
                 }
             } catch (e) {
                 this.error = 'Error de conexion.';
+                this.spinTimers.forEach(clearInterval);
+                this.reelSpinning = [false, false, false];
             }
 
             this.spinning = false;
         },
 
         spawnCoins() {
-            const emojis = ['🪙', '💰', '✨', '💎'];
             this.coinParticles = [];
             for (let i = 0; i < 15; i++) {
                 this.coinParticles.push({
                     id: i,
-                    emoji: emojis[Math.floor(Math.random() * emojis.length)],
                     x: 10 + Math.random() * 80,
                     y: Math.random() * 30,
                     delay: Math.random() * 0.5,

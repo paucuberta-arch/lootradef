@@ -66,6 +66,9 @@
             {{-- Info del juego --}}
             <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-6 sm:p-8 mb-6">
                 <h2 class="text-xl font-bold text-white mb-4">Sobre el juego</h2>
+                @if(in_array($slug, ['sweet-bonanza', 'book-of-dead', 'big-bass-bonanza']) && !empty($juego['image']))
+                    <img src="{{ $juego['image'] }}" alt="Ambientación de {{ $juego['name'] }}" class="mb-6 h-64 w-full rounded-2xl object-cover border border-white/10 shadow-2xl" loading="eager">
+                @endif
                 <p class="text-slate-400 leading-relaxed">{{ $juego['description'] }}</p>
             </div>
 
