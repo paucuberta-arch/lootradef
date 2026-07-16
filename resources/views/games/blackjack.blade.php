@@ -16,7 +16,7 @@
 
 @section('game-content')
 <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10"
-     x-data="blackjackGame()">
+     x-data="blackjackGame()" :aria-busy="busy.toString()">
 
     <div class="flex flex-col lg:flex-row gap-6">
 
@@ -225,8 +225,14 @@ function blackjackGame() {
 
                 if (!res.ok) throw new Error(data.error || data.message || 'No se pudo repartir.');
 
-                this.manoJugador = data.mano_jugador;
-                this.manoDealer = data.mano_dealer;
+                this.manoJugador = [];
+                this.manoDealer = [];
+                for (let i = 0; i < 2; i++) {
+                    this.manoJugador.push(data.mano_jugador[i]);
+                    await this.pause(this.reducedMotion ? 0 : 180);
+                    this.manoDealer.push(data.mano_dealer[i]);
+                    await this.pause(this.reducedMotion ? 0 : 180);
+                }
                 this.puntosJugador = data.puntos_jugador;
                 this.puntosDealer = data.puntos_dealer;
                 this.baraja = data.baraja || [];
@@ -265,7 +271,11 @@ function blackjackGame() {
 
                 if (!res.ok) throw new Error(data.error || data.message || 'No se pudo pedir carta.');
 
-                this.manoJugador = data.mano_jugador;
+                const newCards = data.mano_jugador.slice(this.manoJugador.length);
+                for (const card of newCards) {
+                    this.manoJugador.push(card);
+                    await this.pause(this.reducedMotion ? 0 : 260);
+                }
                 this.puntosJugador = data.puntos_jugador;
                 this.baraja = data.baraja;
 
@@ -278,7 +288,7 @@ function blackjackGame() {
                     this.fase = 'terminado';
                     this.historial.unshift({ puntos: data.puntos_jugador, dealer_puntos: data.puntos_dealer || 0, ganancia: 0, apuesta: this.apuesta });
                 } else if (['win', 'lose', 'push', 'blackjack'].includes(data.estado)) {
-                    this.manoDealer = data.mano_dealer || this.manoDealer;
+                    await this.revealDealer(data.mano_dealer || this.manoDealer);
                     this.puntosDealer = data.puntos_dealer || this.puntosDealer;
                     this.estado = data.estado;
                     this.ganancia = data.ganancia;
@@ -295,7 +305,7 @@ function blackjackGame() {
         },
 
         async stand() {
-            if (this.busy) return; this.busy = true; this.oculto = false;
+            if (this.busy || this.fase !== 'jugando') return; this.busy = true;
 
             try {
                 const res = await fetch(@js($standRoute), {
@@ -311,7 +321,7 @@ function blackjackGame() {
 
                 if (!res.ok) throw new Error(data.error || data.message || 'No se pudo cerrar la mano.');
 
-                this.manoDealer = data.mano_dealer;
+                await this.revealDealer(data.mano_dealer);
                 this.puntosDealer = data.puntos_dealer;
                 this.estado = data.estado;
                 this.ganancia = data.ganancia;
@@ -335,6 +345,16 @@ function blackjackGame() {
             this.fase = '';
             this.ganancia = 0;
             this.baraja = [];
+        },
+        reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+        pause(ms) { return new Promise(resolve => setTimeout(resolve, ms)); },
+        async revealDealer(cards) {
+            this.oculto = false;
+            this.manoDealer = cards.length ? [cards[0]] : [];
+            for (const card of cards.slice(1)) {
+                await this.pause(this.reducedMotion ? 0 : 320);
+                this.manoDealer.push(card);
+            }
         },
     };
 }

@@ -18,7 +18,7 @@
 
 @section('game-content')
 <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10"
-     x-data="crashGame()" x-init="init()">
+     x-data="crashGame()" x-init="init()" :aria-busy="(actionInFlight || fase === 'preparando').toString()">
 
     <div class="flex flex-col lg:flex-row gap-6">
 
@@ -68,6 +68,9 @@
                                 <p class="text-sm text-emerald-400 mt-2">Subiendo...</p>
                             </div>
                         </template>
+                        <template x-if="fase === 'preparando'">
+                            <div><div class="text-6xl font-black text-cyan-300" x-text="countdown"></div><p class="mt-2 text-sm text-slate-400">Preparando lanzamiento…</p></div>
+                        </template>
                         <template x-if="fase === 'crashed'">
                             <div>
                                 <div class="text-5xl sm:text-6xl font-black text-red-500" x-text="crashAt.toFixed(2) + 'x'"></div>
@@ -96,31 +99,31 @@
                         <div class="flex-1 w-full">
                             <label class="text-xs text-slate-500 mb-1 block">Apuesta (€)</label>
                             <input type="number" x-model.number="apuesta" min="0.10" max="1000" step="0.10"
-                                   :disabled="fase === 'subiendo'"
+                                   :disabled="fase === 'subiendo' || fase === 'preparando'"
                                    class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-brand-500 transition disabled:opacity-50">
                         </div>
                         <div class="flex-1 w-full">
                             <label class="text-xs text-slate-500 mb-1 block">Auto-cobrar en (x)</label>
                             <input type="number" x-model.number="autoCashout" min="1.01" max="100" step="0.01"
-                                   :disabled="fase === 'subiendo'"
+                                   :disabled="fase === 'subiendo' || fase === 'preparando'"
                                    class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-brand-500 transition disabled:opacity-50">
                         </div>
                         <div class="w-full sm:w-auto mt-2 sm:mt-6">
                             <template x-if="fase === 'esperando' || fase === 'cobrado' || fase === 'crashed'">
-                                <button @click="startRound()"
+                                <button @click="startRound()" :disabled="actionInFlight"
                                         class="w-full sm:w-auto px-8 py-3 rounded-xl bg-brand-500 hover:bg-brand-400 text-black font-bold transition shadow-lg shadow-brand-500/20">
                                     Apostar
                                 </button>
                             </template>
                             <template x-if="fase === 'subiendo'">
-                                <button @click="cashout()"
+                                <button @click="cashout()" :disabled="actionInFlight"
                                         class="w-full sm:w-auto px-8 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-bold transition shadow-lg shadow-emerald-500/20">
                                     Cobrar <span x-text="multiplier.toFixed(2) + 'x'"></span>
                                 </button>
                             </template>
                         </div>
                     </div>
-                    <p x-show="error" class="text-red-400 text-sm mt-3" x-text="error"></p>
+                    <p x-show="error" role="alert" class="text-red-400 text-sm mt-3" x-text="error"></p>
                 </div>
             </div>
 
@@ -175,12 +178,15 @@ function crashGame() {
         statusInFlight: false,
         actionInFlight: false,
         autoCashoutTriggered: false,
+        countdown: 3,
         roundId: activeRound?.round_id || null,
         ratePerSecond: Number(activeRound?.rate_per_second || 0.2),
 
         init() {
             if (this.roundId) this.animateCrash(this.multiplier);
         },
+
+        destroy() { clearInterval(this.interval); },
 
         async startRound() {
             this.error = '';
@@ -191,7 +197,13 @@ function crashGame() {
             }
 
             this.actionInFlight = true;
+            this.fase = 'preparando';
             try {
+                this.countdown = 3;
+                while (this.countdown > 1) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    this.countdown--;
+                }
                 const res = await fetch('{{ route("games.crash.play") }}', {
                     method: 'POST',
                     headers: {
@@ -217,6 +229,7 @@ function crashGame() {
                 this.animateCrash(this.multiplier);
             } catch (e) {
                 this.error = e.message;
+                this.fase = 'esperando';
             } finally {
                 this.actionInFlight = false;
             }

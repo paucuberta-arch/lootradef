@@ -32,12 +32,10 @@
 
     <div class="grid gap-6 xl:grid-cols-[minmax(360px,.82fr)_minmax(520px,1.18fr)_290px]">
         <section class="game-stage rounded-[1.75rem] border border-white/5 bg-white/[.03] p-5 sm:p-7 {{ $variant === 'lightning' ? 'lightning-stage' : '' }}">
-            @php
-                $wheelOrder = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
-                $redNumbers = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
-            @endphp
+            @php($wheelOrder = $rouletteConfig['wheel_order'])
+            @php($redNumbers = $rouletteConfig['red_numbers'])
             <div class="roulette-camera" x-ref="camera" :class="cameraStage===1?'zooming':cameraStage===2?'holding':''">
-                <div class="roulette-shell">
+                <div class="roulette-shell" x-ref="shell">
                     <div class="roulette-rotor" x-ref="rotor">
                         @foreach($wheelOrder as $index => $number)
                             <div data-pocket="{{ $number }}" class="pocket {{ $number === 0 ? 'pocket-green' : (in_array($number, $redNumbers) ? 'pocket-red' : 'pocket-black') }}" style="transform:rotate({{ $index * (360 / 37) }}deg)"><span>{{ $number }}</span></div>
@@ -80,47 +78,49 @@
 <script>
 function rouletteGame(){return{
     saldo:{{ Auth::user()?->cartera?->saldo ?? 0 }},apuesta:1,tipo:'rojo',valor:null,spinning:false,ganancia:0,lastNumero:null,lastColor:null,cameraStage:0,resultVisible:false,error:'',multipliers:{},wheelRotation:0,
-    wheelOrder:@js($wheelOrder),
+    wheelOrder:@js($rouletteConfig['wheel_order']),
     historial:@js($partidas->map(fn($p)=>['numero'=>$p->detalles['numero']??0,'color'=>$p->detalles['color']??'verde','tipo'=>$p->detalles['tipo_apuesta']??'','ganancia'=>(float)$p->ganancia,'apuesta'=>(float)$p->apuesta])->all()),
-    red:[1,3,5,7,9,11,13,15,17,19,21,23,25,27,30,32,34,36],
+    red:@js($rouletteConfig['red_numbers']),animations:[],reducedMotion:window.matchMedia('(prefers-reduced-motion: reduce)').matches,
     get selectionLabel(){if(this.tipo==='numero')return `Número ${this.valor}`;return {rojo:'Rojo',negro:'Negro',par:'Par',impar:'Impar',docena1:'Primera docena',docena2:'Segunda docena',docena3:'Tercera docena'}[this.tipo]},
     get statusText(){return this.spinning?(this.cameraStage===0?'La pelota recorre el carril exterior…':this.cameraStage===1?'La pelota pierde velocidad y rebota…':'Confirmando la casilla ganadora…'):(this.lastNumero===null?'Selecciona una apuesta para empezar':'Resultado confirmado')},
     select(tipo,valor=null){if(this.spinning)return;this.tipo=tipo;this.valor=valor},selected(t,v=null){return this.tipo===t&&(t!=='numero'||this.valor===v)},
     numberClass(n){const active=this.selected('numero',n);const red=this.red.includes(n);return [active?'ring-2 ring-cyan-300 border-cyan-300':'border-white/10',red?'bg-red-600/80 text-white':'bg-slate-800 text-white']},
     resultClass(c){return c==='rojo'?'bg-red-600 text-white':c==='negro'?'bg-slate-800 text-white border border-white/20':'bg-emerald-600 text-white'},money(v){return new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(Number(v)||0)},
     wait(ms){return new Promise(resolve=>setTimeout(resolve,ms))},
+    destroy(){this.animations.forEach(animation=>animation.cancel());this.animations=[]},
     async animateSpin(number){
-        const duration=6500+Math.floor(Math.random()*1800),wheelTurns=5+Math.random()*2.2,ballTurns=9+Math.random()*3;
+        const duration=this.reducedMotion?900:6500+Math.floor(Math.random()*1800),wheelTurns=this.reducedMotion?1:5+Math.random()*2.2,ballTurns=this.reducedMotion?2:9+Math.random()*3;
         const wheelEnd=this.wheelRotation+wheelTurns*360+(Math.random()*12-6),pocketIndex=this.wheelOrder.indexOf(Number(number));
-        const pocketAngle=pocketIndex*(360/37),targetScreen=(pocketAngle+wheelEnd)%360;
+        const pocketAngle=pocketIndex*(360/37),targetScreen=((pocketAngle+wheelEnd)%360+360)%360;
         const startAngle=Math.random()*360,outerEnd=startAngle-ballTurns*360;
-        const align=(angle,target)=>angle-(((angle-target)%360)+360)%360;
-        const finalAngle=align(outerEnd-250,targetScreen),step=360/37;
-        document.querySelectorAll('.pocket.winner').forEach(el=>el.classList.remove('winner'));
+        const finalAngle=outerEnd-(((outerEnd-targetScreen)%360)+360)%360,step=360/37;
+        const size=this.$refs.shell.getBoundingClientRect().width,outer=size*.445,drop=size*.345,bounce=size*.325,settled=size*.315;
+        this.$root.querySelectorAll('.pocket.winner').forEach(el=>el.classList.remove('winner'));
         this.$refs.ball.classList.add('travelling');
         const wheelAnimation=this.$refs.rotor.animate([
             {transform:`rotate(${this.wheelRotation}deg)`,offset:0,easing:'cubic-bezier(.16,.62,.25,1)'},
             {transform:`rotate(${wheelEnd-22}deg)`,offset:.84,easing:'cubic-bezier(.1,.55,.2,1)'},
             {transform:`rotate(${wheelEnd}deg)`,offset:1,easing:'ease-out'}
-        ],{duration:duration+700,fill:'forwards'});
-        const ballAnimation=this.$refs.ball.animate([
-            {transform:`rotate(${startAngle}deg) translateY(-174px) scale(1)`,offset:0,easing:'linear'},
-            {transform:`rotate(${startAngle-ballTurns*250}deg) translateY(-173px) scale(1.03)`,offset:.52,easing:'linear'},
-            {transform:`rotate(${outerEnd}deg) translateY(-160px) scale(1)`,offset:.69,easing:'cubic-bezier(.22,.7,.3,1)'},
-            {transform:`rotate(${finalAngle+step*4.2}deg) translateY(-137px) scale(.97)`,offset:.79},
-            {transform:`rotate(${finalAngle+step*2.5}deg) translateY(-124px) scale(1.08)`,offset:.84},
-            {transform:`rotate(${finalAngle+step*1.45}deg) translateY(-132px) scale(.94)`,offset:.88},
-            {transform:`rotate(${finalAngle+step*.72}deg) translateY(-118px) scale(1.05)`,offset:.92},
-            {transform:`rotate(${finalAngle+step*.25}deg) translateY(-126px) scale(.98)`,offset:.96},
-            {transform:`rotate(${finalAngle}deg) translateY(-121px) scale(1)`,offset:1,easing:'ease-out'}
         ],{duration,fill:'forwards'});
+        const ballAnimation=this.$refs.ball.animate([
+            {transform:`rotate(${startAngle}deg) translateY(-${outer}px) scale(1)`,offset:0,easing:'linear'},
+            {transform:`rotate(${startAngle-ballTurns*250}deg) translateY(-${outer}px) scale(1.03)`,offset:.52,easing:'linear'},
+            {transform:`rotate(${outerEnd}deg) translateY(-${drop}px) scale(1)`,offset:.69,easing:'cubic-bezier(.22,.7,.3,1)'},
+            {transform:`rotate(${finalAngle+step*4.2}deg) translateY(-${bounce}px) scale(.97)`,offset:.79},
+            {transform:`rotate(${finalAngle+step*2.5}deg) translateY(-${settled*.96}px) scale(1.08)`,offset:.84},
+            {transform:`rotate(${finalAngle+step*1.45}deg) translateY(-${bounce}px) scale(.94)`,offset:.88},
+            {transform:`rotate(${finalAngle+step*.72}deg) translateY(-${settled*.94}px) scale(1.05)`,offset:.92},
+            {transform:`rotate(${finalAngle+step*.25}deg) translateY(-${bounce}px) scale(.98)`,offset:.96},
+            {transform:`rotate(${finalAngle}deg) translateY(-${settled}px) scale(1)`,offset:1,easing:'ease-out'}
+        ],{duration,fill:'forwards'});
+        this.animations=[wheelAnimation,ballAnimation];
         await this.wait(duration*.72);this.cameraStage=1;
         await ballAnimation.finished;this.cameraStage=2;this.$refs.ball.classList.remove('travelling');
-        document.querySelector(`[data-pocket="${number}"]`)?.classList.add('winner');
+        this.$root.querySelector(`[data-pocket="${number}"]`)?.classList.add('winner');
         await wheelAnimation.finished;this.wheelRotation=wheelEnd;
-        await this.wait(1500);
+        await this.wait(this.reducedMotion?250:1500);this.animations=[];
     },
-    async play(){if(this.spinning||this.apuesta>this.saldo)return;this.spinning=true;this.cameraStage=0;this.resultVisible=false;this.lastNumero=null;this.ganancia=0;this.error='';try{const r=await fetch(@js($playRoute),{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content},body:JSON.stringify({apuesta:this.apuesta,tipo:this.tipo,valor:this.valor})});const d=await r.json();if(!r.ok)throw new Error(d.error||d.message||'No se pudo completar el giro.');this.lastNumero=d.numero;this.lastColor=d.color;this.multipliers=d.multipliers||{};await this.animateSpin(d.numero);this.ganancia=Number(d.ganancia);this.saldo=Number(d.saldo);this.$store.wallet.saldo=this.saldo;this.historial.unshift({numero:d.numero,color:d.color,tipo:this.selectionLabel,ganancia:this.ganancia,apuesta:this.apuesta});this.resultVisible=true;window.dispatchEvent(new CustomEvent('saldo-updated',{detail:{saldo:this.saldo}}));await this.wait(900);}catch(e){this.error=e.message;}finally{this.spinning=false;}}
+    async play(){if(this.spinning||this.apuesta>this.saldo)return;this.spinning=true;this.cameraStage=0;this.resultVisible=false;this.lastNumero=null;this.ganancia=0;this.error='';try{const r=await fetch(@js($playRoute),{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content},body:JSON.stringify({apuesta:this.apuesta,tipo:this.tipo,valor:this.valor})});const d=await r.json();if(!r.ok)throw new Error(d.error||d.message||'No se pudo completar el giro.');await this.animateSpin(d.numero);this.lastNumero=d.numero;this.lastColor=d.color;this.multipliers=d.multipliers||{};this.ganancia=Number(d.ganancia);this.saldo=Number(d.saldo);this.$store.wallet.saldo=this.saldo;this.historial.unshift({numero:d.numero,color:d.color,tipo:this.selectionLabel,ganancia:this.ganancia,apuesta:this.apuesta});this.resultVisible=true;window.dispatchEvent(new CustomEvent('saldo-updated',{detail:{saldo:this.saldo}}));await this.wait(900);}catch(e){if(e.name!=='AbortError')this.error=e.message;}finally{this.spinning=false;}}
 }}
 </script>
 @endpush

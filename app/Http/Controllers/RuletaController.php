@@ -8,8 +8,6 @@ use Illuminate\Support\Facades\Auth;
 
 class RuletaController extends Controller
 {
-    private array $redNumbers = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
-
     public function index(string $variant = 'european')
     {
         abort_unless(in_array($variant, ['european', 'lightning'], true), 404);
@@ -25,6 +23,7 @@ class RuletaController extends Controller
             'variant' => $variant,
             'gameName' => $variant === 'lightning' ? 'Lightning Roulette' : 'Ruleta Europea',
             'playRoute' => $variant === 'lightning' ? route('games.roulette.lightning.play') : route('games.roulette.european.play'),
+            'rouletteConfig' => config('roulette'),
         ]);
     }
 
@@ -45,7 +44,7 @@ class RuletaController extends Controller
         }
 
         $numero = random_int(0, 36);
-        $color = $numero === 0 ? 'verde' : (in_array($numero, $this->redNumbers, true) ? 'rojo' : 'negro');
+        $color = $numero === 0 ? 'verde' : (in_array($numero, config('roulette.red_numbers'), true) ? 'rojo' : 'negro');
 
         $multipliers = $variant === 'lightning' ? $this->lightningNumbers() : [];
         $ganancia = $this->calculateWin($request->tipo, $request->valor, $numero, $color, $apuesta);
