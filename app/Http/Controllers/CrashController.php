@@ -2,157 +2,187 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cartera;
+use App\Models\CrashRound;
 use App\Models\Partida;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
 class CrashController extends Controller
 {
-    public function index()
+    private const MULTIPLIER_PER_SECOND = 0.20;
+
+    public function index(Request $request): View
     {
-        $partidas = Partida::where('usuario_id', Auth::id())
-            ->where('juego', 'crash')
-            ->latest()
-            ->take(10)
-            ->get();
+        $active = DB::transaction(function () use ($request) {
+            $round = CrashRound::where('usuario_id', $request->user()->id)
+                ->where('estado', 'activa')->lockForUpdate()->latest()->first();
 
-        return view('games.crash', ['partidas' => $partidas]);
-    }
+            if ($round && $this->currentMultiplier($round) >= $round->crash_point) {
+                $this->finish($round, 'crashed', 0, null);
 
-    public function play(Request $request)
-    {
-        $request->validate([
-            'apuesta' => 'required|numeric|min:0.10|max:1000',
-        ]);
+                return null;
+            }
 
-        $user = Auth::user();
-        $apuesta = round($request->apuesta, 2);
+            return $round;
+        });
 
-        if (!$user->cartera || !$user->cartera->apostar($apuesta)) {
-            return response()->json(['error' => 'Saldo insuficiente.'], 422);
-        }
-
-        $crashPoint = $this->generateCrashPoint();
-
-        Session::put('crash_round', [
-            'crash_point' => $crashPoint,
-            'apuesta' => $apuesta,
-            'started_at' => now()->timestamp,
-        ]);
-
-        return response()->json([
-            'ok' => true,
-            'saldo' => $user->cartera?->saldo ?? 0,
-            'crash_point' => $crashPoint,
+        return view('games.crash', [
+            'partidas' => Partida::where('usuario_id', $request->user()->id)
+                ->where('juego', 'crash')->latest()->take(10)->get(),
+            'activeRound' => $active ? $this->roundData($active) : null,
         ]);
     }
 
-    public function cashout(Request $request)
+    public function play(Request $request): JsonResponse
     {
-        $request->validate([
-            'multiplier' => 'required|numeric|min:1.01',
-        ]);
+        $validated = $request->validate(['apuesta' => ['required', 'numeric', 'min:0.10', 'max:1000']]);
 
-        $user = Auth::user();
-        $round = Session::get('crash_round');
+        $round = DB::transaction(function () use ($request, $validated) {
+            $wallet = Cartera::where('usuario_id', $request->user()->id)->lockForUpdate()->first();
+            abort_unless($wallet, 422, 'No tienes una cartera activa.');
 
-        if (!$round) {
-            return response()->json([
-                'error' => 'No hay ronda activa.',
-                'crash_point' => 0,
-                'ganancia' => 0,
-                'resultado' => 'no_round',
-                'saldo' => $user->cartera?->saldo ?? 0,
-            ], 422);
-        }
+            $active = CrashRound::where('usuario_id', $request->user()->id)
+                ->where('estado', 'activa')->lockForUpdate()->latest()->first();
+            if ($active && $this->currentMultiplier($active) >= $active->crash_point) {
+                $this->finish($active, 'crashed', 0, null);
+                $active = null;
+            }
+            abort_if($active, 409, 'Ya tienes una ronda Crash activa.');
 
-        Session::forget('crash_round');
+            $bet = round((float) $validated['apuesta'], 2);
+            abort_if($wallet->saldo < $bet, 422, 'Saldo insuficiente.');
+            $wallet->decrement('saldo', $bet);
 
-        $crashPoint = $round['crash_point'];
-        $apuesta = $round['apuesta'];
-        $multiplier = round($request->multiplier, 2);
-
-        if ($multiplier >= $crashPoint) {
-            $ganancia = 0;
-            $resultado = 'crash';
-        } else {
-            $ganancia = round($apuesta * $multiplier, 2);
-            $resultado = 'cobrado';
-            $user->cartera->ganar($ganancia);
-        }
-
-        Partida::create([
-            'usuario_id' => $user->id,
-            'juego' => 'crash',
-            'apuesta' => $apuesta,
-            'ganancia' => $ganancia,
-            'detalles' => [
-                'crash_point' => $crashPoint,
-                'cashout_at' => $multiplier,
-                'resultado' => $resultado,
-            ],
-        ]);
-
-        return response()->json([
-            'crash_point' => $crashPoint,
-            'ganancia' => $ganancia,
-            'resultado' => $resultado,
-            'saldo' => $user->cartera?->saldo ?? 0,
-        ]);
-    }
-
-    public function crash(Request $request)
-    {
-        $user = Auth::user();
-        $round = Session::get('crash_round');
-
-        if (!$round) {
-            return response()->json([
-                'crash_point' => 0,
-                'ganancia' => 0,
-                'resultado' => 'no_round',
-                'saldo' => $user->cartera?->saldo ?? 0,
+            return CrashRound::create([
+                'usuario_id' => $request->user()->id,
+                'apuesta' => $bet,
+                'crash_point' => $this->generateCrashPoint(),
+                'estado' => 'activa',
+                'iniciada_at' => now(),
             ]);
+        });
+
+        return response()->json($this->roundData($round) + ['ok' => true], 201);
+    }
+
+    public function status(Request $request): JsonResponse
+    {
+        $validated = $request->validate(['round_id' => ['required', 'integer']]);
+        $round = DB::transaction(function () use ($request, $validated) {
+            $round = CrashRound::whereKey($validated['round_id'])
+                ->where('usuario_id', $request->user()->id)->lockForUpdate()->firstOrFail();
+
+            if ($round->estado === 'activa' && $this->currentMultiplier($round) >= $round->crash_point) {
+                $this->finish($round, 'crashed', 0, null);
+            }
+
+            return $round->fresh();
+        });
+
+        return response()->json($this->roundData($round));
+    }
+
+    public function cashout(Request $request): JsonResponse
+    {
+        $validated = $request->validate(['round_id' => ['required', 'integer']]);
+        $round = DB::transaction(function () use ($request, $validated) {
+            $round = CrashRound::whereKey($validated['round_id'])
+                ->where('usuario_id', $request->user()->id)->lockForUpdate()->firstOrFail();
+
+            if ($round->estado !== 'activa') {
+                return $round;
+            }
+
+            $multiplier = $this->currentMultiplier($round);
+            if ($multiplier >= $round->crash_point) {
+                $this->finish($round, 'crashed', 0, null);
+            } else {
+                abort_if($multiplier < 1.01, 422, 'Es demasiado pronto para cobrar.');
+                $payout = round($round->apuesta * $multiplier, 2);
+                Cartera::where('usuario_id', $round->usuario_id)->lockForUpdate()->increment('saldo', $payout);
+                $this->finish($round, 'cobrado', $payout, $multiplier);
+            }
+
+            return $round->fresh();
+        });
+
+        return response()->json($this->roundData($round));
+    }
+
+    public function crash(Request $request): JsonResponse
+    {
+        return $this->status($request);
+    }
+
+    private function currentMultiplier(CrashRound $round): float
+    {
+        $elapsedMilliseconds = max(0, $round->iniciada_at->diffInMilliseconds(now()));
+        $raw = 1 + ($elapsedMilliseconds / 1000) * self::MULTIPLIER_PER_SECOND;
+
+        return floor($raw * 100) / 100;
+    }
+
+    private function finish(CrashRound $round, string $state, float $payout, ?float $cashoutAt): void
+    {
+        if ($round->estado !== 'activa') {
+            return;
         }
 
-        Session::forget('crash_round');
-
-        $apuesta = $round['apuesta'];
-        $crashPoint = $round['crash_point'];
-
+        $round->update([
+            'estado' => $state,
+            'cashout_at' => $cashoutAt,
+            'ganancia' => $payout,
+            'finalizada_at' => now(),
+        ]);
         Partida::create([
-            'usuario_id' => $user->id,
+            'usuario_id' => $round->usuario_id,
             'juego' => 'crash',
-            'apuesta' => $apuesta,
-            'ganancia' => 0,
+            'apuesta' => $round->apuesta,
+            'ganancia' => $payout,
             'detalles' => [
-                'crash_point' => $crashPoint,
-                'cashout_at' => null,
-                'resultado' => 'crash',
+                'crash_point' => $round->crash_point,
+                'cashout_at' => $cashoutAt,
+                'resultado' => $state,
+                'round_id' => $round->id,
             ],
         ]);
+    }
 
-        return response()->json([
-            'crash_point' => $crashPoint,
-            'ganancia' => 0,
-            'resultado' => 'crash',
-            'saldo' => $user->cartera?->saldo ?? 0,
-        ]);
+    private function roundData(CrashRound $round): array
+    {
+        $finished = $round->estado !== 'activa';
+
+        return [
+            'round_id' => $round->id,
+            'estado' => $round->estado,
+            'multiplier' => $round->estado === 'cobrado'
+                ? $round->cashout_at
+                : ($round->estado === 'crashed' ? $round->crash_point : $this->currentMultiplier($round)),
+            'crash_point' => $finished ? $round->crash_point : null,
+            'ganancia' => $round->ganancia,
+            'saldo' => (float) (Cartera::where('usuario_id', $round->usuario_id)->value('saldo') ?? 0),
+            'rate_per_second' => self::MULTIPLIER_PER_SECOND,
+        ];
     }
 
     private function generateCrashPoint(): float
     {
         $houseEdge = 0.03;
-        $max = 1000000;
         $e = 2 ** 32;
         $h = $e * (1 - $houseEdge);
 
-        if ($h <= 0) return 1.0;
+        if ($h <= 0) {
+            return 1.0;
+        }
 
         $r = random_int(1, $e - 1);
 
-        if ($r >= $h) return 1.0;
+        if ($r >= $h) {
+            return 1.0;
+        }
 
         return round($e / ($e - $r), 2);
     }

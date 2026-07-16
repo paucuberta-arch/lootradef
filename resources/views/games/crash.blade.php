@@ -157,12 +157,14 @@
 @push('scripts')
 <script>
 function crashGame() {
+    const activeRound = @js($activeRound);
+
     return {
         saldo: {{ Auth::user()?->cartera?->saldo ?? 1000 }},
         apuesta: 1,
         autoCashout: 2,
-        fase: 'esperando',
-        multiplier: 1.00,
+        fase: activeRound ? 'subiendo' : 'esperando',
+        multiplier: Number(activeRound?.multiplier || 1),
         crashAt: 0,
         cashoutAt: 0,
         ganancia: 0,
@@ -170,18 +172,25 @@ function crashGame() {
         graphPoints: '0,58',
         historial: @js($partidas->pluck('detalles.crash_point')->filter()->take(15)->values()->all()),
         interval: null,
+        statusInFlight: false,
+        actionInFlight: false,
         autoCashoutTriggered: false,
-        serverCrashPoint: 0,
+        roundId: activeRound?.round_id || null,
+        ratePerSecond: Number(activeRound?.rate_per_second || 0.2),
 
-        init() {},
+        init() {
+            if (this.roundId) this.animateCrash(this.multiplier);
+        },
 
         async startRound() {
             this.error = '';
-            if (this.apuesta <= 0 || this.apuesta > this.saldo) {
+            if (this.actionInFlight || this.fase === 'subiendo') return;
+            if (this.apuesta < 0.10 || this.apuesta > this.saldo) {
                 this.error = 'Apuesta no valida.';
                 return;
             }
 
+            this.actionInFlight = true;
             try {
                 const res = await fetch('{{ route("crash.play") }}', {
                     method: 'POST',
@@ -194,41 +203,36 @@ function crashGame() {
                 });
                 const data = await res.json();
 
-                if (data.error) {
-                    this.error = data.error;
-                    return;
-                }
+                if (!res.ok) throw new Error(data.message || data.error || 'No se pudo iniciar la ronda.');
 
-                this.saldo = data.saldo;
-                Alpine.store('wallet').saldo = data.saldo;
-                window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
-                this.serverCrashPoint = data.crash_point;
-                this.multiplier = 1.00;
+                this.updateBalance(data.saldo);
+                this.roundId = data.round_id;
+                this.ratePerSecond = Number(data.rate_per_second);
+                this.multiplier = Number(data.multiplier);
                 this.ganancia = 0;
                 this.graphPoints = '0,58';
                 this.fase = 'subiendo';
                 this.autoCashoutTriggered = false;
 
-                this.animateCrash();
+                this.animateCrash(this.multiplier);
             } catch (e) {
-                this.error = 'Error de conexion.';
+                this.error = e.message;
+            } finally {
+                this.actionInFlight = false;
             }
         },
 
-        animateCrash() {
-            let current = 1.00;
+        animateCrash(startAt = 1) {
+            clearInterval(this.interval);
+            let current = Number(startAt);
             let pointIndex = 0;
+            let statusTicks = 0;
+            const increment = this.ratePerSecond / 20;
 
             this.interval = setInterval(() => {
-                current += 0.01;
+                if (this.fase !== 'subiendo') return;
+                current += increment;
                 current = Math.round(current * 100) / 100;
-
-                if (current >= this.serverCrashPoint) {
-                    clearInterval(this.interval);
-                    this.doCrash();
-                    return;
-                }
-
                 this.multiplier = current;
 
                 pointIndex++;
@@ -239,48 +243,21 @@ function crashGame() {
                 if (!this.autoCashoutTriggered && current >= this.autoCashout) {
                     this.autoCashoutTriggered = true;
                     clearInterval(this.interval);
-                    this.doCashout(current);
+                    this.cashout();
+                }
+
+                statusTicks++;
+                if (statusTicks >= 5) {
+                    statusTicks = 0;
+                    this.refreshRound();
                 }
             }, 50);
         },
 
         async cashout() {
-            if (this.fase !== 'subiendo') return;
+            if (this.fase !== 'subiendo' || this.actionInFlight || !this.roundId) return;
             clearInterval(this.interval);
-            await this.doCashout(this.multiplier);
-        },
-
-        async doCrash() {
-            try {
-                const res = await fetch('{{ route("crash.crash") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json',
-                    },
-                });
-                const data = await res.json();
-
-                this.crashAt = data.crash_point || this.serverCrashPoint;
-                this.ganancia = 0;
-                this.saldo = data.saldo ?? this.saldo;
-                Alpine.store('wallet').saldo = this.saldo;
-                window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: this.saldo } }));
-                this.fase = 'crashed';
-                this.multiplier = this.crashAt;
-
-                if (data.crash_point) {
-                    this.historial.unshift(data.crash_point);
-                    if (this.historial.length > 15) this.historial.pop();
-                }
-            } catch (e) {
-                this.error = 'Error de conexion.';
-                this.fase = 'esperando';
-            }
-        },
-
-        async doCashout(mult) {
+            this.actionInFlight = true;
             try {
                 const res = await fetch('{{ route("crash.cashout") }}', {
                     method: 'POST',
@@ -289,36 +266,61 @@ function crashGame() {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'Accept': 'application/json',
                     },
-                    body: JSON.stringify({ multiplier: mult }),
+                    body: JSON.stringify({ round_id: this.roundId }),
                 });
                 const data = await res.json();
 
-                if (data.error) {
-                    this.error = data.error;
-                    this.fase = 'esperando';
-                    return;
-                }
-
-                this.crashAt = data.crash_point;
-                this.cashoutAt = mult;
-                this.ganancia = data.ganancia;
-                this.saldo = data.saldo;
-                Alpine.store('wallet').saldo = data.saldo;
-                window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
-
-                if (data.resultado === 'crash') {
-                    this.fase = 'crashed';
-                    this.multiplier = data.crash_point;
-                } else {
-                    this.fase = 'cobrado';
-                }
-
-                this.historial.unshift(data.crash_point);
-                if (this.historial.length > 15) this.historial.pop();
+                if (!res.ok) throw new Error(data.message || data.error || 'No se pudo cobrar.');
+                this.applyRound(data);
             } catch (e) {
-                this.error = 'Error de conexion.';
-                this.fase = 'esperando';
+                this.error = e.message;
+                if (this.fase === 'subiendo') this.animateCrash(this.multiplier);
+            } finally {
+                this.actionInFlight = false;
             }
+        },
+
+        async refreshRound() {
+            if (this.statusInFlight || this.fase !== 'subiendo' || !this.roundId) return;
+            this.statusInFlight = true;
+            try {
+                const res = await fetch('{{ route("crash.status") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ round_id: this.roundId }),
+                });
+                const data = await res.json();
+                if (res.ok) this.applyRound(data, false);
+            } catch (e) {
+                // El reloj visual puede continuar durante un fallo de red temporal.
+            } finally { this.statusInFlight = false; }
+        },
+
+        applyRound(data, syncActive = true) {
+            this.updateBalance(data.saldo);
+            if (data.estado === 'activa') {
+                if (syncActive) this.multiplier = Math.max(this.multiplier, Number(data.multiplier));
+                return;
+            }
+
+            clearInterval(this.interval);
+            this.ganancia = Number(data.ganancia);
+            this.multiplier = Number(data.multiplier);
+            this.crashAt = Number(data.crash_point);
+            this.cashoutAt = data.estado === 'cobrado' ? Number(data.multiplier) : 0;
+            this.fase = data.estado;
+            this.historial.unshift(Number(data.crash_point));
+            if (this.historial.length > 15) this.historial.pop();
+        },
+
+        updateBalance(value) {
+            this.saldo = Number(value);
+            Alpine.store('wallet').saldo = this.saldo;
+            window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: this.saldo } }));
         },
     };
 }

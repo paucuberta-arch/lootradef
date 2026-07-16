@@ -172,6 +172,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/jugar/crash', [CrashController::class, 'index'])->name('crash');
     Route::post('/jugar/crash', [CrashController::class, 'play'])->name('crash.play');
+    Route::post('/jugar/crash/estado', [CrashController::class, 'status'])->name('crash.status');
     Route::post('/jugar/crash/cashout', [CrashController::class, 'cashout'])->name('crash.cashout');
     Route::post('/jugar/crash/crash', [CrashController::class, 'crash'])->name('crash.crash');
 
