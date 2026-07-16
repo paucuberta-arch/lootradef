@@ -197,26 +197,26 @@ Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.s
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin|admin|moderator'])->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/usuarios', [AdminUserController::class, 'index'])->name('users');
-    Route::get('/usuarios/{usuario}/editar', [AdminUserController::class, 'edit'])->name('users.edit');
-    Route::put('/usuarios/{usuario}', [AdminUserController::class, 'update'])->name('users.update');
-    Route::delete('/usuarios/{usuario}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+    Route::get('/usuarios', [AdminUserController::class, 'index'])->middleware('permission:users.view')->name('users');
+    Route::get('/usuarios/{usuario}/editar', [AdminUserController::class, 'edit'])->middleware('permission:users.edit')->name('users.edit');
+    Route::put('/usuarios/{usuario}', [AdminUserController::class, 'update'])->middleware('permission:users.edit')->name('users.update');
+    Route::delete('/usuarios/{usuario}', [AdminUserController::class, 'destroy'])->middleware('permission:users.delete')->name('users.destroy');
 
-    Route::get('/reviews', [AdminReviewController::class, 'index'])->name('reviews');
-    Route::put('/reviews/{review}', [AdminReviewController::class, 'update'])->name('reviews.update');
-    Route::delete('/reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
+    Route::get('/reviews', [AdminReviewController::class, 'index'])->middleware('permission:reviews.view')->name('reviews');
+    Route::put('/reviews/{review}', [AdminReviewController::class, 'update'])->middleware('permission:reviews.moderate')->name('reviews.update');
+    Route::delete('/reviews/{review}', [AdminReviewController::class, 'destroy'])->middleware('permission:reviews.delete')->name('reviews.destroy');
 
-    Route::get('/feedback', [AdminFeedbackController::class, 'index'])->name('feedback');
-    Route::put('/feedback/{fb}', [AdminFeedbackController::class, 'update'])->name('feedback.update');
-    Route::delete('/feedback/{fb}', [AdminFeedbackController::class, 'destroy'])->name('feedback.destroy');
+    Route::get('/feedback', [AdminFeedbackController::class, 'index'])->middleware('permission:feedback.view')->name('feedback');
+    Route::put('/feedback/{fb}', [AdminFeedbackController::class, 'update'])->middleware('permission:feedback.respond')->name('feedback.update');
+    Route::delete('/feedback/{fb}', [AdminFeedbackController::class, 'destroy'])->middleware('permission:feedback.close')->name('feedback.destroy');
 });
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin|admin'])->group(function () {
-    Route::get('/graficos', [AdminChartsController::class, 'index'])->name('charts');
-    Route::get('/roles', [AdminRoleController::class, 'index'])->name('roles');
-    Route::post('/roles', [AdminRoleController::class, 'store'])->name('roles.store');
-    Route::put('/roles/{role}', [AdminRoleController::class, 'update'])->name('roles.update');
-    Route::delete('/roles/{role}', [AdminRoleController::class, 'destroy'])->name('roles.destroy');
+    Route::get('/graficos', [AdminChartsController::class, 'index'])->middleware('permission:stats.view')->name('charts');
+    Route::get('/roles', [AdminRoleController::class, 'index'])->middleware('permission:roles.view')->name('roles');
+    Route::post('/roles', [AdminRoleController::class, 'store'])->middleware('permission:roles.manage')->name('roles.store');
+    Route::put('/roles/{role}', [AdminRoleController::class, 'update'])->middleware('permission:roles.manage')->name('roles.update');
+    Route::delete('/roles/{role}', [AdminRoleController::class, 'destroy'])->middleware('permission:roles.manage')->name('roles.destroy');
 
-    Route::get('/logs', [AdminLogController::class, 'index'])->name('logs');
+    Route::get('/logs', [AdminLogController::class, 'index'])->middleware('permission:logs.view')->name('logs');
 });

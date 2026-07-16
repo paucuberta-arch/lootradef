@@ -11,15 +11,17 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @yield('admin-styles')
 </head>
-<body class="min-h-screen bg-[#090D18] text-white font-sans antialiased" x-data="{ sidebar: false }" @keydown.escape.window="sidebar = false">
+<body class="min-h-screen bg-[#090D18] text-white font-sans antialiased" x-data="{ sidebar: false, confirmForm: null, confirmMessage: '', toggleSidebar(open) { this.sidebar = open; document.body.style.overflow = open ? 'hidden' : ''; this.$nextTick(() => (open ? this.$refs.sidebarClose : this.$refs.sidebarToggle)?.focus()); }, requestDelete(form, message) { this.confirmForm = form; this.confirmMessage = message; document.body.style.overflow = 'hidden'; this.$nextTick(() => this.$refs.confirmCancel?.focus()); }, closeConfirm() { this.confirmForm = null; document.body.style.overflow = ''; } }" @keydown.escape.window="confirmForm ? closeConfirm() : toggleSidebar(false)">
+    <a href="#admin-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-brand-300 focus:px-4 focus:py-2 focus:text-slate-950">Saltar al contenido</a>
 
     <div class="flex min-h-screen overflow-x-clip">
 
-        <button x-show="sidebar" x-transition.opacity @click="sidebar=false" class="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm lg:hidden" aria-label="Cerrar menú"></button>
+        <button x-show="sidebar" x-transition.opacity @click="toggleSidebar(false)" class="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm lg:hidden" aria-label="Cerrar menú"></button>
 
         {{-- SIDEBAR --}}
-        <aside class="fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col border-r border-white/10 bg-[#0F1626] shadow-2xl transition-transform duration-300 lg:static lg:z-auto lg:translate-x-0"
+        <aside x-ref="sidebar" class="fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col border-r border-white/10 bg-[#0F1626] shadow-2xl transition-transform duration-300 lg:static lg:z-auto lg:translate-x-0"
                :class="sidebar ? 'translate-x-0' : '-translate-x-full'">
+            <button x-ref="sidebarClose" @click="toggleSidebar(false)" class="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-xl text-slate-400 hover:bg-white/5 lg:hidden" aria-label="Cerrar menú lateral">×</button>
 
             {{-- Logo --}}
             <div class="h-16 flex items-center gap-3 px-5 border-b border-white/5">
@@ -40,15 +42,15 @@
                         ['route' => 'admin.feedback', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', 'label' => 'Feedback'],
                     ];
 
-                    if (auth()->user()->hasAnyRole(['super_admin', 'admin'])) {
+                    if (auth()->user()->can('stats.view')) {
                         array_splice($navItems, 1, 0, [[
                             'route' => 'admin.charts',
                             'icon' => 'M7 12l3-3 4 4 6-7M5 20V10m5 10V4m5 16v-7m5 7V8',
                             'label' => 'Gráficos',
                         ]]);
-                        $navItems[] = ['route' => 'admin.roles', 'icon' => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', 'label' => 'Roles'];
-                        $navItems[] = ['route' => 'admin.logs', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', 'label' => 'Activity Log'];
                     }
+                    if (auth()->user()->can('roles.view')) $navItems[] = ['route' => 'admin.roles', 'icon' => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', 'label' => 'Roles'];
+                    if (auth()->user()->can('logs.view')) $navItems[] = ['route' => 'admin.logs', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', 'label' => 'Activity Log'];
                 @endphp
 
                 @foreach($navItems as $item)
@@ -88,7 +90,7 @@
             {{-- Topbar --}}
             <header class="h-16 bg-[#0F1626]/85 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30">
                 <div class="flex items-center gap-4">
-                    <button @click="sidebar = !sidebar" class="grid min-h-11 min-w-11 place-items-center rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition lg:hidden" aria-label="Abrir menú" :aria-expanded="sidebar.toString()">
+                    <button x-ref="sidebarToggle" @click="toggleSidebar(!sidebar)" class="grid min-h-11 min-w-11 place-items-center rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition lg:hidden" aria-label="Abrir menú" :aria-expanded="sidebar.toString()">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                     </button>
                     <h1 class="text-lg font-bold text-white">@yield('admin-title', 'Dashboard')</h1>
@@ -100,7 +102,7 @@
             </header>
 
             {{-- Content --}}
-            <main class="p-4 sm:p-6 lg:p-8">
+            <main id="admin-content" tabindex="-1" class="p-4 sm:p-6 lg:p-8">
                 @if(session('success'))
                     <x-ui.alert type="success" class="mb-6">{{ session('success') }}</x-ui.alert>
                 @endif
@@ -115,6 +117,19 @@
 
                 @yield('admin-content')
             </main>
+        </div>
+    </div>
+
+    <div x-show="confirmForm" x-cloak class="fixed inset-0 z-[100] grid place-items-center p-4" role="dialog" aria-modal="true" aria-labelledby="admin-confirm-title">
+        <button class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="closeConfirm()" aria-label="Cancelar"></button>
+        <div class="relative w-full max-w-md rounded-2xl border border-white/15 bg-[#111827] p-6 shadow-2xl">
+            <p class="text-xs font-black uppercase tracking-[.2em] text-red-300">Acción irreversible</p>
+            <h2 id="admin-confirm-title" class="mt-2 text-xl font-bold">Confirmar eliminación</h2>
+            <p class="mt-3 text-sm text-slate-400" x-text="confirmMessage"></p>
+            <div class="mt-6 grid grid-cols-2 gap-3">
+                <button x-ref="confirmCancel" @click="closeConfirm()" class="min-h-11 rounded-xl border border-white/10 bg-white/5 font-bold">Cancelar</button>
+                <button @click="confirmForm.submit()" class="min-h-11 rounded-xl bg-red-500 font-bold text-white">Eliminar</button>
+            </div>
         </div>
     </div>
 

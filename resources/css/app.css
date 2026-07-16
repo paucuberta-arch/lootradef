@@ -108,5 +108,16 @@ img, svg { max-width: 100%; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.13); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.22); }
 
+.admin-table-wrap { scrollbar-color: rgba(54,197,216,.45) rgba(255,255,255,.04); }
+@media (max-width: 639px) {
+    .admin-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .admin-table, .admin-table tbody, .admin-table tr, .admin-table td { display: block; width: 100%; }
+    .admin-table tr { padding: .75rem; border-bottom: 1px solid rgba(255,255,255,.08); }
+    .admin-table td { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .55rem !important; text-align: right; }
+    .admin-table td::before { content: attr(data-label); color: var(--casino-muted); font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; text-align: left; }
+    .admin-table td[data-primary] { display: block; text-align: left; }
+    .admin-table td[data-primary]::before { display: none; }
+}
+
 @media (max-width: 640px) { .featured-card { border-radius: 16px; } .game-card { border-radius: 14px; } }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *,*::before,*::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; } }

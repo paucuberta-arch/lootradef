@@ -62,7 +62,7 @@
                             <button class="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-black text-xs font-bold transition">Guardar</button>
                         </div>
                     </form>
-                    <form method="POST" action="{{ route('admin.feedback.destroy', $fb) }}" class="mt-2" onsubmit="return confirm('Eliminar feedback?')">
+                    <form method="POST" action="{{ route('admin.feedback.destroy', $fb) }}" class="mt-2" @submit.prevent="requestDelete($el, 'Se eliminará este feedback de forma permanente.')">
                         @csrf @method('DELETE')
                         <button class="text-xs text-red-400 hover:text-red-300">Eliminar</button>
                     </form>

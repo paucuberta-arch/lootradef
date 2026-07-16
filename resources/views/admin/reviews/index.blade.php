@@ -11,8 +11,8 @@
 </div>
 
 <div class="rounded-2xl bg-white/[0.03] border border-white/5 overflow-hidden">
-    <div class="overflow-x-auto">
-        <table class="w-full text-sm">
+    <div class="admin-table-wrap overflow-x-auto">
+        <table class="admin-table w-full text-sm">
             <thead>
                 <tr class="border-b border-white/5">
                     <th class="text-left px-5 py-3 text-xs font-bold text-slate-500 uppercase">Autor</th>
@@ -25,16 +25,16 @@
             <tbody>
                 @forelse($reviews as $r)
                     <tr class="border-b border-white/[0.03] hover:bg-white/[0.02] transition">
-                        <td class="px-5 py-3">
+                        <td data-primary class="px-5 py-3">
                             <p class="font-semibold text-white">{{ $r->usuario->name ?? 'Eliminado' }}</p>
                             <p class="text-xs text-slate-500">{{ $r->created_at->diffForHumans() }}</p>
                         </td>
-                        <td class="px-5 py-3">
+                        <td data-label="Tipo" class="px-5 py-3">
                             <span class="px-2 py-1 rounded-lg text-xs font-semibold {{ $r->tipo === 'juego' ? 'bg-blue-500/10 text-blue-400' : 'bg-purple-500/10 text-purple-400' }}">
                                 {{ ucfirst($r->tipo) }}{{ $r->juego_slug ? ': ' . $r->juego_slug : '' }}
                             </span>
                         </td>
-                        <td class="px-5 py-3 max-w-xs">
+                        <td data-label="Contenido" class="px-5 py-3 max-w-xs">
                             @if($r->titulo)<p class="font-semibold text-white text-xs">{{ $r->titulo }}</p>@endif
                             <p class="text-xs text-slate-400 truncate">{{ Str::limit($r->contenido, 100) }}</p>
                             @if($r->puntuacion)
@@ -45,7 +45,7 @@
                                 </div>
                             @endif
                         </td>
-                        <td class="px-5 py-3">
+                        <td data-label="Estado" class="px-5 py-3">
                             @php
                                 $estadoColors = ['pendiente' => 'amber', 'aprobado' => 'emerald', 'rechazado' => 'red'];
                             @endphp
@@ -53,7 +53,7 @@
                                 {{ ucfirst($r->estado) }}
                             </span>
                         </td>
-                        <td class="px-5 py-3 text-right space-x-2">
+                        <td data-label="Acciones" class="px-5 py-3 text-right space-x-2">
                             @if($r->estado !== 'aprobado')
                                 <form method="POST" action="{{ route('admin.reviews.update', $r) }}" class="inline">
                                     @csrf @method('PUT')
@@ -68,7 +68,7 @@
                                     <button class="text-xs text-amber-400 hover:text-amber-300">Rechazar</button>
                                 </form>
                             @endif
-                            <form method="POST" action="{{ route('admin.reviews.destroy', $r) }}" class="inline" onsubmit="return confirm('Eliminar esta review?')">
+                            <form method="POST" action="{{ route('admin.reviews.destroy', $r) }}" class="inline" @submit.prevent="requestDelete($el, 'Se eliminará esta review de forma permanente.')">
                                 @csrf @method('DELETE')
                                 <button class="text-xs text-red-400 hover:text-red-300">Eliminar</button>
                             </form>

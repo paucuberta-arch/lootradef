@@ -17,8 +17,8 @@
 </div>
 
 <div class="rounded-2xl bg-white/[0.03] border border-white/5 overflow-hidden">
-    <div class="overflow-x-auto">
-        <table class="w-full text-sm">
+    <div class="admin-table-wrap overflow-x-auto">
+        <table class="admin-table w-full text-sm">
             <thead>
                 <tr class="border-b border-white/5">
                     <th class="text-left px-5 py-3 text-xs font-bold text-slate-500 uppercase">Usuario</th>
@@ -31,7 +31,7 @@
             <tbody>
                 @forelse($usuarios as $u)
                     <tr class="border-b border-white/[0.03] hover:bg-white/[0.02] transition">
-                        <td class="px-5 py-3">
+                        <td data-primary class="px-5 py-3">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-black text-xs font-bold shrink-0">
                                     {{ strtoupper(substr($u->name, 0, 1)) }}
@@ -42,22 +42,26 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-5 py-3">
+                        <td data-label="Rol" class="px-5 py-3">
                             @php $role = $u->roles->first(); @endphp
                             <span class="tone-badge tone-{{ $role->color ?? 'slate' }} px-2 py-1 rounded-lg text-xs font-semibold">
                                 {{ $role->label ?? 'Sin rol' }}
                             </span>
                         </td>
-                        <td class="px-5 py-3 text-sm text-white font-semibold">
+                        <td data-label="Saldo" class="px-5 py-3 text-sm text-white font-semibold">
                             €{{ number_format($u->cartera->saldo ?? 0, 2) }}
                         </td>
-                        <td class="px-5 py-3 text-xs text-slate-500">{{ $u->created_at->format('d/m/Y') }}</td>
-                        <td class="px-5 py-3 text-right">
+                        <td data-label="Registro" class="px-5 py-3 text-xs text-slate-500">{{ $u->created_at->format('d/m/Y') }}</td>
+                        <td data-label="Acciones" class="px-5 py-3 text-right">
+                            @can('users.edit')
                             <a href="{{ route('admin.users.edit', $u) }}" class="text-xs text-brand-400 hover:text-brand-300 transition mr-3">Editar</a>
-                            <form method="POST" action="{{ route('admin.users.destroy', $u) }}" class="inline" onsubmit="return confirm('Eliminar este usuario?')">
+                            @endcan
+                            @can('users.delete')
+                            <form method="POST" action="{{ route('admin.users.destroy', $u) }}" class="inline" @submit.prevent="requestDelete($el, 'Se eliminará la cuenta de {{ addslashes($u->name) }} y sus datos asociados.')">
                                 @csrf @method('DELETE')
                                 <button class="text-xs text-red-400 hover:text-red-300 transition">Eliminar</button>
                             </form>
+                            @endcan
                         </td>
                     </tr>
                 @empty

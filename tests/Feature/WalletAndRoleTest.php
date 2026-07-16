@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -55,6 +56,12 @@ class WalletAndRoleTest extends TestCase
             'label' => 'Jugador',
             'color' => 'emerald',
         ]);
+        $adminRole->givePermissionTo(Permission::create([
+            'name' => 'users.edit',
+            'guard_name' => 'web',
+            'label' => 'Editar usuarios',
+            'group' => 'Usuarios',
+        ]));
         $admin->assignRole($adminRole);
 
         $usuario = $this->createUsuario('target@example.com');
