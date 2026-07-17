@@ -30,6 +30,7 @@ class BlackjackController extends Controller
             'dealRoute' => $variant === 'vip' ? route('games.blackjack.vip.deal') : route('games.blackjack.classic.deal'),
             'hitRoute' => $variant === 'vip' ? route('games.blackjack.vip.hit') : route('games.blackjack.classic.hit'),
             'standRoute' => $variant === 'vip' ? route('games.blackjack.vip.stand') : route('games.blackjack.classic.stand'),
+            'statusRoute' => $variant === 'vip' ? route('games.blackjack.vip.status') : route('games.blackjack.classic.status'),
             'activeHand' => $active ? $this->handData($active) : null,
         ]);
     }
@@ -37,26 +38,43 @@ class BlackjackController extends Controller
     public function deal(Request $request, string $variant = 'vip'): JsonResponse
     {
         $this->validateVariant($variant);
-        $validated = $request->validate(['apuesta' => [
-            'required', 'numeric', $variant === 'vip' ? 'min:5' : 'min:1', $variant === 'vip' ? 'max:5000' : 'max:2000',
-        ]]);
+        $validated = $request->validate([
+            'apuesta' => [
+                'required', 'numeric', $variant === 'vip' ? 'min:5' : 'min:1', $variant === 'vip' ? 'max:5000' : 'max:2000',
+            ],
+            'request_token' => ['required', 'uuid'],
+        ]);
 
-        $hand = DB::transaction(function () use ($request, $variant, $validated) {
-            if (BlackjackHand::where('usuario_id', $request->user()->id)->where('variante', $variant)->where('estado', 'jugando')->lockForUpdate()->exists()) {
-                abort(409, 'Ya tienes una mano en juego. Termínala antes de volver a repartir.');
+        $result = DB::transaction(function () use ($request, $variant, $validated) {
+            $wallet = Cartera::where('usuario_id', $request->user()->id)->lockForUpdate()->first();
+            $existing = BlackjackHand::where('usuario_id', $request->user()->id)
+                ->where('variante', $variant)
+                ->where('request_token', $validated['request_token'])
+                ->first();
+
+            if ($existing) {
+                return ['hand' => $existing, 'conflict' => false];
             }
 
-            $wallet = Cartera::where('usuario_id', $request->user()->id)->lockForUpdate()->first();
+            $active = BlackjackHand::where('usuario_id', $request->user()->id)
+                ->where('variante', $variant)
+                ->where('estado', 'jugando')
+                ->lockForUpdate()
+                ->first();
+            if ($active) {
+                return ['hand' => $active, 'conflict' => true];
+            }
+
             $bet = round((float) $validated['apuesta'], 2);
             if (! $wallet || $wallet->saldo < $bet) {
                 abort(422, 'Saldo insuficiente.');
             }
-            $deck = $this->crearBaraja();
+            $deck = $this->crearBaraja($variant === 'classic' ? 6 : 1);
             shuffle($deck);
             $player = [$this->draw($deck), $this->draw($deck)];
             $dealer = [$this->draw($deck), $this->draw($deck)];
             $hand = BlackjackHand::create([
-                'usuario_id' => $request->user()->id, 'variante' => $variant, 'apuesta' => $bet,
+                'usuario_id' => $request->user()->id, 'variante' => $variant, 'request_token' => $validated['request_token'], 'apuesta' => $bet,
                 'baraja' => $deck, 'mano_jugador' => $player, 'mano_dealer' => $dealer,
             ]);
             abort_unless($wallet->apostar($bet, 'apuesta_blackjack', ['variante' => $variant], $hand), 422, 'Saldo insuficiente.');
@@ -69,10 +87,17 @@ class BlackjackController extends Controller
                 $this->finish($hand, $state, $payout, $wallet);
             }
 
-            return $hand->fresh();
+            return ['hand' => $hand->fresh(), 'conflict' => false];
         });
 
-        return response()->json($this->handData($hand, true));
+        if ($result['conflict']) {
+            return response()->json([
+                'message' => 'Ya tienes una mano en juego. La hemos recuperado para que puedas terminarla.',
+                'active_hand' => $this->handData($result['hand']),
+            ], 409);
+        }
+
+        return response()->json($this->handData($result['hand'], $result['hand']->estado !== 'jugando'));
     }
 
     public function hit(Request $request, string $variant = 'vip'): JsonResponse
@@ -109,6 +134,29 @@ class BlackjackController extends Controller
         });
 
         return response()->json($this->handData($hand, true));
+    }
+
+    public function status(Request $request, string $variant = 'vip'): JsonResponse
+    {
+        $this->validateVariant($variant);
+        $validated = $request->validate([
+            'hand_id' => ['nullable', 'integer'],
+            'request_token' => ['nullable', 'uuid'],
+        ]);
+
+        $query = BlackjackHand::where('usuario_id', $request->user()->id)->where('variante', $variant);
+        if (! empty($validated['hand_id'])) {
+            $query->whereKey($validated['hand_id']);
+        } elseif (! empty($validated['request_token'])) {
+            $query->where('request_token', $validated['request_token']);
+        } else {
+            $query->where('estado', 'jugando');
+        }
+
+        $hand = $query->latest()->first();
+        abort_unless($hand, 404, 'No se encontró la mano solicitada.');
+
+        return response()->json($this->handData($hand, $hand->estado !== 'jugando'));
     }
 
     private function activeHand(int $userId, string $variant): BlackjackHand
@@ -158,6 +206,7 @@ class BlackjackController extends Controller
         $finished = $hand->estado !== 'jugando';
 
         return [
+            'id' => $hand->id,
             'mano_jugador' => $hand->mano_jugador,
             'mano_dealer' => $revealDealer || $finished ? $hand->mano_dealer : [$hand->mano_dealer[0], ['oculta' => true]],
             'puntos_jugador' => $this->calcularPuntos($hand->mano_jugador),
@@ -172,12 +221,14 @@ class BlackjackController extends Controller
         abort_unless(in_array($variant, ['vip', 'classic'], true), 404);
     }
 
-    private function crearBaraja(): array
+    private function crearBaraja(int $decks = 1): array
     {
         $deck = [];
-        foreach ($this->palos as $suit) {
-            foreach ($this->valores as $value) {
-                $deck[] = ['palo' => $suit, 'valor' => $value];
+        for ($copy = 0; $copy < $decks; $copy++) {
+            foreach ($this->palos as $suit) {
+                foreach ($this->valores as $value) {
+                    $deck[] = ['palo' => $suit, 'valor' => $value];
+                }
             }
         }
 

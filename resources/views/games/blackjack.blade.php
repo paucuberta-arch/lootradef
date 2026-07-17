@@ -3,10 +3,8 @@
 
 @section('styles')
 <style>
-    @keyframes deal-card { 0% { transform: translate(160px,-90px) rotate(24deg) scale(.65); opacity:0; } 70%{transform:translate(-5px,3px) rotate(-3deg) scale(1.03)} 100% { transform:none; opacity:1; } }
-    .deal-card { animation: deal-card .55s cubic-bezier(.16,1,.3,1) forwards;position:relative;box-shadow:0 12px 22px #0008,inset 0 0 0 1px #ffffff88; }
-    .deal-card:nth-child(2) { animation-delay: 0.15s; }
-    .deal-card:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes deal-card { 0% { transform:translate3d(76px,-42px,0) rotate(12deg) scale(.82);opacity:0 } 72%{transform:translate3d(-3px,2px,0) rotate(-1.5deg) scale(1.015)} 100% { transform:none;opacity:1 } }
+    .deal-card { position:relative;animation:deal-card .34s cubic-bezier(.16,1,.3,1) both;animation-delay:calc(var(--deal-index,0) * 55ms);box-shadow:0 10px 20px #0007,inset 0 0 0 1px #ffffff88;backface-visibility:hidden;transform-origin:center bottom; }
     .casino-table{background:radial-gradient(ellipse at 50% 45%,var(--felt-light),var(--felt-dark) 70%);box-shadow:inset 0 0 80px #0009,0 30px 70px #0008;border:12px solid var(--rail);border-bottom-width:22px}
     .casino-table::before{content:"";position:absolute;inset:12%;border:2px solid #f8e7a622;border-radius:45%}
     .table-vip{--felt-light:#174c3b;--felt-dark:#031d16;--rail:#3a1609}.table-classic{--felt-light:#17456d;--felt-dark:#061426;--rail:#6b3f16}
@@ -56,16 +54,16 @@
                                   x-text="'— ' + puntosDealer + ' pts'"></span>
                         </div>
                         <div class="flex gap-2 flex-wrap">
-                            <template x-for="(carta, i) in manoDealer" :key="i">
+                            <template x-for="(carta, i) in manoDealer" :key="carta._key">
                                 <div class="deal-card w-16 h-22 sm:w-20 sm:h-28 rounded-xl flex flex-col items-center justify-center text-sm font-bold shadow-lg"
-                                     :class="(oculto && i === 1) ? 'bg-slate-700 border-2 border-slate-600' : 'bg-white border-2 border-slate-200'"
-                                     :style="'animation-delay:' + (i*0.15) + 's'">
-                                    <template x-if="!oculto || i === 0">
+                                     :class="carta.oculta ? 'bg-slate-700 border-2 border-slate-600' : 'bg-white border-2 border-slate-200'"
+                                     :style="'--deal-index:' + (carta._dealIndex ?? i)">
+                                    <template x-if="!carta.oculta">
                                         <div>
                                             <span class="card-corner" :class="isRed(carta)?'text-red-600':'text-slate-900'"><b x-text="carta.valor"></b><small x-text="carta.palo"></small></span><span class="card-center" :class="isRed(carta)?'text-red-600':'text-slate-900'" x-text="carta.palo"></span>
                                         </div>
                                     </template>
-                                    <template x-if="oculto && i === 1">
+                                    <template x-if="carta.oculta">
                                         <span class="w-11 h-16 rounded-md border border-cyan-300/40 bg-[repeating-linear-gradient(45deg,#312e81_0_5px,#0e7490_5px_10px)] shadow-inner"></span>
                                     </template>
                                 </div>
@@ -86,9 +84,9 @@
                                   :class="puntosJugador > 21 ? 'text-red-400' : ''"></span>
                         </div>
                         <div class="flex gap-2 flex-wrap">
-                            <template x-for="(carta, i) in manoJugador" :key="i">
+                            <template x-for="(carta, i) in manoJugador" :key="carta._key">
                                 <div class="deal-card w-16 h-22 sm:w-20 sm:h-28 rounded-xl bg-white border-2 border-slate-200 flex flex-col items-center justify-center text-sm font-bold shadow-lg"
-                                     :style="'animation-delay:' + (i*0.15) + 's'">
+                                     :style="'--deal-index:' + (carta._dealIndex ?? i)">
                                     <span class="card-corner" :class="isRed(carta)?'text-red-600':'text-slate-900'"><b x-text="carta.valor"></b><small x-text="carta.palo"></small></span><span class="card-center" :class="isRed(carta)?'text-red-600':'text-slate-900'" x-text="carta.palo"></span>
                                 </div>
                             </template>
@@ -96,7 +94,7 @@
                     </div>
 
                     {{-- Resultado --}}
-                    <div x-show="estado !== 'jugando' && estado !== ''" class="mt-6 text-center">
+                    <div x-show="estado !== 'jugando' && estado !== ''" class="mt-6 text-center" aria-live="polite">
                         <div class="inline-block px-6 py-3 rounded-xl font-bold text-lg"
                              :class="{
                                 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30': estado === 'win' || estado === 'blackjack',
@@ -105,10 +103,10 @@
                              }">
                             <span x-show="estado === 'blackjack'">¡BLACKJACK! </span>
                             <span x-show="estado === 'win'">¡Ganaste! </span>
-                            <span x-show="estado === 'push'">Empate</span>
+                            <span x-show="estado === 'push'">Empate · apuesta devuelta</span>
                             <span x-show="estado === 'bust'">¡Te pasaste!</span>
                             <span x-show="estado === 'lose'">Dealer gana</span>
-                            <span x-show="ganancia > 0" x-text="' +€' + ganancia.toFixed(2)"></span>
+                            <span x-show="ganancia > 0 && estado !== 'push'" x-text="' · premio €' + ganancia.toFixed(2)"></span>
                         </div>
                     </div>
                 </div>
@@ -116,17 +114,20 @@
 
             {{-- Controles --}}
             <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
+                <div x-show="notice" x-transition class="mb-4 rounded-xl border border-cyan-400/20 bg-cyan-400/10 px-4 py-3 text-sm text-cyan-200" role="status" x-text="notice"></div>
+                <div x-show="error" x-transition class="mb-4 rounded-xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-200" role="alert" x-text="error"></div>
                 <template x-if="fase === ''">
                     <div class="flex flex-col min-[420px]:flex-row min-[420px]:items-center gap-4">
                         <div class="flex-1">
                             <label class="text-xs text-slate-500 mb-1 block">Apuesta (€)</label>
                             <input type="number" x-model.number="apuesta" min="{{ $variant === 'vip' ? 5 : 1 }}" max="{{ $variant === 'vip' ? 5000 : 2000 }}" step="1"
-                                   class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-brand-500 transition">
+                                   :class="canDeal ? 'border-white/10' : 'border-red-400/40'"
+                                   class="w-full px-4 py-3 rounded-xl bg-white/5 border text-white text-sm outline-none focus:border-brand-500 transition">
                         </div>
                         <div class="min-[420px]:mt-5">
-                            <button @click="deal()" :disabled="busy || apuesta > saldo"
+                            <button @click="deal()" :disabled="busy || !canDeal"
                                     class="w-full min-[420px]:w-auto px-8 py-3 rounded-xl bg-brand-500 hover:bg-brand-400 text-black font-bold transition shadow-lg shadow-brand-500/20 disabled:opacity-50">
-                                Repartir
+                                <span x-text="busy ? 'Repartiendo…' : 'Repartir'"></span>
                             </button>
                         </div>
                     </div>
@@ -162,12 +163,13 @@
                     <div class="flex justify-between"><span class="text-slate-500">Min apuesta</span><span class="text-white font-semibold">€{{ $variant === 'vip' ? '5' : '1' }}</span></div>
                     <div class="flex justify-between"><span class="text-slate-500">Max apuesta</span><span class="text-white font-semibold">€{{ $variant === 'vip' ? '5,000' : '2,000' }}</span></div>
                     <div class="flex justify-between"><span class="text-slate-500">Blackjack</span><span class="text-brand-400 font-bold">x2.5</span></div>
-                    <div class="flex justify-between"><span class="text-slate-500">RTP</span><span class="text-emerald-400 font-semibold">99.28%</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Barajas</span><span class="text-white font-semibold">{{ $variant === 'classic' ? '6' : '1' }}</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">RTP</span><span class="text-emerald-400 font-semibold">{{ $variant === 'classic' ? '99.91%' : '99.28%' }}</span></div>
                 </div>
             </div>
             <div class="rounded-2xl bg-gradient-to-br from-brand-500/20 to-brand-600/10 border border-brand-500/20 p-5">
                 <h3 class="text-sm font-bold text-white mb-2">¿Cómo funciona?</h3>
-                <p class="text-xs text-slate-400 leading-relaxed">Acércate a 21 puntos sin pasarte. Pide carta o plantate. Blackjack natural (A + 10) paga x2.5. Dealer se planta en 17.</p>
+                <p class="text-xs text-slate-400 leading-relaxed">Acércate a 21 puntos sin pasarte. Pide carta o plántate. Blackjack natural (A + 10) paga x2.5. El dealer se planta en 17.</p>
             </div>
             <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
                 <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-3">Historial</h3>
@@ -176,8 +178,8 @@
                         <div class="flex items-center justify-between text-xs">
                             <span class="text-slate-400" x-text="h.puntos + ' pts'"></span>
                             <span class="text-slate-500" x-text="h.dealer_puntos ? 'vs ' + h.dealer_puntos : ''"></span>
-                            <span :class="h.ganancia > 0 ? 'text-emerald-400' : 'text-red-400'"
-                                  x-text="h.ganancia > 0 ? '+€' + h.ganancia.toFixed(2) : '-€' + h.apuesta.toFixed(2)"></span>
+                            <span :class="netResult(h) > 0 ? 'text-emerald-400' : (netResult(h) < 0 ? 'text-red-400' : 'text-amber-300')"
+                                  x-text="signedMoney(netResult(h))"></span>
                         </div>
                     </template>
                 </div>
@@ -191,174 +193,227 @@
 function blackjackGame() {
     const active = @js($activeHand);
     return {
-        saldo: {{ Auth::user()?->cartera?->saldo ?? 1000 }},
+        handId: active?.id ?? null,
+        saldo: {{ Auth::user()?->cartera?->saldo ?? 0 }},
         apuesta: active?.apuesta ?? {{ $variant === 'vip' ? 10 : 5 }},
+        minBet: {{ $variant === 'vip' ? 5 : 1 }},
+        maxBet: {{ $variant === 'vip' ? 5000 : 2000 }},
         manoJugador: active?.mano_jugador ?? [],
         manoDealer: active?.mano_dealer ?? [],
         puntosJugador: active?.puntos_jugador ?? 0,
         puntosDealer: active?.puntos_dealer ?? 0,
-        oculto: true,
         estado: active?.estado ?? '',
         fase: active ? 'jugando' : '',
         busy: false,
         ganancia: 0,
         error: '',
-        baraja: [],
+        notice: active ? 'Hemos recuperado la mano que tenías en curso.' : '',
+        dealToken: null,
+        cardSequence: 0,
+        recordedHands: [],
+        reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
         historial: @js($partidas->take(10)->map(fn($p) => ['puntos' => $p->detalles['puntos_jugador'] ?? 0, 'dealer_puntos' => $p->detalles['puntos_dealer'] ?? 0, 'ganancia' => $p->ganancia, 'apuesta' => $p->apuesta])->all()),
+        get canDeal() {
+            const bet = Number(this.apuesta);
+            return Number.isFinite(bet) && bet >= this.minBet && bet <= this.maxBet && bet <= this.saldo;
+        },
+        init() {
+            this.manoJugador = this.decorateCards(this.manoJugador, 'player-active');
+            this.manoDealer = this.decorateCards(this.manoDealer, 'dealer-active');
+        },
         isRed(card) { return ['♥','♦'].includes(card.palo); },
+        netResult(hand) { return Number(hand.ganancia) - Number(hand.apuesta); },
+        signedMoney(value) {
+            const amount = Number(value);
+            if (amount === 0) return '±€0.00';
+            return `${amount > 0 ? '+' : '-'}€${Math.abs(amount).toFixed(2)}`;
+        },
+        decorateCards(cards, group) {
+            const sequence = ++this.cardSequence;
+            return (cards || []).map((card, index) => ({ ...card, _key: `${group}-${sequence}-${index}`, _dealIndex: index }));
+        },
+        requestToken() {
+            const webCrypto = globalThis.crypto;
+            if (typeof webCrypto?.randomUUID === 'function') return webCrypto.randomUUID();
+            const bytes = new Uint8Array(16);
+            webCrypto.getRandomValues(bytes);
+            bytes[6] = (bytes[6] & 15) | 64;
+            bytes[8] = (bytes[8] & 63) | 128;
+            return Array.from(bytes, (byte, index) => ([4,6,8,10].includes(index) ? '-' : '') + byte.toString(16).padStart(2, '0')).join('');
+        },
+        async request(url, options = {}) {
+            const response = await fetch(url, {
+                method: options.method || 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                },
+                body: options.body === undefined ? undefined : JSON.stringify(options.body),
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                const error = new Error(data.error || data.message || 'No se pudo completar la acción.');
+                error.status = response.status;
+                error.data = data;
+                throw error;
+            }
+            return data;
+        },
+        updateBalance(value) {
+            const balance = Number(value);
+            if (!Number.isFinite(balance) || balance === this.saldo) return;
+            this.saldo = balance;
+            Alpine.store('wallet').saldo = balance;
+            window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: balance } }));
+        },
 
         async deal() {
-            if (this.busy || this.fase !== '' || this.apuesta > this.saldo) return;
+            if (this.busy || this.fase !== '' || !this.canDeal) return;
             this.busy = true;
-            this.fase = 'jugando';
-            this.estado = 'jugando';
+            this.estado = '';
             this.ganancia = 0;
-            this.oculto = true;
             this.error = '';
+            this.notice = '';
+            this.dealToken ||= this.requestToken();
 
             try {
-                const res = await fetch(@js($dealRoute), {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify({ apuesta: this.apuesta }),
-                });
-                const data = await res.json();
-
-                if (!res.ok) throw new Error(data.error || data.message || 'No se pudo repartir.');
-
-                this.manoJugador = [];
-                this.manoDealer = [];
-                for (let i = 0; i < 2; i++) {
-                    this.manoJugador.push(data.mano_jugador[i]);
-                    await this.pause(this.reducedMotion ? 0 : 180);
-                    this.manoDealer.push(data.mano_dealer[i]);
-                    await this.pause(this.reducedMotion ? 0 : 180);
-                }
+                const data = await this.request(@js($dealRoute), { body: { apuesta: this.apuesta, request_token: this.dealToken } });
+                this.dealToken = null;
+                this.handId = data.id;
+                this.manoJugador = this.decorateCards(data.mano_jugador, 'player-deal');
+                this.manoDealer = this.decorateCards(data.mano_dealer, 'dealer-deal');
                 this.puntosJugador = data.puntos_jugador;
                 this.puntosDealer = data.puntos_dealer;
-                this.baraja = data.baraja || [];
-                this.saldo = data.saldo;
-                Alpine.store('wallet').saldo = data.saldo;
-                window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
+                this.updateBalance(data.saldo);
+                this.fase = data.estado === 'jugando' ? 'jugando' : 'terminado';
+                await this.pause(this.reducedMotion ? 0 : 410);
                 this.estado = data.estado;
 
-                if (data.estado === 'jugando') {
-                    this.oculto = true;
-                } else {
-                    this.oculto = false;
-                    this.ganancia = data.ganancia;
-                    this.fase = 'terminado';
-                    this.historial.unshift({ puntos: data.puntos_jugador, dealer_puntos: data.puntos_dealer, ganancia: data.ganancia, apuesta: this.apuesta });
-                }
+                if (data.estado !== 'jugando') this.finishClientHand(data);
             } catch (e) {
-                this.error = e.message;
-                if (!this.manoJugador.length) this.fase = '';
+                if (e.status === 409 && e.data?.active_hand) {
+                    this.applyRecoveredHand(e.data.active_hand);
+                    this.notice = e.message;
+                    this.dealToken = null;
+                } else if (!await this.syncHand({ requestToken: this.dealToken })) {
+                    this.error = e.message;
+                }
             } finally { this.busy = false; }
         },
 
         async hit() {
+            if (this.busy || this.fase !== 'jugando') return;
+            this.busy = true;
+            this.error = '';
+            this.notice = '';
             try {
-                this.busy = true;
-                const res = await fetch(@js($hitRoute), {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify({}),
-                });
-                const data = await res.json();
-
-                if (!res.ok) throw new Error(data.error || data.message || 'No se pudo pedir carta.');
+                const data = await this.request(@js($hitRoute), { body: {} });
 
                 const newCards = data.mano_jugador.slice(this.manoJugador.length);
-                for (const card of newCards) {
-                    this.manoJugador.push(card);
-                    await this.pause(this.reducedMotion ? 0 : 260);
-                }
+                this.manoJugador = [...this.manoJugador, ...this.decorateCards(newCards, 'player-hit')];
                 this.puntosJugador = data.puntos_jugador;
-                this.baraja = data.baraja;
+                await this.pause(this.reducedMotion ? 0 : 350);
 
-                if (data.mano_dealer) this.manoDealer = data.mano_dealer;
-                if (data.puntos_dealer) this.puntosDealer = data.puntos_dealer;
-
-                if (data.estado === 'bust') {
-                    this.estado = 'bust';
-                    this.oculto = false;
-                    this.fase = 'terminado';
-                    this.historial.unshift({ puntos: data.puntos_jugador, dealer_puntos: data.puntos_dealer || 0, ganancia: 0, apuesta: this.apuesta });
-                } else if (['win', 'lose', 'push', 'blackjack'].includes(data.estado)) {
+                if (data.estado !== 'jugando') {
                     await this.revealDealer(data.mano_dealer || this.manoDealer);
-                    this.puntosDealer = data.puntos_dealer || this.puntosDealer;
-                    this.estado = data.estado;
-                    this.ganancia = data.ganancia;
-                    this.saldo = data.saldo;
-                    Alpine.store('wallet').saldo = data.saldo;
-                    window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
-                    this.oculto = false;
-                    this.fase = 'terminado';
-                    this.historial.unshift({ puntos: data.puntos_jugador, dealer_puntos: data.puntos_dealer, ganancia: data.ganancia, apuesta: this.apuesta });
+                    this.finishClientHand(data);
+                } else {
+                    this.puntosDealer = data.puntos_dealer;
                 }
             } catch (e) {
-                this.error = e.message;
+                if (!await this.syncHand({ handId: this.handId })) this.error = e.message;
             } finally { this.busy = false; }
         },
 
         async stand() {
-            if (this.busy || this.fase !== 'jugando') return; this.busy = true;
+            if (this.busy || this.fase !== 'jugando') return;
+            this.busy = true;
+            this.error = '';
+            this.notice = '';
 
             try {
-                const res = await fetch(@js($standRoute), {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify({}),
-                });
-                const data = await res.json();
-
-                if (!res.ok) throw new Error(data.error || data.message || 'No se pudo cerrar la mano.');
-
+                const data = await this.request(@js($standRoute), { body: {} });
                 await this.revealDealer(data.mano_dealer);
-                this.puntosDealer = data.puntos_dealer;
-                this.estado = data.estado;
-                this.ganancia = data.ganancia;
-                this.saldo = data.saldo;
-                Alpine.store('wallet').saldo = data.saldo;
-                window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
-                this.fase = 'terminado';
-                this.historial.unshift({ puntos: data.puntos_jugador, dealer_puntos: data.puntos_dealer, ganancia: data.ganancia, apuesta: this.apuesta });
+                this.finishClientHand(data);
             } catch (e) {
-                this.error = e.message;
+                if (!await this.syncHand({ handId: this.handId })) this.error = e.message;
             } finally { this.busy = false; }
         },
 
         reset() {
+            this.handId = null;
             this.manoJugador = [];
             this.manoDealer = [];
             this.puntosJugador = 0;
             this.puntosDealer = 0;
-            this.oculto = true;
-            this.estado = 'jugando';
+            this.estado = '';
             this.fase = '';
             this.ganancia = 0;
-            this.baraja = [];
+            this.error = '';
+            this.notice = '';
+            this.dealToken = null;
         },
-        reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
         pause(ms) { return new Promise(resolve => setTimeout(resolve, ms)); },
         async revealDealer(cards) {
-            this.oculto = false;
-            this.manoDealer = cards.length ? [cards[0]] : [];
-            for (const card of cards.slice(1)) {
-                await this.pause(this.reducedMotion ? 0 : 320);
-                this.manoDealer.push(card);
+            if (!cards?.length) { this.manoDealer = []; return; }
+            const firstKey = this.manoDealer[0]?._key || `dealer-first-${++this.cardSequence}`;
+            this.manoDealer = [
+                { ...cards[0], _key: firstKey },
+                ...this.decorateCards(cards.slice(1), 'dealer-reveal'),
+            ];
+            await this.pause(this.reducedMotion ? 0 : 350 + Math.max(0, cards.length - 2) * 55);
+        },
+        finishClientHand(data) {
+            this.handId = data.id ?? this.handId;
+            this.puntosJugador = Number(data.puntos_jugador);
+            this.puntosDealer = Number(data.puntos_dealer);
+            this.estado = data.estado;
+            this.ganancia = Number(data.ganancia || 0);
+            this.fase = 'terminado';
+            this.updateBalance(data.saldo);
+            if (!this.recordedHands.includes(this.handId)) {
+                this.recordedHands.push(this.handId);
+                this.historial.unshift({
+                    puntos: this.puntosJugador,
+                    dealer_puntos: this.puntosDealer,
+                    ganancia: this.ganancia,
+                    apuesta: Number(data.apuesta ?? this.apuesta),
+                });
+            }
+        },
+        applyRecoveredHand(data) {
+            this.handId = data.id;
+            this.apuesta = Number(data.apuesta);
+            this.manoJugador = this.decorateCards(data.mano_jugador, 'player-sync');
+            this.manoDealer = this.decorateCards(data.mano_dealer, 'dealer-sync');
+            this.puntosJugador = Number(data.puntos_jugador);
+            this.puntosDealer = Number(data.puntos_dealer);
+            this.estado = data.estado;
+            this.ganancia = Number(data.ganancia || 0);
+            this.fase = data.estado === 'jugando' ? 'jugando' : 'terminado';
+            this.updateBalance(data.saldo);
+            if (data.estado !== 'jugando') this.finishClientHand(data);
+        },
+        async syncHand({ handId = null, requestToken = null } = {}) {
+            const params = new URLSearchParams();
+            if (handId) params.set('hand_id', handId);
+            else if (requestToken) params.set('request_token', requestToken);
+            else return false;
+            try {
+                const data = await this.request(`${@js($statusRoute)}?${params}`, { method: 'GET' });
+                if (data.estado === 'jugando') {
+                    this.applyRecoveredHand(data);
+                } else {
+                    this.manoJugador = this.decorateCards(data.mano_jugador, 'player-recovered');
+                    await this.revealDealer(data.mano_dealer);
+                    this.finishClientHand(data);
+                }
+                this.notice = 'La mano se ha sincronizado correctamente con el servidor.';
+                if (requestToken) this.dealToken = null;
+                return true;
+            } catch {
+                return false;
             }
         },
     };
