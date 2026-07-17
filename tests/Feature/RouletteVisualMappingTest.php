@@ -26,6 +26,9 @@ class RouletteVisualMappingTest extends TestCase
             $response->assertSee('data-pocket="'.$number.'"', false);
         }
         $response->assertSee(json_encode(config('roulette.red_numbers')), false);
+        $response->assertSee('roulette-ball-track', false);
+        $response->assertSee('roulette-spindle', false);
+        $response->assertSee('European wheel · single zero', false);
         $response->assertSee('Promise.allSettled([wheelAnimation.finished,ballAnimation.finished])', false);
         $response->assertSee('this.animations.forEach(animation=>animation.cancel())', false);
         $response->assertDontSee('6500+Math.floor(Math.random()*1800)', false);

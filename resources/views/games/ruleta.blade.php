@@ -4,27 +4,46 @@
 @section('styles')
 <style>
     @keyframes result-in{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}
-    @keyframes winning-glow{0%,100%{box-shadow:0 0 0 1px #ffffff16,0 0 18px transparent}50%{box-shadow:0 0 0 2px #fde68a,0 0 28px #fbbf2477}}
-    .roulette-camera{width:min(100%,390px);aspect-ratio:1;margin:auto;perspective:900px;transition:transform .8s cubic-bezier(.16,1,.3,1);transform:rotateX(7deg) scale(.9)}
+    @keyframes winning-glow{0%,100%{filter:brightness(1);box-shadow:inset 0 0 8px #0008}50%{filter:brightness(1.8);box-shadow:inset 0 0 8px #fff8,0 0 18px #fde68a}}
+    .roulette-stage{overflow:hidden;background:radial-gradient(circle at 50% 34%,rgba(146,39,43,.25),transparent 22rem),linear-gradient(145deg,#170d13,#080b12 58%,#071712)}
+    .roulette-stage::before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 0 38%,rgba(255,255,255,.035) 38.5% 39%,transparent 39.5% 100%),repeating-linear-gradient(90deg,transparent 0 42px,rgba(255,255,255,.018) 43px);pointer-events:none}
+    .roulette-camera{position:relative;z-index:1;width:min(100%,410px);aspect-ratio:1;margin:auto;perspective:900px;transition:transform .8s cubic-bezier(.16,1,.3,1);transform:rotateX(7deg) scale(.9)}
+    .roulette-camera::before{content:"";position:absolute;z-index:-1;left:9%;right:9%;bottom:-5%;height:18%;border-radius:50%;background:#000;filter:blur(14px);opacity:.72;transform:rotateX(65deg)}
     .roulette-camera.zooming{transform:rotateX(3deg) scale(1.04)}
     .roulette-camera.holding{transform:rotateX(1deg) scale(1.08)}
-    .roulette-shell{position:relative;width:100%;height:100%;border-radius:50%;background:radial-gradient(circle,#191107 0 42%,#5b2e0d 43% 54%,#1c0e05 55% 62%,#8b5423 63% 68%,#2a1206 69%);box-shadow:0 32px 60px #000b,inset 0 0 20px #f5c56c55,0 0 0 2px #d9a441;overflow:hidden;contain:layout paint}
-    .roulette-shell::after{content:"";position:absolute;inset:2%;border-radius:50%;background:linear-gradient(115deg,#fff3 0 4%,transparent 18% 72%,#0008);pointer-events:none;z-index:15}
-    .roulette-rotor{position:absolute;inset:10%;border-radius:50%;background:radial-gradient(circle,#f6d58b 0 5%,#8a531a 6% 15%,#2c1405 16% 34%,#d5a548 35% 38%,#111827 39% 69%,#d2a34b 70% 73%,#4a2409 74%);box-shadow:inset 0 0 32px #000,0 0 0 3px #e5b958,0 10px 30px #000b}
-    .roulette-hub{position:absolute;z-index:3;inset:35%;border-radius:50%;background:radial-gradient(circle at 34% 28%,#fff1b9,#d19a38 25%,#6b390c 54%,#180b03 58%,#ba7b22 70%);box-shadow:inset 0 0 16px #0009,0 8px 20px #000}
-    .pocket{position:absolute;z-index:4;left:50%;top:50%;width:22px;height:72px;margin-left:-11px;margin-top:-72px;transform-origin:50% 72px;clip-path:polygon(15% 0,85% 0,100% 100%,0 100%);border-left:1px solid #ffe9a488;border-right:1px solid #422306;display:flex;justify-content:center;padding-top:5px;font-size:9px;font-weight:950;text-shadow:0 1px 2px #000;box-shadow:inset 0 0 8px #0008}
-    .pocket-red{background:linear-gradient(#dc2626,#761515)}.pocket-black{background:linear-gradient(#263248,#070b12)}.pocket-green{background:linear-gradient(#10b981,#065f46)}
-    .pocket.winner{animation:winning-glow .75s ease-in-out 3;filter:brightness(1.4);z-index:6}
-    .roulette-ball{position:absolute;left:50%;top:50%;z-index:12;width:16px;height:16px;margin:-8px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#fff 0 18%,#edf2f7 34%,#a8b2c2 66%,#475569 100%);box-shadow:0 3px 7px #000,0 0 8px #fff8}
+    .roulette-shell{position:relative;width:100%;height:100%;border-radius:50%;background:radial-gradient(circle,#180a07 0 54%,#d3a84e 55% 57%,#351208 58% 69%,#925025 70% 79%,#e1b767 80% 82%,#311008 83% 91%,#a3612e 92% 96%,#1b0805 97%);box-shadow:0 34px 64px #000c,inset 0 0 24px #f5c56c66,0 0 0 2px #e7c477,0 0 0 7px #351208;overflow:hidden;contain:layout paint}
+    .roulette-shell::before{content:"";position:absolute;inset:0;border-radius:50%;background:repeating-conic-gradient(from 8deg,rgba(255,255,255,.08) 0 3deg,rgba(43,10,5,.13) 3deg 8deg);mask-image:radial-gradient(circle,transparent 0 68%,#000 69% 100%);pointer-events:none;z-index:1}
+    .roulette-shell::after{content:"";position:absolute;inset:1.5%;border-radius:50%;background:linear-gradient(120deg,rgba(255,255,255,.3) 0 3%,transparent 17% 72%,rgba(0,0,0,.58));pointer-events:none;z-index:15}
+    .roulette-ball-track{position:absolute;z-index:2;inset:4.8%;border-radius:50%;border:clamp(7px,2.4vw,11px) solid #150b08;box-shadow:inset 0 0 0 2px #c99a4b,inset 0 0 15px #000,0 0 0 2px #5f3519;pointer-events:none}
+    .roulette-rotor{position:absolute;z-index:3;inset:12%;border-radius:50%;background:radial-gradient(circle,#f7dda2 0 3%,#9a5d1d 4% 11%,#2b1007 12% 30%,#d6aa4d 31% 34%,#160907 35% 91%,#e1bd69 92% 96%,#5a2e0f 97%);box-shadow:inset 0 0 28px #000,0 0 0 2px #f0d48b,0 10px 30px #000c}
+    .roulette-hub{position:absolute;z-index:8;inset:31%;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle at 35% 28%,#fff2bd 0 8%,#d4a347 24%,#6d380f 51%,#1d0b04 55%,#b87525 72%,#4b2009 82%);border:2px solid #f4d68b;box-shadow:inset 0 0 18px #000b,0 8px 24px #000}
+    .roulette-spindle{position:relative;z-index:1;display:grid;width:31%;aspect-ratio:1;place-items:center;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fffbe1,#e2b85c 24%,#795017 62%,#2b1405);box-shadow:0 3px 9px #000,0 0 0 2px #e8c77a;color:#3a2108;font:950 clamp(10px,2.6vw,16px) "Space Grotesk"}
+    .roulette-spindle::before,.roulette-spindle::after{content:"";position:absolute;z-index:-1;left:50%;top:50%;width:310%;height:20%;border-radius:99px;background:linear-gradient(#fff0b6,#9a621f 45%,#3f1c08 55%,#d6a64c);box-shadow:0 3px 5px #0009;transform:translate(-50%,-50%)}
+    .roulette-spindle::after{transform:translate(-50%,-50%) rotate(90deg)}
+    .pocket{position:absolute;z-index:4;left:50%;top:50%;display:flex;width:6.7%;height:47%;margin-left:-3.35%;margin-top:-47%;transform-origin:50% 100%;clip-path:polygon(0 0,100% 0,58% 100%,42% 100%);justify-content:center;padding-top:3.5%;border-left:1px solid rgba(255,232,166,.65);border-right:1px solid rgba(31,10,5,.8);font-size:clamp(6px,2vw,9px);font-weight:950;line-height:1;text-shadow:0 1px 2px #000;box-shadow:inset 0 5px 9px #0005}
+    .pocket span{display:block}
+    .pocket-red{background:linear-gradient(#e34442 0 18%,#9f1f21 38%,#5d1114 100%)}.pocket-black{background:linear-gradient(#3b4654 0 18%,#171c24 40%,#05070b 100%)}.pocket-green{background:linear-gradient(#2bc68b 0 18%,#08754f 42%,#043424 100%)}
+    .pocket.winner{animation:winning-glow .65s ease-in-out 4;z-index:6}
+    .roulette-ball{--ball-size:clamp(12px,4.1%,17px);position:absolute;left:50%;top:50%;z-index:12;width:var(--ball-size);aspect-ratio:1;margin:calc(var(--ball-size) * -.5);border-radius:50%;background:radial-gradient(circle at 30% 25%,#fff 0 18%,#edf2f7 34%,#a8b2c2 66%,#475569 100%);box-shadow:0 3px 7px #000,0 0 8px #fff8}
+    .roulette-marker{position:absolute;z-index:20;left:50%;top:-1.5%;width:9%;aspect-ratio:.8;transform:translateX(-50%);clip-path:polygon(50% 100%,0 32%,18% 8%,82% 8%,100% 32%);background:linear-gradient(90deg,#704114,#fff0ad 45%,#c48b32 60%,#4d2709);filter:drop-shadow(0 5px 4px #000b)}
+    .roulette-edition{position:relative;z-index:1;margin:-.15rem auto 0;width:max-content;max-width:100%;border:1px solid rgba(231,196,119,.25);border-radius:99px;background:rgba(5,8,15,.72);padding:.4rem .75rem;color:#c9b98e;font-size:.62rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
     .roulette-camera.is-spinning .roulette-rotor,.roulette-camera.is-spinning .roulette-ball{will-change:transform}
     .roulette-ball.travelling{box-shadow:0 3px 7px #000,0 0 13px #fff;filter:brightness(1.2)}
     .roulette-result{animation:result-in .65s cubic-bezier(.16,1,.3,1)}
-    .lightning-stage .roulette-shell{box-shadow:0 45px 80px #000c,inset 0 0 22px #67e8f955,0 0 0 2px #818cf8,0 0 45px #22d3ee33}
+    .lightning-stage{background:radial-gradient(circle at 50% 34%,rgba(58,63,188,.3),transparent 23rem),linear-gradient(145deg,#080b1e,#060b18 58%,#0b1029)}
+    .lightning-stage .roulette-shell{background:radial-gradient(circle,#0b1228 0 54%,#7dd3fc 55% 57%,#111938 58% 69%,#312e81 70% 79%,#a5f3fc 80% 82%,#11152f 83% 91%,#4338ca 92% 96%,#050816 97%);box-shadow:0 34px 64px #000c,inset 0 0 24px #67e8f977,0 0 0 2px #a5f3fc,0 0 32px #6366f144}
+    .lightning-stage .roulette-ball-track{border-color:#090d22;box-shadow:inset 0 0 0 2px #67e8f9,inset 0 0 15px #000,0 0 0 2px #4338ca}
+    .lightning-stage .roulette-hub{border-color:#a5f3fc;box-shadow:inset 0 0 18px #000b,0 0 22px #22d3ee55}
+    .lightning-stage .roulette-marker{background:linear-gradient(90deg,#312e81,#cffafe 45%,#818cf8 62%,#1e1b4b)}
+    .lightning-stage .roulette-edition{border-color:rgba(103,232,249,.3);color:#a5f3fc}
     .number-cell{transition:transform .16s,border-color .16s,background-color .16s}
     @media (hover:hover){.number-cell:hover{transform:translateY(-2px)}}
     @media (max-width:639px){
+        .roulette-stage{padding-inline:.75rem}
+        .roulette-camera{width:min(100%,350px)}
         .roulette-camera.zooming{transform:rotateX(3deg) scale(1.02)}
         .roulette-camera.holding{transform:rotateX(1deg) scale(1.05)}
+        .roulette-edition{font-size:.55rem;letter-spacing:.12em}
     }
 </style>
 @endsection
@@ -37,20 +56,23 @@
     </header>
 
     <div class="grid gap-6 lg:grid-cols-[minmax(300px,.82fr)_minmax(0,1.18fr)] xl:grid-cols-[minmax(360px,.82fr)_minmax(520px,1.18fr)_290px]">
-        <section class="game-stage rounded-[1.75rem] border border-white/5 bg-white/[.03] p-4 sm:p-7 {{ $variant === 'lightning' ? 'lightning-stage' : '' }}">
+        <section class="roulette-stage game-stage rounded-[1.75rem] border border-white/5 p-4 sm:p-7 {{ $variant === 'lightning' ? 'lightning-stage' : '' }}">
             @php($wheelOrder = $rouletteConfig['wheel_order'])
             @php($redNumbers = $rouletteConfig['red_numbers'])
             <div class="roulette-camera" x-ref="camera" :class="[cameraStage===1?'zooming':cameraStage===2?'holding':'',spinning?'is-spinning':'']">
+                <div class="roulette-marker" aria-hidden="true"></div>
                 <div class="roulette-shell" x-ref="shell">
+                    <div class="roulette-ball-track" aria-hidden="true"></div>
                     <div class="roulette-rotor" x-ref="rotor">
                         @foreach($wheelOrder as $index => $number)
                             <div data-pocket="{{ $number }}" class="pocket {{ $number === 0 ? 'pocket-green' : (in_array($number, $redNumbers) ? 'pocket-red' : 'pocket-black') }}" style="transform:rotate({{ $index * (360 / 37) }}deg)"><span>{{ $number }}</span></div>
                         @endforeach
-                        <div class="roulette-hub"></div>
+                        <div class="roulette-hub"><span class="roulette-spindle">L</span></div>
                     </div>
                     <div class="roulette-ball" x-ref="ball"></div>
                 </div>
             </div>
+            <div class="roulette-edition">{{ $variant === 'lightning' ? 'Lightning multipliers · single zero' : 'European wheel · single zero' }}</div>
             <div class="mt-3 min-h-20 text-center">
                 <p class="text-xs font-black uppercase tracking-[.2em]" :class="spinning?'text-cyan-300':'text-slate-500'" x-text="statusText"></p>
                 <div x-show="resultVisible" class="roulette-result mt-3"><b class="text-xl">Número ganador: <span :class="lastColor==='rojo'?'text-red-400':lastColor==='negro'?'text-slate-300':'text-emerald-400'" x-text="lastNumero"></span></b><p class="mt-1 text-sm capitalize text-slate-400" x-text="lastColor"></p><p class="mt-1 text-sm" :class="ganancia>0?'text-emerald-300':'text-slate-500'" x-text="ganancia>0?'Premio '+money(ganancia):'La próxima puede ser la tuya'"></p></div>
