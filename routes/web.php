@@ -117,6 +117,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/poker/dealer', [PokerDealerController::class, 'index'])->name('poker.dealer');
         Route::post('/poker/dealer/start', [PokerDealerController::class, 'start'])->name('poker.dealer.start');
         Route::post('/poker/dealer/action', [PokerDealerController::class, 'action'])->name('poker.dealer.action');
+        Route::get('/poker/dealer/status', [PokerDealerController::class, 'status'])->name('poker.dealer.status');
         Route::get('/poker/all-in', [ArcadeController::class, 'index'])->defaults('game', 'texas-holdem')->name('poker.all-in');
         Route::post('/poker/all-in', [ArcadeController::class, 'play'])->defaults('game', 'texas-holdem')->name('poker.all-in.play');
         Route::get('/originals/{game}', [ArcadeController::class, 'index'])->name('originals.show');
@@ -155,6 +156,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/jugar/poker/dealer', [PokerDealerController::class, 'index'])->name('poker.dealer');
     Route::post('/jugar/poker/dealer/iniciar', [PokerDealerController::class, 'start'])->name('poker.dealer.start');
     Route::post('/jugar/poker/dealer/accion', [PokerDealerController::class, 'action'])->name('poker.dealer.action');
+    Route::get('/jugar/poker/dealer/estado', [PokerDealerController::class, 'status'])->name('poker.dealer.status');
     Route::post('/apuestas/{partido}', [ApuestasController::class, 'place'])->name('apuestas.place');
     Route::get('/jugar/originales/{game}', [ArcadeController::class, 'index'])->name('arcade');
     Route::post('/jugar/originales/{game}', [ArcadeController::class, 'play'])->name('arcade.play');

@@ -63,7 +63,12 @@ class ArcadeController extends Controller
             return Partida::create(['usuario_id' => $user->id, 'juego' => $game, 'request_token' => $data['request_token'], 'apuesta' => $bet, 'ganancia' => $win, 'detalles' => $result]);
         });
 
-        return response()->json([...$round->detalles, 'ganancia' => (float) $round->ganancia, 'saldo' => (float) $user->cartera()->value('saldo')]);
+        return response()->json([
+            ...$round->detalles,
+            'apuesta' => (float) $round->apuesta,
+            'ganancia' => (float) $round->ganancia,
+            'saldo' => (float) $user->cartera()->value('saldo'),
+        ]);
     }
 
     private function wheel(): array

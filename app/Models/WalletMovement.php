@@ -51,6 +51,7 @@ class WalletMovement extends Model
             'premio_blackjack' => 'Premio de blackjack',
             'ante_poker_dealer' => 'Ante de póker',
             'igualar_poker_dealer' => 'Igualar en póker',
+            'apuesta_poker_dealer' => 'Apuesta por calle en póker',
             'premio_poker_dealer' => 'Premio de póker',
             'apuesta_deportiva' => 'Apuesta deportiva',
             'premio_apuesta_deportiva' => 'Premio de apuesta deportiva',

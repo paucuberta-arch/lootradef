@@ -26,10 +26,10 @@ class PokerDealerController extends Controller
     {
         $validated = $request->validate(['ante' => ['required', 'numeric', 'min:1', 'max:1000']]);
         $hand = DB::transaction(function () use ($request, $validated) {
+            $wallet = Cartera::where('usuario_id', $request->user()->id)->lockForUpdate()->firstOrFail();
             if (PokerDealerHand::where('usuario_id', $request->user()->id)->whereNotIn('fase', ['finalizada', 'retirada'])->lockForUpdate()->exists()) {
                 abort(409, 'Ya tienes una partida de poker en curso.');
             }
-            $wallet = Cartera::where('usuario_id', $request->user()->id)->lockForUpdate()->firstOrFail();
             $ante = round((float) $validated['ante'], 2);
             abort_if($wallet->saldo < $ante, 422, 'Saldo insuficiente.');
             $deck = $this->deck();
@@ -51,10 +51,21 @@ class PokerDealerController extends Controller
 
     public function action(Request $request): JsonResponse
     {
-        $action = $request->validate(['accion' => ['required', 'in:jugar,continuar,retirarse']])['accion'];
-        $hand = DB::transaction(function () use ($request, $action) {
+        $validated = $request->validate([
+            'accion' => ['required', 'in:jugar,pasar,apostar,continuar,retirarse'],
+            'cantidad' => ['nullable', 'numeric', 'min:1', 'max:1000'],
+            'fase' => ['nullable', 'in:preflop,flop,turn,river'],
+        ]);
+        $action = $validated['accion'] === 'continuar' ? 'pasar' : $validated['accion'];
+
+        $hand = DB::transaction(function () use ($request, $validated, $action) {
             $hand = PokerDealerHand::where('usuario_id', $request->user()->id)->whereNotIn('fase', ['finalizada', 'retirada'])->lockForUpdate()->first();
             abort_unless($hand, 409, 'No tienes una partida activa.');
+            abort_if(
+                isset($validated['fase']) && $validated['fase'] !== $hand->fase,
+                409,
+                'La mano ya había avanzado. Recarga la mesa para recuperar su estado.'
+            );
 
             if ($action === 'retirarse') {
                 $this->finish($hand, 'retirada', 0, 'retirada');
@@ -68,23 +79,50 @@ class PokerDealerController extends Controller
                 abort_unless($wallet->apostar($hand->ante, 'igualar_poker_dealer', ['fase' => 'preflop'], $hand), 422, 'Necesitas saldo para igualar el ante.');
                 $hand->apostado += $hand->ante;
                 $this->reveal($hand, 3, 'flop');
-            } elseif ($hand->fase === 'flop') {
-                abort_unless($action === 'continuar', 422, 'La acción disponible es ver el turn o retirarte.');
-                $this->reveal($hand, 1, 'turn');
-            } elseif ($hand->fase === 'turn') {
-                abort_unless($action === 'continuar', 422, 'La acción disponible es ver el river o retirarte.');
-                $this->reveal($hand, 1, 'river');
-            } elseif ($hand->fase === 'river') {
-                abort_unless($action === 'continuar', 422, 'La acción disponible es llegar al showdown o retirarte.');
-                $player = $this->score([...$hand->mano_jugador, ...$hand->comunitarias]);
-                $dealer = $this->score([...$hand->mano_dealer, ...$hand->comunitarias]);
-                $result = $player['score'] > $dealer['score'] ? 'ganada' : ($player['score'] === $dealer['score'] ? 'empate' : 'perdida');
-                $payout = $result === 'ganada' ? $hand->apostado * 2 : ($result === 'empate' ? $hand->apostado : 0);
-                $this->finish($hand, $result, $payout, 'finalizada');
+            } else {
+                abort_unless(in_array($action, ['pasar', 'apostar'], true), 422, 'Debes pasar, apostar o retirarte.');
+
+                if ($action === 'apostar') {
+                    $amount = round((float) ($validated['cantidad'] ?? 0), 2);
+                    abort_if($amount < 1, 422, 'Indica una apuesta válida para esta calle.');
+                    $wallet = Cartera::where('usuario_id', $hand->usuario_id)->lockForUpdate()->firstOrFail();
+                    abort_if($wallet->saldo < $amount, 422, 'No tienes saldo suficiente para esa apuesta.');
+                    abort_unless(
+                        $wallet->apostar($amount, 'apuesta_poker_dealer', ['fase' => $hand->fase], $hand),
+                        422,
+                        'No tienes saldo suficiente para esa apuesta.'
+                    );
+                    $hand->apostado = round($hand->apostado + $amount, 2);
+                }
+
+                if ($hand->fase === 'flop') {
+                    $this->reveal($hand, 1, 'turn');
+                } elseif ($hand->fase === 'turn') {
+                    $this->reveal($hand, 1, 'river');
+                } else {
+                    $this->showdown($hand);
+                }
             }
 
             return $hand->fresh();
         });
+
+        return response()->json($this->data($hand));
+    }
+
+    public function status(Request $request): JsonResponse
+    {
+        $validated = $request->validate(['hand_id' => ['nullable', 'integer']]);
+        $query = PokerDealerHand::where('usuario_id', $request->user()->id);
+
+        if (! empty($validated['hand_id'])) {
+            $query->whereKey($validated['hand_id']);
+        } else {
+            $query->whereNotIn('fase', ['finalizada', 'retirada']);
+        }
+
+        $hand = $query->latest()->first();
+        abort_unless($hand, 404, 'No se encontró una mano para recuperar.');
 
         return response()->json($this->data($hand));
     }
@@ -97,6 +135,15 @@ class PokerDealerController extends Controller
             $community[] = array_pop($deck);
         }
         $hand->update(['baraja' => $deck, 'comunitarias' => $community, 'fase' => $phase, 'apostado' => $hand->apostado]);
+    }
+
+    private function showdown(PokerDealerHand $hand): void
+    {
+        $player = $this->score([...$hand->mano_jugador, ...$hand->comunitarias]);
+        $dealer = $this->score([...$hand->mano_dealer, ...$hand->comunitarias]);
+        $result = $player['score'] > $dealer['score'] ? 'ganada' : ($player['score'] === $dealer['score'] ? 'empate' : 'perdida');
+        $payout = $result === 'ganada' ? round($hand->apostado * 2, 2) : ($result === 'empate' ? $hand->apostado : 0);
+        $this->finish($hand, $result, $payout, 'finalizada');
     }
 
     private function finish(PokerDealerHand $hand, string $result, float $payout, string $phase): void
@@ -115,14 +162,16 @@ class PokerDealerController extends Controller
     private function data(PokerDealerHand $hand): array
     {
         $finished = in_array($hand->fase, ['finalizada', 'retirada'], true);
+        $showdown = $hand->fase === 'finalizada';
 
         return [
             'id' => $hand->id, 'phase' => $hand->fase, 'player' => $hand->mano_jugador,
-            'dealer' => $finished ? $hand->mano_dealer : [['hidden' => true], ['hidden' => true]],
+            'dealer' => $showdown ? $hand->mano_dealer : [['hidden' => true], ['hidden' => true]],
             'community' => $hand->comunitarias ?? [], 'ante' => $hand->ante, 'wagered' => $hand->apostado,
             'result' => $hand->resultado, 'winnings' => $hand->ganancia,
             'player_hand' => count($hand->comunitarias ?? []) >= 3 ? $this->score([...$hand->mano_jugador, ...$hand->comunitarias])['name'] : null,
-            'dealer_hand' => $finished ? $this->score([...$hand->mano_dealer, ...$hand->comunitarias])['name'] : null,
+            'dealer_hand' => $showdown ? $this->score([...$hand->mano_dealer, ...$hand->comunitarias])['name'] : null,
+            'can_bet' => ! $finished && $hand->fase !== 'preflop',
             'balance' => (float) Cartera::where('usuario_id', $hand->usuario_id)->value('saldo'),
         ];
     }

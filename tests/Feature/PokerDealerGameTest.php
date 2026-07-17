@@ -6,6 +6,7 @@ use App\Models\Partida;
 use App\Models\PokerDealerHand;
 use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class PokerDealerGameTest extends TestCase
@@ -52,6 +53,88 @@ class PokerDealerGameTest extends TestCase
             ->assertOk()->assertJsonPath('phase', 'retirada')->assertJsonPath('balance', 90);
 
         $this->assertDatabaseHas('partidas', ['juego' => 'poker_dealer', 'apuesta' => 10, 'ganancia' => 0]);
+    }
+
+    public function test_player_can_check_bet_and_fold_on_postflop_streets(): void
+    {
+        $usuario = $this->player();
+
+        $this->actingAs($usuario)->postJson(route('games.poker.dealer.start'), ['ante' => 10])->assertCreated();
+        $this->actingAs($usuario)->postJson(route('games.poker.dealer.action'), [
+            'accion' => 'jugar', 'fase' => 'preflop',
+        ])->assertOk()->assertJsonPath('phase', 'flop');
+
+        $this->actingAs($usuario)->postJson(route('games.poker.dealer.action'), [
+            'accion' => 'apostar', 'cantidad' => 15, 'fase' => 'flop',
+        ])->assertOk()
+            ->assertJsonPath('phase', 'turn')
+            ->assertJsonPath('wagered', 35)
+            ->assertJsonPath('balance', 65);
+
+        $this->actingAs($usuario)->postJson(route('games.poker.dealer.action'), [
+            'accion' => 'pasar', 'fase' => 'turn',
+        ])->assertOk()->assertJsonPath('phase', 'river')->assertJsonPath('balance', 65);
+
+        $this->actingAs($usuario)->postJson(route('games.poker.dealer.action'), [
+            'accion' => 'retirarse', 'fase' => 'river',
+        ])->assertOk()
+            ->assertJsonPath('phase', 'retirada')
+            ->assertJsonPath('dealer.0.hidden', true)
+            ->assertJsonPath('balance', 65);
+
+        $this->assertDatabaseHas('partidas', ['juego' => 'poker_dealer', 'apuesta' => 35, 'ganancia' => 0]);
+    }
+
+    public function test_stale_street_action_cannot_charge_or_advance_twice(): void
+    {
+        $usuario = $this->player();
+        $this->actingAs($usuario)->postJson(route('games.poker.dealer.start'), ['ante' => 10])->assertCreated();
+        $this->actingAs($usuario)->postJson(route('games.poker.dealer.action'), [
+            'accion' => 'jugar', 'fase' => 'preflop',
+        ])->assertOk();
+
+        $payload = ['accion' => 'apostar', 'cantidad' => 10, 'fase' => 'flop'];
+        $this->actingAs($usuario)->postJson(route('games.poker.dealer.action'), $payload)
+            ->assertOk()->assertJsonPath('phase', 'turn');
+        $balance = (float) $usuario->cartera()->value('saldo');
+
+        $this->actingAs($usuario)->postJson(route('games.poker.dealer.action'), $payload)->assertConflict();
+        $this->assertSame($balance, (float) $usuario->cartera()->value('saldo'));
+        $this->assertSame('turn', PokerDealerHand::first()->fase);
+        $this->assertSame(4, count(PokerDealerHand::first()->comunitarias));
+    }
+
+    public function test_poker_screens_expose_all_in_token_and_dealer_decisions(): void
+    {
+        $usuario = $this->player();
+
+        $this->actingAs($usuario)->get(route('games.poker.all-in'))
+            ->assertOk()
+            ->assertSee('request_token: this.roundToken', false);
+        $this->actingAs($usuario)->get(route('games.poker.dealer'))
+            ->assertOk()
+            ->assertSee("act('pasar')", false)
+            ->assertSee("act('apostar')", false)
+            ->assertSee("act('retirarse')", false);
+    }
+
+    public function test_all_in_can_play_and_retry_without_a_second_charge(): void
+    {
+        $usuario = $this->player();
+        $payload = ['apuesta' => 10, 'request_token' => Str::uuid()->toString()];
+
+        $first = $this->actingAs($usuario)->postJson(route('games.poker.all-in.play'), $payload)
+            ->assertOk()
+            ->assertJsonPath('apuesta', 10)
+            ->assertJsonCount(2, 'player')
+            ->assertJsonCount(2, 'dealer')
+            ->assertJsonCount(5, 'community');
+        $balance = (float) $usuario->cartera()->value('saldo');
+
+        $second = $this->actingAs($usuario)->postJson(route('games.poker.all-in.play'), $payload)->assertOk();
+        $this->assertSame($first->json('player'), $second->json('player'));
+        $this->assertSame($balance, (float) $usuario->cartera()->value('saldo'));
+        $this->assertSame(1, Partida::where('juego', 'texas-holdem')->where('request_token', $payload['request_token'])->count());
     }
 
     private function player(): Usuario
