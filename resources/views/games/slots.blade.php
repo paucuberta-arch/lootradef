@@ -12,7 +12,7 @@
         box-shadow: inset 0 0 30px rgba(0,0,0,.85), inset 0 2px 2px rgba(255,255,255,.35), 0 12px 30px rgba(0,0,0,.45);
     }
     .reel-strip { position:absolute; inset:7%; display:grid; place-items:center; transition:filter .2s ease; }
-    .reel-strip.spinning { animation:reel-scroll .13s linear infinite alternate; filter:blur(5px) saturate(1.35) brightness(1.25); }
+    .reel-strip.spinning { animation:reel-scroll .16s linear infinite alternate; filter:blur(2px) saturate(1.2) brightness(1.15); will-change:transform; }
     .reel-strip.stopping { animation:reel-lock .58s cubic-bezier(.16,1,.3,1); }
     @keyframes win-flash { 0%,100% { box-shadow: 0 0 0 rgba(245,158,11,0); } 50% { box-shadow: 0 0 25px rgba(245,158,11,0.5); } }
     .win-flash { animation: win-flash 0.5s ease-in-out 3; border-color: rgba(245,158,11,0.5) !important; }
@@ -201,7 +201,8 @@ function slotsGame() {
         paytable: @js($paytable),
         symbols: @js($symbols),
         atlas: @js($symbolAtlas),
-        spinTimers: [],
+        spinTimer: null,
+        reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
 
         symbolStyle(symbol) {
             const index = Math.max(0, this.symbols.indexOf(symbol));
@@ -216,6 +217,10 @@ function slotsGame() {
                 this.symbols[Math.floor(Math.random() * this.symbols.length)],
                 this.symbols[Math.floor(Math.random() * this.symbols.length)],
             ];
+        },
+
+        destroy() {
+            clearInterval(this.spinTimer);
         },
 
         requestToken() {
@@ -242,9 +247,12 @@ function slotsGame() {
             this.showCoins = false;
 
             this.reelSpinning = [true, true, true];
-            this.spinTimers = this.reels.map((_, i) => setInterval(() => {
-                this.reels[i] = this.symbols[Math.floor(Math.random() * this.symbols.length)];
-            }, 72 + i * 9));
+            clearInterval(this.spinTimer);
+            this.spinTimer = setInterval(() => {
+                this.reels = this.reels.map((symbol, index) => this.reelSpinning[index]
+                    ? this.symbols[Math.floor(Math.random() * this.symbols.length)]
+                    : symbol);
+            }, 110);
 
             try {
                 const res = await fetch(@js(route('games.slots.play', ['slug' => $gameSlug])), {
@@ -263,18 +271,17 @@ function slotsGame() {
                 }
 
                 // Frenado escalonado con inercia: cada carrete bloquea el resultado por separado.
-                const delays = [850, 1350, 1900];
+                const delays = this.reducedMotion ? [180, 300, 420] : [700, 1100, 1550];
                 for (let i = 0; i < 3; i++) {
                     await new Promise(r => setTimeout(r, delays[i] - (i > 0 ? delays[i-1] : 0)));
                     this.reelSpinning[i] = false;
-                    clearInterval(this.spinTimers[i]);
                     this.reelStopping[i] = true;
 
                     // Animate to final position
                     await new Promise(r => setTimeout(r, 50));
                     this.reels[i] = data.reels[i];
 
-                    await new Promise(r => setTimeout(r, 580));
+                    await new Promise(r => setTimeout(r, this.reducedMotion ? 30 : 480));
                     this.reelStopping[i] = false;
                 }
 
@@ -291,8 +298,10 @@ function slotsGame() {
                 }
             } catch (e) {
                 this.error = e.message || 'No se pudo conectar con el servidor.';
-                this.spinTimers.forEach(clearInterval);
                 this.reelSpinning = [false, false, false];
+            } finally {
+                clearInterval(this.spinTimer);
+                this.spinTimer = null;
             }
 
             this.spinning = false;
@@ -310,9 +319,6 @@ function slotsGame() {
             }
             this.showCoins = true;
             setTimeout(() => { this.showCoins = false; }, 2000);
-        },
-        destroy() {
-            this.spinTimers.forEach(clearInterval);
         },
     };
 }

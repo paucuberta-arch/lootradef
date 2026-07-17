@@ -23,7 +23,7 @@
                 <div class="relative flex min-h-[290px] h-full flex-col justify-end p-5 sm:min-h-[350px] sm:p-10">
                     <div x-show="!imageLoaded" class="absolute inset-0 animate-pulse bg-gradient-to-br from-white/5 to-transparent" aria-hidden="true"></div>
                     @if(!empty($juego['image']))
-                        <img src="{{ $juego['image'] }}" alt="{{ $juego['name'] }}" class="absolute inset-0 w-full h-full object-cover" loading="eager" x-on:load="imageLoaded=true" x-on:error="$event.currentTarget.src=@js(asset('images/game-fallback.svg')); imageLoaded=true">
+                        <img src="{{ $juego['image'] }}" alt="{{ $juego['name'] }}" class="absolute inset-0 w-full h-full object-cover" loading="eager" decoding="async" fetchpriority="high" x-on:load="imageLoaded=true" x-on:error="$event.currentTarget.src=@js(asset('images/game-fallback.svg')); imageLoaded=true">
                     @endif
                     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
                     <div class="relative z-10">
@@ -125,7 +125,7 @@
                 <div class="space-y-3">
                     @forelse($similarGames as $similar)
                         <a href="{{ route('games.show', $similar['slug']) }}" x-data class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition">
-                            <img src="{{ $similar['image'] }}" alt="" class="h-10 w-10 rounded-lg object-cover" loading="lazy" x-on:error="$event.currentTarget.src=@js(asset('images/game-fallback.svg'))">
+                            <img src="{{ $similar['image'] }}" alt="" class="h-10 w-10 rounded-lg object-cover" loading="lazy" decoding="async" x-on:error="$event.currentTarget.src=@js(asset('images/game-fallback.svg'))">
                             <div>
                                 <p class="text-sm font-semibold text-white">{{ $similar['name'] }}</p>
                                 <p class="text-xs text-slate-500">{{ ucfirst($similar['category']) }}</p>

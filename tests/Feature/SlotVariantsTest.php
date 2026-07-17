@@ -20,7 +20,7 @@ class SlotVariantsTest extends TestCase
         foreach ($variants as $variant) {
             $this->actingAs($user)->get(route('games.slots.show', $variant))
                 ->assertOk()
-                ->assertSee('symbols-v2.png')
+                ->assertSee('symbols-v2.webp')
                 ->assertSee('webCrypto.getRandomValues(bytes)', false)
                 ->assertSee('request_token: this.requestToken()', false);
         }

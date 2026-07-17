@@ -1,4 +1,3 @@
-import './bootstrap';
 import Alpine from 'alpinejs';
 
 window.Alpine = Alpine;
@@ -8,9 +7,15 @@ const initialBalance = Number(body?.dataset.walletBalance ?? 0);
 
 Alpine.store('wallet', { saldo: Number.isFinite(initialBalance) ? initialBalance : 0 });
 
-const refreshWallet = async () => {
+let lastWalletRefresh = Date.now();
+
+const refreshWallet = async ({ force = false } = {}) => {
     const url = document.body?.dataset.walletUrl;
     if (!url || document.hidden) return;
+
+    const now = Date.now();
+    if (!force && now - lastWalletRefresh < 15000) return;
+    lastWalletRefresh = now;
 
     try {
         const response = await fetch(url, { headers: { Accept: 'application/json' }, cache: 'no-store' });
@@ -29,8 +34,7 @@ const refreshWallet = async () => {
 Alpine.start();
 
 if (document.body?.dataset.walletUrl) {
-    refreshWallet();
-    window.setInterval(refreshWallet, 15000);
+    window.setInterval(refreshWallet, 45000);
     window.addEventListener('focus', refreshWallet);
     document.addEventListener('visibilitychange', refreshWallet);
 }

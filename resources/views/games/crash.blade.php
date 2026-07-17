@@ -4,11 +4,11 @@
 @section('styles')
 <style>
     .crash-line { transition: all 0.1s linear; }
-    @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 20px rgba(245,158,11,0.3); } 50% { box-shadow: 0 0 40px rgba(245,158,11,0.6); } }
-    .pulse-glow { animation: pulse-glow 1.5s ease-in-out infinite; }
+    @keyframes pulse-glow { 0%, 100% { transform:scale(1); border-color:rgba(245,158,11,.18); } 50% { transform:scale(1.018); border-color:rgba(245,158,11,.55); } }
+    .pulse-glow { animation: pulse-glow 1.5s ease-in-out infinite; border:1px solid rgba(245,158,11,.18); }
     @keyframes crash-shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
     .crash-shake { animation: crash-shake 0.3s ease-in-out 3; }
-    @keyframes rocket-flame { 50% { transform:scaleY(1.45); filter:brightness(1.5); } }
+    @keyframes rocket-flame { 50% { transform:scaleY(1.45); opacity:.72; } }
     .rocket-craft { width:30px; height:62px; border-radius:55% 55% 35% 35%; background:linear-gradient(90deg,#2563eb,#f8fafc 48%,#67e8f9); border:2px solid rgba(255,255,255,.75); box-shadow:0 0 24px rgba(34,211,238,.65); transition:bottom .1s linear; }
     .rocket-craft::before { content:""; position:absolute; width:15px; height:25px; left:6px; bottom:-23px; border-radius:0 0 60% 60%; background:linear-gradient(180deg,#fbbf24,#fb7185 55%,transparent); filter:drop-shadow(0 7px 8px #ef4444); transform-origin:top; animation:rocket-flame .16s infinite; }
     .rocket-craft::after { content:""; position:absolute; left:-8px; bottom:4px; width:42px; height:20px; background:linear-gradient(90deg,#7c3aed 0 22%,transparent 23% 77%,#7c3aed 78%); clip-path:polygon(0 100%,20% 0,80% 0,100% 100%,72% 68%,28% 68%); }
@@ -174,7 +174,7 @@ function crashGame() {
         error: '',
         graphPoints: '0,58',
         historial: @js($partidas->pluck('detalles.crash_point')->filter()->take(15)->values()->all()),
-        interval: null,
+        animationFrame: null,
         statusInFlight: false,
         actionInFlight: false,
         autoCashoutTriggered: false,
@@ -183,10 +183,17 @@ function crashGame() {
         ratePerSecond: Number(activeRound?.rate_per_second || 0.2),
 
         init() {
+            this.visibilityHandler = () => {
+                if (!document.hidden && this.fase === 'subiendo') this.refreshRound();
+            };
+            document.addEventListener('visibilitychange', this.visibilityHandler);
             if (this.roundId) this.animateCrash(this.multiplier);
         },
 
-        destroy() { clearInterval(this.interval); },
+        destroy() {
+            cancelAnimationFrame(this.animationFrame);
+            document.removeEventListener('visibilitychange', this.visibilityHandler);
+        },
 
         async startRound() {
             this.error = '';
@@ -236,40 +243,49 @@ function crashGame() {
         },
 
         animateCrash(startAt = 1) {
-            clearInterval(this.interval);
-            let current = Number(startAt);
-            let pointIndex = 0;
-            let statusTicks = 0;
-            const increment = this.ratePerSecond / 20;
+            cancelAnimationFrame(this.animationFrame);
+            const base = Number(startAt);
+            const startedAt = performance.now();
+            let lastPaint = 0;
+            let lastStatus = startedAt;
+            const points = [58];
 
-            this.interval = setInterval(() => {
+            const frame = now => {
                 if (this.fase !== 'subiendo') return;
-                current += increment;
-                current = Math.round(current * 100) / 100;
-                this.multiplier = current;
 
-                pointIndex++;
-                const x = Math.min(95, pointIndex * 1.5);
-                const y = Math.max(5, 58 - (current - 1) * 8);
-                this.graphPoints += ` ${x},${y}`;
+                const elapsed = (now - startedAt) / 1000;
+                const current = Math.round((base + elapsed * this.ratePerSecond) * 100) / 100;
+
+                if (now - lastPaint >= 80) {
+                    lastPaint = now;
+                    this.multiplier = current;
+                    points.push(Math.max(5, 58 - (current - 1) * 8));
+                    if (points.length > 64) points.shift();
+                    const denominator = Math.max(1, points.length - 1);
+                    this.graphPoints = points.map((y, index) => `${(index / denominator) * 95},${y}`).join(' ');
+                }
 
                 if (!this.autoCashoutTriggered && current >= this.autoCashout) {
                     this.autoCashoutTriggered = true;
-                    clearInterval(this.interval);
+                    cancelAnimationFrame(this.animationFrame);
                     this.cashout();
+                    return;
                 }
 
-                statusTicks++;
-                if (statusTicks >= 5) {
-                    statusTicks = 0;
+                if (now - lastStatus >= 1000) {
+                    lastStatus = now;
                     this.refreshRound();
                 }
-            }, 50);
+
+                this.animationFrame = requestAnimationFrame(frame);
+            };
+
+            this.animationFrame = requestAnimationFrame(frame);
         },
 
         async cashout() {
             if (this.fase !== 'subiendo' || this.actionInFlight || !this.roundId) return;
-            clearInterval(this.interval);
+            cancelAnimationFrame(this.animationFrame);
             this.actionInFlight = true;
             try {
                 const res = await fetch('{{ route("games.crash.cashout") }}', {
@@ -320,7 +336,7 @@ function crashGame() {
                 return;
             }
 
-            clearInterval(this.interval);
+            cancelAnimationFrame(this.animationFrame);
             this.ganancia = Number(data.ganancia);
             this.multiplier = Number(data.multiplier);
             this.crashAt = Number(data.crash_point);
@@ -331,7 +347,9 @@ function crashGame() {
         },
 
         updateBalance(value) {
-            this.saldo = Number(value);
+            const nextBalance = Number(value);
+            if (this.saldo === nextBalance) return;
+            this.saldo = nextBalance;
             Alpine.store('wallet').saldo = this.saldo;
             window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: this.saldo } }));
         },

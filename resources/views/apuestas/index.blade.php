@@ -14,7 +14,7 @@
 @section('contenido')
 <div class="sports-grid min-h-screen" x-data="sportsbook()" x-init="start()">
     <section class="relative overflow-hidden border-b border-white/10">
-        <img src="https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=1800&h=700&fit=crop" class="absolute inset-0 h-full w-full object-cover opacity-30" alt="Estadio de fútbol">
+        <img src="https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=1800&h=700&fit=crop" class="absolute inset-0 h-full w-full object-cover opacity-30" alt="Estadio de fútbol" decoding="async">
         <div class="absolute inset-0 bg-gradient-to-r from-[#07152d] via-[#07152d]/90 to-fuchsia-950/60"></div>
         <div class="relative mx-auto max-w-[1450px] px-4 py-12 sm:px-5 sm:py-20">
             <div class="mb-5 inline-flex items-center gap-3 rounded-full border border-rose-400/30 bg-rose-500/10 px-4 py-2 text-xs font-black uppercase tracking-[.22em] text-rose-300">

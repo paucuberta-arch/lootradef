@@ -60,9 +60,9 @@ img, svg { max-width: 100%; }
 
 .site-shell > nav, .site-shell > main, .site-shell > footer { position: relative; z-index: 2; }
 .site-shell > nav { z-index: 100; }
-.ambient-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.ambient-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; contain: strict; }
 .ambient-bg::after { content: ""; position: absolute; inset: 0; opacity: .14; background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px); background-size: 48px 48px; mask-image: linear-gradient(to bottom,black,transparent 75%); }
-.ambient-orb { position: absolute; width: 38rem; height: 38rem; border-radius: 999px; filter: blur(100px); opacity: .12; animation: ambient-drift 18s ease-in-out infinite alternate; }
+.ambient-orb { position: absolute; width: 38rem; height: 38rem; border-radius: 999px; filter: blur(100px); opacity: .12; animation: ambient-drift 24s ease-in-out infinite alternate; will-change: transform; }
 .ambient-orb--one { background: var(--casino-violet); left: -16rem; top: -12rem; }
 .ambient-orb--two { background: var(--casino-cyan); right: -18rem; top: 30%; animation-delay: -7s; }
 .ambient-orb--three { background: var(--casino-gold); left: 38%; bottom: -24rem; animation-delay: -12s; }
@@ -72,7 +72,8 @@ img, svg { max-width: 100%; }
 .brand-gem { position: relative; transform: rotate(-7deg); transition: transform .45s cubic-bezier(.2,.8,.2,1); }
 .brand-gem span { transform: rotate(7deg); }
 .group:hover .brand-gem { transform: rotate(6deg) scale(1.08); box-shadow: 0 0 35px rgba(214,168,75,.28); }
-.glass-panel, .ui-card, .rounded-2xl.bg-white\/\[0\.03\] { background: linear-gradient(145deg,rgba(255,255,255,.065),rgba(255,255,255,.018)); border-color: var(--casino-border); box-shadow: inset 0 1px 0 rgba(255,255,255,.06),var(--shadow-elevated); backdrop-filter: blur(18px); }
+.glass-panel, .ui-card, .rounded-2xl.bg-white\/\[0\.03\] { background: linear-gradient(145deg,rgba(255,255,255,.065),rgba(255,255,255,.018)); border-color: var(--casino-border); box-shadow: inset 0 1px 0 rgba(255,255,255,.06),var(--shadow-elevated); }
+.glass-panel { backdrop-filter: blur(12px); }
 .game-stage { position: relative; isolation: isolate; box-shadow: 0 35px 100px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08); }
 .game-heading { font-size: clamp(1.5rem,3vw,2.5rem); line-height: 1; letter-spacing: -.04em; background: linear-gradient(90deg,#fff 10%,var(--casino-gold-bright) 48%,#7dd3fc 90%); color: transparent; background-clip: text; }
 .balance-chip { background: linear-gradient(135deg,rgba(214,168,75,.16),rgba(14,143,104,.10)); border: 1px solid rgba(242,205,117,.3); box-shadow: 0 0 30px rgba(214,168,75,.1); }
@@ -81,7 +82,7 @@ img, svg { max-width: 100%; }
 .cta-shine { position: relative; overflow: hidden; isolation: isolate; }
 .cta-shine::after { content:""; position:absolute; inset:-30% auto -30% -30%; width:30%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent); animation:shimmer 3.8s ease-in-out infinite; }
 .game-card, .featured-card { position: relative; border: 1px solid var(--casino-border); overflow: hidden; transition: transform .35s cubic-bezier(.16,1,.3,1),box-shadow .35s ease; }
-.game-card { border-radius: 22px; background: var(--casino-card); }
+.game-card { border-radius: 22px; background: var(--casino-card); content-visibility: auto; contain-intrinsic-size: auto 300px 400px; }
 .featured-card { border-radius: 28px; }
 .game-card:hover, .featured-card:hover { transform: translateY(-7px) scale(1.015); box-shadow: 0 30px 80px -18px rgba(54,197,216,.28); }
 .game-card img, .featured-card img { transition: transform .8s cubic-bezier(.2,.8,.2,1),filter .5s; }
@@ -127,5 +128,12 @@ img, svg { max-width: 100%; }
     .game-stage { border-radius: 1.25rem !important; }
     .game-heading { overflow-wrap: anywhere; }
     .ui-card { border-radius: 1rem; }
+    .glass-panel { backdrop-filter: none; }
+    .ambient-orb { width: 24rem; height: 24rem; filter: blur(70px); opacity: .08; animation-duration: 32s; }
+}
+@media (update: slow) { .ambient-orb, .cta-shine::after { animation: none; } }
+@media (hover: none) {
+    .game-card:hover, .featured-card:hover { transform: none; }
+    .game-card:hover img, .featured-card:hover img { transform: none; filter: none; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *,*::before,*::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; } }

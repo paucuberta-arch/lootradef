@@ -78,7 +78,7 @@
                     <div class="mb-4 flex items-center justify-between"><div><h2 class="text-lg font-bold">Inventario disponible</h2><p class="text-xs text-slate-500">Premios pendientes de canje.</p></div><a href="{{ route('cases.index') }}#inventario" class="text-xs font-bold text-cyan-300">Ver todo</a></div>
                     <div class="grid grid-cols-2 gap-3">
                         @forelse($inventario as $item)
-                            <div class="rounded-xl border border-white/5 bg-black/15 p-3"><img src="{{ $item->imagen ?: asset('images/game-fallback.svg') }}" alt="" class="mb-2 h-16 w-full rounded-lg object-cover" loading="lazy"><p class="truncate text-sm font-bold">{{ $item->nombre }}</p><p class="text-xs text-brand-300">{{ number_format($item->valor_canje, 2, ',', '.') }} €</p></div>
+                            <div class="rounded-xl border border-white/5 bg-black/15 p-3"><img src="{{ $item->imagen ?: asset('images/game-fallback.svg') }}" alt="" class="mb-2 h-16 w-full rounded-lg object-cover" loading="lazy" decoding="async"><p class="truncate text-sm font-bold">{{ $item->nombre }}</p><p class="text-xs text-brand-300">{{ number_format($item->valor_canje, 2, ',', '.') }} €</p></div>
                         @empty
                             <p class="col-span-2 rounded-xl border border-dashed border-white/10 py-8 text-center text-sm text-slate-500">Abre una caja para conseguir tu primer artículo.</p>
                         @endforelse

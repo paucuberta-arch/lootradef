@@ -59,7 +59,7 @@
 
     <section class="relative mb-8 flex min-h-[360px] items-end overflow-hidden rounded-3xl border border-white/10 hero-casino sm:mb-10 sm:min-h-[420px] sm:rounded-[2rem]">
         <img src="{{ asset('images/lootra-hero.webp') }}"
-             alt="Mesa de casino premium iluminada" class="absolute inset-0 w-full h-full object-cover" fetchpriority="high">
+             alt="Mesa de casino premium iluminada" class="absolute inset-0 w-full h-full object-cover" fetchpriority="high" decoding="async">
         <div class="absolute inset-0 bg-gradient-to-r from-[#070712] via-[#09081a]/90 to-fuchsia-950/25"></div>
         <div class="absolute inset-0 bg-gradient-to-t from-[#070712] via-transparent to-cyan-500/10"></div>
         <div class="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-fuchsia-500/25 blur-[90px]"></div>
@@ -186,7 +186,7 @@
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                     <a href="{{ route('games.show', 'gates-of-olympus') }}" class="featured-card game-gradient-5 aspect-[16/9] sm:aspect-[16/10] flex items-end">
-                        <img src="https://images.unsplash.com/photo-1551524559-8af4e6624178?w=1200&h=675&fit=crop" alt="Gates of Olympus" class="absolute inset-0 w-full h-full object-cover" loading="lazy">
+                        <img src="https://images.unsplash.com/photo-1551524559-8af4e6624178?w=1200&h=675&fit=crop" alt="Gates of Olympus" class="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async">
                         <div class="featured-overlay"></div>
                         <div class="absolute top-4 left-4 z-10"><span class="px-3 py-1 rounded-lg bg-brand-500/90 text-black text-xs font-bold uppercase tracking-wider">Popular</span></div>
                         <div class="relative z-10 p-5 sm:p-6 w-full">
@@ -203,7 +203,7 @@
                         </div>
                     </a>
                     <a href="{{ route('games.show', 'texas-holdem') }}" class="featured-card game-gradient-2 aspect-[16/9] sm:aspect-[16/10] flex items-end">
-                        <img src="{{ asset('images/poker-live.webp') }}" alt="Texas Hold'em Live" class="absolute inset-0 w-full h-full object-cover" loading="lazy">
+                        <img src="{{ asset('images/poker-live.webp') }}" alt="Texas Hold'em Live" class="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async">
                         <div class="featured-overlay"></div>
                         <div class="absolute top-4 left-4 z-10"><span class="px-3 py-1 rounded-lg bg-emerald-500/90 text-black text-xs font-bold uppercase tracking-wider">Nuevo</span></div>
                         <div class="relative z-10 p-5 sm:p-6 w-full">
@@ -232,7 +232,7 @@
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                     <template x-for="j in filtered" :key="j.slug">
                         <a :href="j.detail_url" class="game-card aspect-[3/4]" :class="j.grad">
-                            <img :src="j.image" :alt="j.name" class="absolute inset-0 w-full h-full object-cover" loading="lazy" x-on:error="$event.currentTarget.src=@js(asset('images/game-fallback.svg'))">
+                            <img :src="j.image" :alt="j.name" class="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" x-on:error="$event.currentTarget.src=@js(asset('images/game-fallback.svg'))">
                             <div class="game-overlay"></div>
 
                             <template x-if="j.badge">

@@ -37,7 +37,7 @@
 @section('contenido')
 <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10" x-data="caseCenter()" x-init="init()">
     <section class="case-hero relative mb-8 flex min-h-[340px] items-center overflow-hidden rounded-3xl border border-white/10 sm:mb-10 sm:min-h-[390px] sm:rounded-[2rem]">
-        <img src="https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?auto=format&fit=crop&w=1800&q=85" alt="Colección de premios" class="absolute inset-0 w-full h-full object-cover opacity-20">
+        <img src="https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?auto=format&fit=crop&w=1800&q=80" alt="Colección de premios" class="absolute inset-0 w-full h-full object-cover opacity-20" decoding="async">
         <div class="absolute inset-0 bg-gradient-to-r from-[#090719] via-[#0b0920]/85 to-transparent"></div>
         <div class="relative z-10 max-w-3xl p-6 sm:p-12 lg:p-16">
             <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-fuchsia-400/10 border border-fuchsia-300/20 text-fuchsia-200 text-xs font-bold uppercase tracking-[.18em] mb-5"><i class="w-2 h-2 rounded-full bg-cyan-300 animate-pulse"></i> Lootra Drops</span>
@@ -72,7 +72,7 @@
                          class="case-card group relative rounded-[1.5rem] bg-white/[0.035] border border-white/10 overflow-hidden" style="--accent:{{ $accent }}">
                     <div class="case-glint"></div>
                     <div class="h-52 relative overflow-hidden">
-                        <img src="{{ $caja['imagen'] }}" alt="{{ $caja['nombre'] }}" class="w-full h-full object-cover" loading="lazy">
+                        <img src="{{ $caja['imagen'] }}" alt="{{ $caja['nombre'] }}" class="w-full h-full object-cover" loading="lazy" decoding="async">
                         <div class="absolute inset-0 bg-gradient-to-t from-[#090914] via-transparent to-transparent"></div>
                         <span class="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-black/50 border border-white/10 backdrop-blur text-[10px] uppercase tracking-widest">Hasta €{{ number_format($top['valor'], 0) }}</span>
                     </div>
@@ -103,7 +103,7 @@
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <template x-for="item in inventory.filter(i => i.estado === 'disponible')" :key="item.id">
                 <article class="rounded-2xl bg-white/[0.035] border border-white/10 overflow-hidden prize-reveal">
-                    <div class="h-40 relative"><img :src="item.imagen" :alt="item.nombre" class="w-full h-full object-cover"><span class="absolute top-3 left-3 px-2 py-1 rounded-lg border text-[10px] uppercase font-bold" :class="'rarity-'+item.rareza" x-text="rarityName(item.rareza)"></span></div>
+                    <div class="h-40 relative"><img :src="item.imagen" :alt="item.nombre" class="w-full h-full object-cover" loading="lazy" decoding="async"><span class="absolute top-3 left-3 px-2 py-1 rounded-lg border text-[10px] uppercase font-bold" :class="'rarity-'+item.rareza" x-text="rarityName(item.rareza)"></span></div>
                     <div class="p-4"><h3 class="font-bold text-white" x-text="item.nombre"></h3><p class="text-xs text-slate-500 mt-1">Obtenido <span x-text="item.created_at"></span></p><button @click="confirming=item" :disabled="redeeming===item.id" class="w-full mt-4 py-2.5 rounded-xl bg-emerald-500/15 border border-emerald-400/25 text-emerald-300 text-sm font-bold hover:bg-emerald-500/25 disabled:opacity-50 transition"><span x-text="redeeming===item.id ? 'Canjeando...' : 'Canjear por '+money(item.valor_canje)"></span></button></div>
                 </article>
             </template>
@@ -118,7 +118,7 @@
             <template x-if="!prize">
                 <div>
                     <div class="loot-box my-8" :class="opening && 'is-opening'"><div class="loot-box__lid"></div><div class="loot-box__base"></div></div>
-                    <div x-show="opening" class="case-reel relative my-5 rounded-2xl border border-white/10 bg-black/25 p-3"><div class="absolute left-1/2 top-0 bottom-0 z-10 w-0.5 bg-amber-300 shadow-[0_0_12px_#fbbf24]"></div><div class="case-reel__track" x-ref="caseTrack"><template x-for="(item,index) in reelItems" :key="index"><div class="case-reel__item"><img :src="item.imagen" :alt="item.nombre" class="h-20 w-full rounded-lg object-cover"><p class="mt-2 truncate text-[10px]" x-text="item.nombre"></p></div></template></div></div>
+                    <div x-show="opening" class="case-reel relative my-5 rounded-2xl border border-white/10 bg-black/25 p-3"><div class="absolute left-1/2 top-0 bottom-0 z-10 w-0.5 bg-amber-300 shadow-[0_0_12px_#fbbf24]"></div><div class="case-reel__track" x-ref="caseTrack"><template x-for="(item,index) in reelItems" :key="index"><div class="case-reel__item"><img :src="item.imagen" :alt="item.nombre" class="h-20 w-full rounded-lg object-cover" decoding="async"><p class="mt-2 truncate text-[10px]" x-text="item.nombre"></p></div></template></div></div>
                     <h2 class="text-2xl font-bold" x-text="selected?.nombre"></h2>
                     <p class="text-slate-500 text-sm mt-2" x-text="opening ? 'Generando y guardando tu premio...' : 'El premio se añadirá automáticamente a tu inventario.'"></p>
                     <p x-show="error" class="mt-4 text-sm text-red-400" x-text="error"></p>
@@ -128,7 +128,7 @@
             <template x-if="prize">
                 <div class="prize-reveal">
                     <p class="text-xs uppercase tracking-[.25em] text-fuchsia-300 font-bold mb-4">Nuevo premio</p>
-                    <div class="relative mx-auto aspect-square w-44 overflow-hidden rounded-3xl border-2 sm:w-56" :class="'rarity-'+prize.rareza"><img :src="prize.imagen" :alt="prize.nombre" class="w-full h-full object-cover"><div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div></div>
+                    <div class="relative mx-auto aspect-square w-44 overflow-hidden rounded-3xl border-2 sm:w-56" :class="'rarity-'+prize.rareza"><img :src="prize.imagen" :alt="prize.nombre" class="w-full h-full object-cover" decoding="async"><div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div></div>
                     <span class="inline-block mt-5 px-3 py-1 rounded-full border text-[10px] uppercase font-bold" :class="'rarity-'+prize.rareza" x-text="rarityName(prize.rareza)"></span>
                     <h2 class="text-2xl font-bold mt-3" x-text="prize.nombre"></h2>
                     <p class="text-sm text-slate-400 mt-2">Valor de canje: <strong class="text-emerald-400" x-text="money(prize.valor_canje)"></strong></p>
@@ -160,6 +160,8 @@ function caseCenter() {
         async openSelected() {
             if (this.opening || !this.selectedKey) return;
             this.opening=true; this.error='';this.reelItems=Array.from({length:18},()=>this.selected.premios[Math.floor(Math.random()*this.selected.premios.length)]);
+            await this.$nextTick();
+            if(this.$refs.caseTrack){this.$refs.caseTrack.style.transition='none';this.$refs.caseTrack.style.transform='translate3d(0,0,0)';this.$refs.caseTrack.getBoundingClientRect();this.$refs.caseTrack.style.transition=''}
             const started=Date.now();
             try {
                 const url=@js(route('cases.open',['caja'=>'__CASE__'])).replace('__CASE__',encodeURIComponent(this.selectedKey));
@@ -167,7 +169,7 @@ function caseCenter() {
                 const data=await response.json();
                 if (!response.ok) throw new Error(data.message || 'No se pudo abrir la caja.');
                 this.reelItems[15]=data.item;await this.$nextTick();
-                if(this.$refs.caseTrack)this.$refs.caseTrack.style.transform='translateX(calc(50% - 1916px))';
+                if(this.$refs.caseTrack){const track=this.$refs.caseTrack,target=track.children[15],viewport=track.parentElement;if(target&&viewport){const shift=viewport.clientWidth/2-(target.offsetLeft+target.offsetWidth/2);requestAnimationFrame(()=>{track.style.transform=`translate3d(${shift}px,0,0)`})}}
                 await new Promise(resolve => setTimeout(resolve, Math.max(0, 2450-(Date.now()-started))));
                 this.prize=data.item; this.inventory.unshift(data.item);
                 Alpine.store('wallet').saldo=Number(data.saldo);
