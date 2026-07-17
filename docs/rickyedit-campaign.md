@@ -141,6 +141,16 @@ Eventos registrados y deduplicados:
 
 El panel separa `real`, `test` y `simulated`, y muestra visitas, registros, retos, conversión, partidas, usuarios que superaron la puntuación, retención y fuentes UTM.
 
+### Google Analytics 4
+
+Al crear por primera vez una participación activa, la siguiente página registra:
+
+- Evento: `reto_iniciado`
+- `reto_id`: `reto_1`
+- `reto_nombre`: `RickyEditXLootra`
+
+El servidor solo activa la señal cuando la participación acaba de crearse. En el navegador, `localStorage.reto_iniciado_reto_1` evita duplicar el evento. Puede marcarse `reto_iniciado` como evento clave/conversión desde GA4.
+
 ## Seeder
 
 `RickyEditCampaignSeeder` crea tráfico bajo previo, pico en el lanzamiento del vídeo, descenso, segundo pico por directo y actividad residual. Los usuarios y todos los registros de campaña se marcan como demo/simulados.

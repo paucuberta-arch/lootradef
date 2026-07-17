@@ -54,5 +54,9 @@ class FrontendAssetBuildTest extends TestCase
         $this->assertSame(2, substr_count($tag, 'G-ZG7EW2QE96'));
         $this->assertStringContainsString('https://www.googletagmanager.com/gtag/js', $tag);
         $this->assertStringContainsString("gtag('config', 'G-ZG7EW2QE96')", $tag);
+        $this->assertStringContainsString("gtag('event', 'reto_iniciado'", $tag);
+        $this->assertStringContainsString("reto_id: 'reto_1'", $tag);
+        $this->assertStringContainsString("reto_nombre: 'RickyEditXLootra'", $tag);
+        $this->assertStringContainsString("localStorage.getItem('reto_iniciado_reto_1')", $tag);
     }
 }

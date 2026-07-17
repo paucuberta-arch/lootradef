@@ -71,11 +71,14 @@ class RickyEditCampaignTest extends TestCase
     {
         Carbon::setTestNow('2026-07-17 12:00:00');
         $user = $this->user();
-        $this->actingAs($user)->post(route('rickyedit.start'))->assertRedirect(route('games.index'));
+        $this->actingAs($user)->post(route('rickyedit.start'))
+            ->assertRedirect(route('games.index'))
+            ->assertSessionHas('ga_reto_iniciado', true);
         $challenge = CampaignChallenge::firstOrFail();
 
         $this->assertSame('2026-07-17 12:15:00', $challenge->expires_at->format('Y-m-d H:i:s'));
-        $this->actingAs($user)->post(route('rickyedit.start'));
+        $this->actingAs($user)->post(route('rickyedit.start'))
+            ->assertSessionMissing('ga_reto_iniciado');
         $this->assertDatabaseCount('campaign_challenges', 1);
 
         Carbon::setTestNow('2026-07-17 12:15:00');

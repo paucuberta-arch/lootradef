@@ -46,13 +46,16 @@ class RickyEditCampaignController extends Controller
     public function start(Request $request): RedirectResponse
     {
         $challenge = $this->challenges->start($request->user());
+        $startedNow = $challenge->wasRecentlyCreated && $challenge->status === 'active';
 
-        return redirect()->route('games.index')->with(
+        $response = redirect()->route('games.index')->with(
             $challenge->status === 'active' ? 'success' : 'info',
             $challenge->status === 'active'
                 ? 'El reto ha comenzado. Tienes '.(int) $this->campaigns->config()['duration_minutes'].' minutos.'
                 : 'Ya utilizaste tu participación.'
         );
+
+        return $startedNow ? $response->with('ga_reto_iniciado', true) : $response;
     }
 
     public function finish(Request $request): RedirectResponse
