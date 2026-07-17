@@ -15,7 +15,10 @@ return [
     'neon-mines' => $game('neon-mines', 'Neon Mines', 'arcade', 'mines', 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=900&q=85', 'Escanea una cuadrícula de energía y evita las minas para multiplicar la apuesta.'),
     'dice-arena' => $game('dice-arena', 'Dice Arena', 'arcade', 'dice', 'https://images.unsplash.com/photo-1551431009-a802eeec77b1?auto=format&fit=crop&w=900&q=85', 'Predice si la tirada será alta o baja y ajusta riesgo y recompensa.'),
     'high-low' => $game('high-low', 'Higher or Lower', 'cartas', 'hilo', 'https://images.unsplash.com/photo-1529480780361-c8cb81eb5735?auto=format&fit=crop&w=900&q=85', 'Lee la carta visible y decide si la siguiente será mayor o menor.'),
-    'quantum-plinko' => $game('quantum-plinko', 'Quantum Plinko', 'arcade', 'plinko', 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=900&q=85', 'Lanza una esfera de energía a través de un tablero de probabilidades.', 'Nuevo'),
+    'quantum-plinko' => array_replace(
+        $game('quantum-plinko', 'Quantum Plinko', 'arcade', 'plinko', 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=900&q=85', 'Lanza una esfera de energía a través de un tablero de probabilidades.', 'Nuevo'),
+        ['rtp' => '96.4%', 'max_win' => 'x12']
+    ),
     'cosmic-keno' => $game('cosmic-keno', 'Cosmic Keno', 'numeros', 'keno', 'https://images.unsplash.com/photo-1446776877081-d282a0f896e2?auto=format&fit=crop&w=900&q=85', 'Elige cinco constelaciones y busca coincidencias en el sorteo galáctico.'),
     'coin-duel' => $game('coin-duel', 'Coin Duel', 'arcade', 'coin', 'https://images.unsplash.com/photo-1621761191319-c6fb62004040?auto=format&fit=crop&w=900&q=85', 'Un duelo instantáneo de cara o cruz con presentación holográfica.'),
     'baccarat-royale' => $game('baccarat-royale', 'Baccarat Royale', 'cartas', 'baccarat', 'https://images.unsplash.com/photo-1511193311914-0346f16efe90?auto=format&fit=crop&w=900&q=85', 'Apuesta por jugador, banca o empate en el clásico juego de nueve puntos.'),

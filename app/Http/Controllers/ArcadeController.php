@@ -17,7 +17,13 @@ class ArcadeController extends Controller
         $definition = $catalog->find($game);
         abort_unless($definition && isset($definition['mode']), 404);
 
-        return view($definition['mode'] === 'poker' ? 'games.poker-live' : 'games.arcade', [
+        $view = match ($definition['mode']) {
+            'poker' => 'games.poker-live',
+            'plinko' => 'games.quantum-plinko',
+            default => 'games.arcade',
+        };
+
+        return view($view, [
             'game' => $definition,
             'history' => Partida::where('usuario_id', $request->user()->id)->where('juego', $game)->latest()->take(10)->get(),
             'initialCard' => $definition['mode'] === 'hilo' ? $this->prepareHiLo() : null,
@@ -107,7 +113,7 @@ class ArcadeController extends Controller
 
     private function plinko(): array
     {
-        $slots = [10, 3, 1.5, 1, .5, .2, .5, 1, 1.5, 3, 10];
+        $slots = [12, 5, 2, 1.2, .7, .4, .7, 1.2, 2, 5, 12];
         $path = array_map(fn () => random_int(0, 1), range(1, 10));
         $slot = array_sum($path);
 

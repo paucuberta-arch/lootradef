@@ -45,4 +45,31 @@ class ArcadeGamesTest extends TestCase
 
         $this->assertSame(10, Partida::where('usuario_id', $usuario->id)->count());
     }
+
+    public function test_quantum_plinko_uses_its_physics_board_and_server_trajectory(): void
+    {
+        $usuario = Usuario::create(['name' => 'Quantum Tester', 'email' => 'quantum@example.com', 'password' => bcrypt('password')]);
+        $usuario->cartera()->create(['saldo' => 100]);
+
+        $this->actingAs($usuario)->get(route('games.originals.show', 'quantum-plinko'))
+            ->assertOk()
+            ->assertSee('x-ref="plinkoCanvas"', false)
+            ->assertSee('stepPhysics(delta, path, time, elapsed)', false)
+            ->assertSee('prefers-reduced-motion', false)
+            ->assertSee('10 niveles · 11 destinos');
+
+        $response = $this->actingAs($usuario)->postJson(route('games.originals.play', 'quantum-plinko'), [
+            'apuesta' => 2,
+            'request_token' => fake()->uuid(),
+        ])->assertOk()->assertJsonCount(10, 'path');
+
+        $path = array_map('intval', $response->json('path'));
+        $slot = (int) $response->json('slot');
+        $multipliers = [12, 5, 2, 1.2, .7, .4, .7, 1.2, 2, 5, 12];
+
+        $this->assertSame(array_sum($path), $slot);
+        $this->assertEquals((float) $multipliers[$slot], (float) $response->json('multiplier'));
+        $this->assertSame('96.4%', config('casino_games.quantum-plinko.rtp'));
+        $this->assertSame('x12', config('casino_games.quantum-plinko.max_win'));
+    }
 }
