@@ -6,6 +6,7 @@ use App\Models\ActivityLog;
 use App\Models\ApuestaDeportiva;
 use App\Models\Cartera;
 use App\Models\PartidoDeportivo;
+use App\Services\CampaignChallengeService;
 use App\Services\SportsSimulationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,7 +15,10 @@ use Illuminate\View\View;
 
 class ApuestasController extends Controller
 {
-    public function __construct(private readonly SportsSimulationService $simulation) {}
+    public function __construct(
+        private readonly SportsSimulationService $simulation,
+        private readonly CampaignChallengeService $campaignChallenges,
+    ) {}
 
     public function index(Request $request): View
     {
@@ -38,6 +42,11 @@ class ApuestasController extends Controller
 
     public function place(Request $request, PartidoDeportivo $partido): JsonResponse
     {
+        abort_if(
+            $this->campaignChallenges->activeForUser($request->user()),
+            409,
+            'Las apuestas deportivas no están incluidas en el reto.'
+        );
         $validated = $request->validate([
             'seleccion' => ['required', 'in:local,empate,visitante'],
             'importe' => ['required', 'numeric', 'min:1', 'max:5000'],

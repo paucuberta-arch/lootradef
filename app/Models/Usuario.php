@@ -19,12 +19,16 @@ class Usuario extends Authenticatable
         'name',
         'email',
         'password',
+        'is_demo',
+        'data_origin',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
     ];
+
+    protected $casts = ['is_demo' => 'boolean'];
 
     protected $appends = ['role_badge', 'role_color'];
 
@@ -66,6 +70,16 @@ class Usuario extends Authenticatable
     public function partidas(): HasMany
     {
         return $this->hasMany(Partida::class, 'usuario_id');
+    }
+
+    public function campaignChallenges(): HasMany
+    {
+        return $this->hasMany(CampaignChallenge::class, 'user_id');
+    }
+
+    public function campaignAttributions(): HasMany
+    {
+        return $this->hasMany(CampaignAttribution::class, 'user_id');
     }
 
     public function getSaldoAttribute(): float

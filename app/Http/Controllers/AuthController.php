@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Usuario;
 use App\Services\AccountMailService;
+use App\Services\CampaignAnalytics;
+use App\Services\CampaignManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,15 +14,28 @@ use Illuminate\View\View;
 
 class AuthController extends Controller
 {
-    public function __construct(private readonly AccountMailService $accountMail) {}
+    public function __construct(
+        private readonly AccountMailService $accountMail,
+        private readonly CampaignManager $campaigns,
+        private readonly CampaignAnalytics $campaignAnalytics,
+    ) {}
 
-    public function mostrarRegistro(): View|RedirectResponse
+    public function mostrarRegistro(Request $request): View|RedirectResponse
     {
         if (Auth::check()) {
             return redirect()->route('profile.show');
         }
 
-        return view('auth.register');
+        $campaignAttributed = $this->campaigns->isAttributed($request);
+        if ($campaignAttributed) {
+            $this->campaignAnalytics->record(
+                'registration_started',
+                $this->campaigns->sessionHash($request),
+                [], null, null, $this->campaigns->attribution($request), $request
+            );
+        }
+
+        return view('auth.register', compact('campaignAttributed'));
     }
 
     public function registrar(Request $request): RedirectResponse
@@ -67,6 +82,16 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
         $this->accountMail->registered($usuario);
+
+        if ($this->campaigns->isAttributed($request)) {
+            $attribution = $this->campaigns->attribution($request);
+            $attribution?->update(['user_id' => $usuario->id, 'converted_at' => now()]);
+            $this->campaignAnalytics->record(
+                'registration_completed', 'user-'.$usuario->id, [], $usuario, null, $attribution, $request
+            );
+
+            return redirect()->route('rickyedit.intro')->with('success', 'Tu cuenta se ha creado correctamente.');
+        }
 
         return redirect()
             ->route('profile.show')

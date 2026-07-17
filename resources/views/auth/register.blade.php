@@ -3,6 +3,9 @@
 @section('title', 'Crear cuenta — Lootra Casino')
 
 @section('contenido')
+@if($campaignAttributed ?? false)
+<div class="mx-auto mt-8 max-w-lg px-4"><div class="rounded-xl border border-fuchsia-400/25 bg-fuchsia-400/10 p-4 text-center font-bold text-fuchsia-100">Crea tu cuenta y recibe {{ number_format($rickyeditCampaign['initial_balance'] ?? 1000, 0, ',', '.') }} créditos demo para el reto.</div></div>
+@endif
 
     <div class="relative min-h-[80vh] flex items-center justify-center px-4 py-8 sm:py-16">
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[min(500px,90vw)] w-[min(500px,90vw)] bg-brand-500/5 rounded-full blur-[120px] pointer-events-none"></div>

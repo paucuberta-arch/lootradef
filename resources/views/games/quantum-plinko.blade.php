@@ -29,6 +29,7 @@
 @endsection
 
 @section('game-content')
+<div class="mx-auto max-w-[1350px] px-4 pt-5"><x-campaign.rickyedit.banner variant="compact" /></div>
 <div class="mx-auto max-w-[1380px] px-4 py-6 sm:px-6 sm:py-9" x-data="quantumPlinko()" :class="playing && 'quantum-live'">
     <header class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -114,7 +115,7 @@ function quantumPlinko() {
     const floor = 714;
 
     return {
-        saldo: {{ auth()->user()->saldo }},
+        saldo: {{ $gameBalance }},
         apuesta: 2,
         playing: false,
         result: null,

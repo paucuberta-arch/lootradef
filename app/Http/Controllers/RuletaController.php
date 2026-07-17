@@ -3,11 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Partida;
+use App\Services\CampaignManager;
+use App\Services\GameBalanceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class RuletaController extends Controller
 {
+    public function __construct(private readonly GameBalanceService $balances) {}
+
     public function index(string $variant = 'european')
     {
         abort_unless(in_array($variant, ['european', 'lightning'], true), 404);
@@ -24,62 +30,67 @@ class RuletaController extends Controller
             'gameName' => $variant === 'lightning' ? 'Lightning Roulette' : 'Ruleta Europea',
             'playRoute' => $variant === 'lightning' ? route('games.roulette.lightning.play') : route('games.roulette.european.play'),
             'rouletteConfig' => config('roulette'),
+            'gameBalance' => $this->balances->balance(Auth::user(), 'ruleta_'.$variant),
         ]);
     }
 
     public function play(Request $request, string $variant = 'european')
     {
         abort_unless(in_array($variant, ['european', 'lightning'], true), 404);
+        if (! $request->filled('request_token')) {
+            $request->merge(['request_token' => (string) Str::uuid()]);
+        }
         $request->validate([
             'apuesta' => 'required|numeric|min:0.10|max:500',
             'tipo' => 'required|string|in:numero,rojo,negro,par,impar,docena1,docena2,docena3',
             'valor' => 'nullable|integer|min:0|max:36',
+            'request_token' => 'required|uuid',
         ]);
 
         $user = Auth::user();
         $apuesta = round($request->apuesta, 2);
 
-        if (! $user->cartera || ! $user->cartera->apostar($apuesta, 'apuesta_ruleta', ['variante' => $variant])) {
-            return response()->json(['error' => 'Saldo insuficiente.'], 422);
-        }
+        $gameKey = 'ruleta_'.$variant;
+        $round = DB::transaction(function () use ($request, $user, $apuesta, $variant, $gameKey) {
+            $existing = Partida::where('usuario_id', $user->id)->where('juego', $gameKey)
+                ->where('request_token', $request->request_token)->lockForUpdate()->first();
+            if ($existing) {
+                return $existing;
+            }
+            $campaignId = $this->balances->campaignId($user, $gameKey);
+            abort_unless($this->balances->debit($user, $gameKey, $apuesta, 'apuesta_ruleta', ['variante' => $variant], null, $request->request_token, $campaignId), 422, 'Saldo insuficiente.');
+            $numero = random_int(0, 36);
+            $color = $numero === 0 ? 'verde' : (in_array($numero, config('roulette.red_numbers'), true) ? 'rojo' : 'negro');
+            $multipliers = $variant === 'lightning' ? $this->lightningNumbers() : [];
+            $ganancia = $this->calculateWin($request->tipo, $request->valor, $numero, $color, $apuesta);
+            if ($variant === 'lightning' && $request->tipo === 'numero' && $request->valor === $numero && isset($multipliers[$numero])) {
+                $ganancia = round($apuesta * $multipliers[$numero], 2);
+            }
+            if ($ganancia > 0) {
+                $this->balances->credit($user, $gameKey, $ganancia, 'premio_ruleta', ['variante' => $variant], null, $campaignId);
+            }
+            $round = Partida::create([
+                'usuario_id' => $user->id, 'juego' => $gameKey, 'request_token' => $request->request_token,
+                'apuesta' => $apuesta, 'ganancia' => $ganancia,
+                'campaign_challenge_id' => $campaignId, 'campaign_key' => $campaignId ? CampaignManager::KEY : null,
+                'detalles' => [
+                    'numero' => $numero, 'color' => $color, 'tipo_apuesta' => $request->tipo,
+                    'valor_apuesta' => $request->valor, 'resultado' => $ganancia > 0 ? 'win' : 'lose',
+                    'variante' => $variant, 'multiplicadores' => $multipliers,
+                ],
+            ]);
+            $this->balances->recordGame($round);
 
-        $numero = random_int(0, 36);
-        $color = $numero === 0 ? 'verde' : (in_array($numero, config('roulette.red_numbers'), true) ? 'rojo' : 'negro');
+            return $round;
+        });
 
-        $multipliers = $variant === 'lightning' ? $this->lightningNumbers() : [];
-        $ganancia = $this->calculateWin($request->tipo, $request->valor, $numero, $color, $apuesta);
-        if ($variant === 'lightning' && $request->tipo === 'numero' && $request->valor === $numero && isset($multipliers[$numero])) {
-            $ganancia = round($apuesta * $multipliers[$numero], 2);
-        }
-        $resultado = $ganancia > 0 ? 'win' : 'lose';
-
-        if ($ganancia > 0) {
-            $user->cartera->ganar($ganancia, 'premio_ruleta', ['variante' => $variant]);
-        }
-
-        Partida::create([
-            'usuario_id' => $user->id,
-            'juego' => 'ruleta_'.$variant,
-            'apuesta' => $apuesta,
-            'ganancia' => $ganancia,
-            'detalles' => [
-                'numero' => $numero,
-                'color' => $color,
-                'tipo_apuesta' => $request->tipo,
-                'valor_apuesta' => $request->valor,
-                'resultado' => $resultado,
-                'variante' => $variant,
-                'multiplicadores' => $multipliers,
-            ],
-        ]);
+        $details = $round->detalles;
 
         return response()->json([
-            'numero' => $numero,
-            'color' => $color,
-            'ganancia' => $ganancia,
-            'resultado' => $resultado,
-            'saldo' => $user->cartera?->saldo ?? 0,
-            'multipliers' => $multipliers,
+            'numero' => $details['numero'], 'color' => $details['color'],
+            'ganancia' => (float) $round->ganancia, 'resultado' => $details['resultado'],
+            'saldo' => $this->balances->balance($user, $gameKey, $round->campaign_challenge_id),
+            'multipliers' => $details['multiplicadores'],
         ]);
     }
 

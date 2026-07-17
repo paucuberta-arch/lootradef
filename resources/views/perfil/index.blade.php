@@ -21,6 +21,22 @@
                 @endforeach
             </div>
 
+            @if($campaignChallenge)
+            <section class="mb-6 rounded-2xl border border-fuchsia-400/20 bg-gradient-to-br from-fuchsia-500/10 to-cyan-500/5 p-5 sm:p-7">
+                <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between"><div><p class="text-xs font-black uppercase tracking-[.2em] text-fuchsia-300">Mi reto contra RickyEdit</p><h2 class="mt-2 text-2xl font-black">{{ $campaignChallenge->public_alias }}</h2></div><span class="self-start rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-bold uppercase text-cyan-200">{{ $campaignChallenge->status }}</span></div>
+                @if($campaignChallenge->status === 'active')<x-campaign.rickyedit.progress class="mt-5" />@endif
+                @php($playedUntil = $campaignChallenge->completed_at ?? now())
+                <div class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-5">@foreach([
+                    ['Puntuación', number_format($campaignChallenge->score ?? floor($campaignChallenge->current_balance))],
+                    ['Saldo final', number_format($campaignChallenge->final_balance ?? $campaignChallenge->current_balance,2,',','.')],
+                    ['Partidas', $campaignChallenge->games_played],
+                    ['Tiempo jugado', $campaignChallenge->started_at ? gmdate('i:s', min(($rickyeditCampaign['duration_minutes'] ?? 15) * 60, $campaignChallenge->started_at->diffInSeconds($playedUntil))) : '00:00'],
+                    ['Posición', $campaignPosition ? '#'.$campaignPosition : '—'],
+                ] as [$label,$value])<div class="rounded-xl bg-black/20 p-3"><p class="text-[10px] uppercase tracking-wider text-slate-500">{{ $label }}</p><b class="mt-1 block">{{ $value }}</b></div>@endforeach</div>
+                <div class="mt-5 flex flex-col gap-2 sm:flex-row"><a href="{{ route('rickyedit.ranking') }}" class="rounded-xl bg-white px-4 py-3 text-center text-sm font-black text-slate-950">Ver ranking</a><button type="button" data-campaign-share onclick="navigator.share?.({title:'Mi reto contra RickyEdit',url:'{{ route('rickyedit.ranking') }}'})" class="rounded-xl border border-white/10 px-4 py-3 text-sm font-bold">Compartir resultado</button></div>
+            </section>
+            @endif
+
             <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-6 sm:p-8 backdrop-blur-sm">
 
                 <div class="text-center mb-8">
@@ -55,7 +71,7 @@
                             <p class="text-xs font-medium text-brand-400 uppercase tracking-wider">Saldo</p>
                             <p class="text-white font-semibold mt-0.5">€<span x-text="$store.wallet.saldo.toFixed(2)">{{ number_format($usuario->saldo, 2) }}</span></p>
                         </div>
-                        <button @click="depositOpen=true" class="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition text-sm font-bold">Añadir saldo demo</button>
+                        @if(!$campaignChallenge || $campaignChallenge->status !== 'active')<button @click="depositOpen=true" class="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition text-sm font-bold">Añadir saldo demo</button>@else<span class="text-xs text-cyan-300">La cartera normal permanece separada durante el reto</span>@endif
                     </div>
                 </div>
 

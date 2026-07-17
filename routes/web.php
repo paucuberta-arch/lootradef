@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminCampaignController;
+use App\Http\Controllers\Admin\AdminCasePrizeController;
 use App\Http\Controllers\Admin\AdminChartsController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminFeedbackController;
@@ -19,11 +21,15 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\PokerDealerController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\RickyEditCampaignController;
 use App\Http\Controllers\RuletaController;
 use App\Http\Controllers\SlotsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('inicio');
+Route::get('/rickyedit', [RickyEditCampaignController::class, 'landing'])->name('rickyedit.landing');
+Route::get('/rickyedit/ranking', [RickyEditCampaignController::class, 'ranking'])->name('rickyedit.ranking');
+Route::post('/rickyedit/event', [RickyEditCampaignController::class, 'event'])->middleware('throttle:30,1')->name('rickyedit.event');
 Route::get('/games', HomeController::class)->name('games.index');
 Route::get('/juego/{slug}', [GameController::class, 'show'])->name('juego.show');
 
@@ -113,6 +119,10 @@ Route::get('/iniciar-sesion', [AuthController::class, 'mostrarLogin'])->name('lo
 Route::post('/iniciar-sesion', [AuthController::class, 'iniciarSesion'])->name('login.store');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/rickyedit/reto', [RickyEditCampaignController::class, 'intro'])->name('rickyedit.intro');
+    Route::post('/rickyedit/reto/iniciar', [RickyEditCampaignController::class, 'start'])->middleware('throttle:5,1')->name('rickyedit.start');
+    Route::post('/rickyedit/reto/finalizar', [RickyEditCampaignController::class, 'finish'])->middleware('throttle:5,1')->name('rickyedit.finish');
+    Route::get('/rickyedit/reto/estado', [RickyEditCampaignController::class, 'status'])->middleware('throttle:60,1')->name('rickyedit.status');
     Route::prefix('games')->name('games.')->group(function () {
         Route::get('/poker/dealer', [PokerDealerController::class, 'index'])->name('poker.dealer');
         Route::post('/poker/dealer/start', [PokerDealerController::class, 'start'])->name('poker.dealer.start');
@@ -218,6 +228,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin|ad
 });
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin|admin'])->group(function () {
+    Route::get('/campanas/rickyedit', [AdminCampaignController::class, 'index'])->middleware('permission:campaigns.stats.view')->name('campaigns.rickyedit');
+    Route::get('/premios-cajas', [AdminCasePrizeController::class, 'index'])->middleware('permission:case-prizes.manage')->name('case-prizes.index');
+    Route::put('/premios-cajas', [AdminCasePrizeController::class, 'update'])->middleware(['permission:case-prizes.manage', 'throttle:10,1'])->name('case-prizes.update');
+    Route::post('/premios-cajas/multiplicadores', [AdminCasePrizeController::class, 'storeBoost'])->middleware(['permission:case-prizes.manage', 'throttle:10,1'])->name('case-prizes.boosts.store');
+    Route::delete('/premios-cajas/multiplicadores/{boost}', [AdminCasePrizeController::class, 'destroyBoost'])->middleware(['permission:case-prizes.manage', 'throttle:10,1'])->name('case-prizes.boosts.destroy');
     Route::get('/graficos', [AdminChartsController::class, 'index'])->middleware('permission:stats.view')->name('charts');
     Route::get('/roles', [AdminRoleController::class, 'index'])->middleware('permission:roles.view')->name('roles');
     Route::post('/roles', [AdminRoleController::class, 'store'])->middleware('permission:roles.manage')->name('roles.store');

@@ -18,7 +18,8 @@
 </head>
 
 <body class="site-shell min-h-screen flex flex-col bg-[#060812] text-white font-sans antialiased"
-      data-wallet-balance="{{ auth()->user()?->cartera?->saldo ?? 0 }}"
+      data-wallet-balance="{{ $displayBalance ?? 0 }}"
+      data-wallet-kind="{{ $displayBalanceKind ?? 'wallet' }}"
       @auth data-wallet-url="{{ route('wallet.balance') }}" @endauth>
 
     <div class="ambient-bg" aria-hidden="true">
@@ -29,11 +30,17 @@
 
     @include('partials.menu')
 
+    @if(($rickyeditCampaignEnabled ?? false) && !request()->routeIs('rickyedit.*', 'login', 'registro', 'admin.*'))
+        <x-campaign.rickyedit.banner variant="global" :closable="true" />
+    @endif
+
     <main class="flex-1 w-full">
         @yield('contenido')
     </main>
 
     @include('partials.footer')
+
+    <x-campaign.rickyedit.floating-button />
 
     @stack('scripts')
 </body>

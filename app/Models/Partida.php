@@ -16,6 +16,8 @@ class Partida extends Model
         'apuesta',
         'ganancia',
         'detalles',
+        'campaign_challenge_id',
+        'campaign_key',
     ];
 
     protected $casts = [
@@ -27,5 +29,10 @@ class Partida extends Model
     public function usuario(): BelongsTo
     {
         return $this->belongsTo(Usuario::class, 'usuario_id');
+    }
+
+    public function campaignChallenge(): BelongsTo
+    {
+        return $this->belongsTo(CampaignChallenge::class);
     }
 }

@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cartera;
 use App\Models\Partida;
+use App\Services\CampaignManager;
+use App\Services\GameBalanceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class SlotsController extends Controller
 {
+    public function __construct(private readonly GameBalanceService $balances) {}
+
     private array $themes = [
         'default' => [
             'name' => 'Slots',
@@ -144,7 +147,7 @@ class SlotsController extends Controller
             ])->all(),
             'symbolAtlas' => asset($theme['atlas'] ?? 'images/slots/olympus-symbols-v2.webp'),
             'gameHero' => $theme['hero'] ?? null,
-            'saldo' => Auth::user()?->cartera?->saldo ?? 0,
+            'saldo' => $this->balances->balance(Auth::user(), 'slots'),
         ]);
     }
 
@@ -162,13 +165,13 @@ class SlotsController extends Controller
         $theme = $this->themes[$gameSlug] ?? $this->themes['default'];
 
         $round = DB::transaction(function () use ($request, $user, $apuesta, $gameSlug, $theme) {
-            $wallet = Cartera::where('usuario_id', $user->id)->lockForUpdate()->first();
+            $campaignId = $this->balances->campaignId($user, 'slots');
             $existing = Partida::where('usuario_id', $user->id)->where('juego', 'slots')
                 ->where('request_token', $request->request_token)->lockForUpdate()->first();
             if ($existing) {
                 return $existing;
             }
-            abort_unless($wallet?->apostar($apuesta, 'apuesta_slots', ['juego' => $gameSlug]), 422, 'Saldo insuficiente.');
+            abort_unless($this->balances->debit($user, 'slots', $apuesta, 'apuesta_slots', ['juego' => $gameSlug], null, $request->request_token, $campaignId), 422, 'Saldo insuficiente.');
             $reels = [
                 $this->spin($theme['symbols'], $theme['weights']),
                 $this->spin($theme['symbols'], $theme['weights']),
@@ -176,21 +179,26 @@ class SlotsController extends Controller
             ];
             $ganancia = $this->calculateWin($reels, $apuesta, $gameSlug);
             if ($ganancia > 0) {
-                $wallet->ganar($ganancia, 'premio_slots', ['juego' => $gameSlug]);
+                $this->balances->credit($user, 'slots', $ganancia, 'premio_slots', ['juego' => $gameSlug], null, $campaignId);
             }
 
-            return Partida::create([
+            $game = Partida::create([
                 'usuario_id' => $user->id, 'juego' => 'slots', 'request_token' => $request->request_token,
                 'apuesta' => $apuesta, 'ganancia' => $ganancia,
                 'detalles' => ['reels' => $reels, 'resultado' => $ganancia > 0 ? 'win' : 'lose', 'game' => $gameSlug],
+                'campaign_challenge_id' => $campaignId,
+                'campaign_key' => $campaignId ? CampaignManager::KEY : null,
             ]);
+            $this->balances->recordGame($game);
+
+            return $game;
         });
 
         return response()->json([
             'reels' => $round->detalles['reels'],
             'ganancia' => (float) $round->ganancia,
             'resultado' => $round->detalles['resultado'],
-            'saldo' => (float) $user->cartera()->value('saldo'),
+            'saldo' => $this->balances->balance($user, 'slots', $round->campaign_challenge_id),
         ]);
     }
 

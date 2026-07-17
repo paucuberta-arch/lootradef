@@ -3,17 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Services\AccountMailService;
+use App\Services\CampaignChallengeService;
+use App\Services\CampaignLeaderboardService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class PerfilController extends Controller
 {
-    public function __construct(private readonly AccountMailService $accountMail) {}
+    public function __construct(
+        private readonly AccountMailService $accountMail,
+        private readonly CampaignChallengeService $campaignChallenges,
+        private readonly CampaignLeaderboardService $campaignLeaderboard,
+    ) {}
 
     public function index(Request $request): View
     {
         $user = $request->user()->load('cartera');
+        $campaignChallenge = $this->campaignChallenges->findForUser($user);
 
         return view('perfil.index', [
             'usuario' => $user,
@@ -25,6 +32,8 @@ class PerfilController extends Controller
                 'inventario' => $user->inventario()->where('estado', 'disponible')->count(),
                 'apuestas' => $user->apuestasDeportivas()->count(),
             ],
+            'campaignChallenge' => $campaignChallenge,
+            'campaignPosition' => $this->campaignLeaderboard->position($campaignChallenge),
         ]);
     }
 
@@ -60,8 +69,13 @@ class PerfilController extends Controller
 
     public function saldo(Request $request): JsonResponse
     {
+        $challenge = $this->campaignChallenges->findForUser($request->user());
+
         return response()->json([
-            'saldo' => (float) ($request->user()->cartera()->value('saldo') ?? 0),
+            'saldo' => $challenge?->status === 'active'
+                ? (float) $challenge->current_balance
+                : (float) ($request->user()->cartera()->value('saldo') ?? 0),
+            'kind' => $challenge?->status === 'active' ? 'campaign' : 'wallet',
         ]);
     }
 }

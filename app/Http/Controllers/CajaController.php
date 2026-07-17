@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\ActivityLog;
 use App\Models\Cartera;
 use App\Models\InventarioItem;
+use App\Services\CampaignChallengeService;
+use App\Services\CasePrizeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +14,11 @@ use Illuminate\View\View;
 
 class CajaController extends Controller
 {
+    public function __construct(
+        private readonly CampaignChallengeService $campaignChallenges,
+        private readonly CasePrizeService $prizes,
+    ) {}
+
     public function index(Request $request): View
     {
         $inventario = $request->user()
@@ -26,6 +33,11 @@ class CajaController extends Controller
 
     public function open(Request $request, string $caja): JsonResponse
     {
+        abort_if(
+            $this->campaignChallenges->activeForUser($request->user()),
+            409,
+            'Las cajas no están incluidas en el reto. Finaliza el intento antes de abrir una.'
+        );
         $definition = config("cajas.{$caja}");
 
         if (! $definition) {
@@ -39,7 +51,7 @@ class CajaController extends Controller
                 return null;
             }
 
-            $prize = $this->pickPrize($definition['premios']);
+            $prize = $this->prizes->pick($caja, $definition, $request->user());
 
             $item = InventarioItem::create([
                 'usuario_id' => $request->user()->id,
@@ -109,20 +121,6 @@ class CajaController extends Controller
         }
 
         return response()->json($result);
-    }
-
-    private function pickPrize(array $prizes): array
-    {
-        $roll = random_int(1, array_sum(array_column($prizes, 'peso')));
-
-        foreach ($prizes as $prize) {
-            $roll -= $prize['peso'];
-            if ($roll <= 0) {
-                return $prize;
-            }
-        }
-
-        return $prizes[array_key_last($prizes)];
     }
 
     private function serializeItem(InventarioItem $item): array

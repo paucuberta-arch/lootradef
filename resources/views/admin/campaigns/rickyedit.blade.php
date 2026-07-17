@@ -1,0 +1,10 @@
+@extends('layouts.admin')
+@section('admin-title', 'Analítica RickyEdit')
+@section('admin-content')
+<div class="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p class="text-xs font-black uppercase tracking-[.2em] text-fuchsia-300">Campaña</p><h1 class="mt-2 text-3xl font-black">RickyEdit x Lootra</h1></div><div class="flex gap-2">@foreach(['real'=>'Datos reales','simulated'=>'Simulados','test'=>'Pruebas'] as $key=>$label)<a href="{{ route('admin.campaigns.rickyedit',['origin'=>$key]) }}" class="rounded-xl border px-3 py-2 text-xs font-bold {{ $origin===$key?'border-cyan-300/30 bg-cyan-300/10 text-cyan-200':'border-white/10 text-slate-400' }}">{{ $label }}</a>@endforeach</div></div>
+<div class="grid grid-cols-2 gap-3 lg:grid-cols-4">@foreach([
+    ['Visitas',$stats['visits']],['Registros',$stats['registrations']],['Retos iniciados',$stats['started']],['Retos completados',$stats['completed']],
+    ['Conversión',$stats['conversion'].'%'],['Partidas',$stats['games']],['Superaron a RickyEdit',$stats['beat_creator']],['Retención D1 / D7',$stats['day_1'].' / '.$stats['day_7']],
+] as [$label,$value])<div class="rounded-2xl border border-white/10 bg-white/[.035] p-5"><p class="text-xs text-slate-500">{{ $label }}</p><b class="mt-2 block text-2xl">{{ $value }}</b></div>@endforeach</div>
+<div class="mt-7 grid gap-5 lg:grid-cols-2"><section class="rounded-2xl border border-white/10 bg-white/[.03] p-5"><h2 class="font-black">Fuentes UTM</h2><div class="mt-4 space-y-2">@forelse($sources as $source)<div class="flex justify-between rounded-xl bg-black/20 p-3"><span>{{ $source->source }}</span><b>{{ $source->total }}</b></div>@empty<p class="text-sm text-slate-500">Sin datos.</p>@endforelse</div></section><section class="rounded-2xl border border-white/10 bg-white/[.03] p-5"><h2 class="font-black">Actividad diaria</h2><div class="mt-4 max-h-80 space-y-2 overflow-y-auto">@forelse($daily as $day)<div class="flex justify-between rounded-xl bg-black/20 p-3"><span>{{ $day->day }}</span><b>{{ $day->total }}</b></div>@empty<p class="text-sm text-slate-500">Sin datos.</p>@endforelse</div></section></div>
+@endsection

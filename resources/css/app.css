@@ -58,8 +58,8 @@ button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 :where(button, a, input, select, textarea):focus-visible { outline: 2px solid var(--casino-cyan); outline-offset: 3px; }
 img, svg { max-width: 100%; }
 
-.site-shell > nav, .site-shell > main, .site-shell > footer { position: relative; z-index: 2; }
-.site-shell > nav { z-index: 100; }
+.site-shell > nav, .site-shell > .contents > nav, .site-shell > main, .site-shell > footer { position: relative; z-index: 2; }
+.site-shell > nav, .site-shell > .contents > nav { z-index: 300; }
 .ambient-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; contain: strict; }
 .ambient-bg::after { content: ""; position: absolute; inset: 0; opacity: .14; background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px); background-size: 48px 48px; mask-image: linear-gradient(to bottom,black,transparent 75%); }
 .ambient-orb { position: absolute; width: 38rem; height: 38rem; border-radius: 999px; filter: blur(100px); opacity: .12; animation: ambient-drift 24s ease-in-out infinite alternate; will-change: transform; }
@@ -77,6 +77,39 @@ img, svg { max-width: 100%; }
 .game-stage { position: relative; isolation: isolate; box-shadow: 0 35px 100px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08); }
 .game-heading { font-size: clamp(1.5rem,3vw,2.5rem); line-height: 1; letter-spacing: -.04em; background: linear-gradient(90deg,#fff 10%,var(--casino-gold-bright) 48%,#7dd3fc 90%); color: transparent; background-clip: text; }
 .balance-chip { background: linear-gradient(135deg,rgba(214,168,75,.16),rgba(14,143,104,.10)); border: 1px solid rgba(242,205,117,.3); box-shadow: 0 0 30px rgba(214,168,75,.1); }
+.campaign-banner--horizontal { border-radius: 1rem; border: 1px solid rgba(232,121,249,.22); }
+.campaign-banner--compact > div { padding-block: .65rem; }
+.campaign-banner--compact p { font-size: .75rem; }
+.campaign-banner--global { position: relative; z-index: 30; }
+
+.campaign-home-promo {
+    box-shadow: 0 30px 90px -28px rgba(192, 38, 211, .62), 0 0 0 1px rgba(255,255,255,.04);
+    transform: translateZ(0);
+    transition: transform .55s cubic-bezier(.16,1,.3,1), border-color .4s ease, box-shadow .55s ease;
+}
+.campaign-home-promo--hero { animation: campaign-glow 4.5s ease-in-out infinite; }
+.campaign-home-promo__image { position: relative; z-index: 0; transition: transform 1s cubic-bezier(.16,1,.3,1), filter .7s ease; }
+.campaign-home-promo__wash { z-index: 5; background: linear-gradient(112deg,transparent 28%,rgba(255,255,255,.14) 45%,transparent 61%); transform: translateX(-120%); animation: campaign-sweep 5.5s ease-in-out infinite; }
+.campaign-home-promo__cta { transition: transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s ease; }
+.campaign-home-promo__spark { position:absolute; z-index:10; width:5px; height:5px; border-radius:50%; background:#fff; box-shadow:0 0 8px #fff,0 0 18px #e879f9; pointer-events:none; animation:campaign-spark 3.8s ease-in-out infinite; }
+.campaign-home-promo__spark--one { left:30%; top:19%; }
+.campaign-home-promo__spark--two { left:62%; top:72%; animation-delay:-1.3s; }
+.campaign-home-promo__spark--three { left:83%; top:25%; animation-delay:-2.5s; }
+.campaign-home-promo:hover { transform:translateY(-5px) scale(1.006); border-color:rgba(232,121,249,.6); box-shadow:0 38px 110px -24px rgba(192,38,211,.72),0 0 42px rgba(34,211,238,.11); }
+.campaign-home-promo:hover .campaign-home-promo__image { transform:scale(1.025); filter:saturate(1.12) contrast(1.04); }
+.campaign-home-promo:hover .campaign-home-promo__cta { transform:translateY(-3px); box-shadow:0 18px 45px rgba(0,0,0,.45),0 0 30px rgba(232,121,249,.22); }
+.ricky-landing-hero { box-shadow:0 36px 120px -40px rgba(168,85,247,.55),inset 0 1px 0 rgba(255,255,255,.08); }
+.ricky-landing-hero::after { content:""; position:absolute; inset:0; z-index:-5; pointer-events:none; background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.06) 47%,transparent 59%); transform:translateX(-100%); animation:campaign-sweep 7s ease-in-out infinite; }
+.ricky-landing-hero__beam { animation:campaign-beam 4s ease-in-out infinite; }
+.ricky-landing-cutout { filter:drop-shadow(0 28px 28px rgba(0,0,0,.55)); }
+.ricky-landing-cutout img { filter:drop-shadow(0 0 2px rgba(255,255,255,.35)) drop-shadow(0 0 22px rgba(168,85,247,.32)); animation:campaign-cutout-float 5s ease-in-out infinite; }
+.ricky-landing-cutout__aura { animation:campaign-cutout-aura 4s ease-in-out infinite; }
+@keyframes campaign-glow { 50% { box-shadow:0 35px 105px -24px rgba(192,38,211,.75),0 0 38px rgba(34,211,238,.13); } }
+@keyframes campaign-sweep { 0%,58% { transform:translateX(-120%); } 82%,100% { transform:translateX(120%); } }
+@keyframes campaign-spark { 0%,100% { opacity:.15; transform:scale(.45) translateY(8px); } 45% { opacity:1; transform:scale(1.35) translateY(-7px); } }
+@keyframes campaign-beam { 50% { opacity:.65; transform:translateY(-50%) scale(1.22); } }
+@keyframes campaign-cutout-float { 50% { transform:translateY(-7px) scale(1.008); } }
+@keyframes campaign-cutout-aura { 50% { opacity:.62; transform:translate(-50%,-50%) scale(1.16); } }
 
 @keyframes shimmer { from { transform: translateX(-130%) skewX(-20deg); } to { transform: translateX(250%) skewX(-20deg); } }
 .cta-shine { position: relative; overflow: hidden; isolation: isolate; }

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+  <defs><radialGradient id="a"><stop stop-color="#a855f7" stop-opacity=".85"/><stop offset="1" stop-color="#080d18" stop-opacity="0"/></radialGradient><linearGradient id="b" x2="1" y2="1"><stop stop-color="#080d18"/><stop offset=".55" stop-color="#211044"/><stop offset="1" stop-color="#083344"/></linearGradient></defs>
+  <rect width="1600" height="900" fill="url(#b)"/><circle cx="1220" cy="250" r="430" fill="url(#a)"/><circle cx="950" cy="720" r="380" fill="#06b6d4" opacity=".14"/>
+  <g fill="none" stroke="#fff" stroke-opacity=".12"><path d="M0 130h1600M0 260h1600M0 390h1600M0 520h1600M0 650h1600M0 780h1600"/><path d="M170 0v900M340 0v900M510 0v900M680 0v900M850 0v900M1020 0v900M1190 0v900M1360 0v900"/></g>
+  <text x="110" y="360" fill="#fff" font-family="Arial,sans-serif" font-size="86" font-weight="900">EL RETO</text><text x="110" y="505" fill="#e879f9" font-family="Arial,sans-serif" font-size="170" font-weight="900">1.000</text><text x="118" y="570" fill="#67e8f9" font-family="Arial,sans-serif" font-size="34" font-weight="800" letter-spacing="8">PLACEHOLDER</text>
+  <g transform="translate(1110 370)"><circle cx="170" cy="170" r="160" fill="#080d18" stroke="#67e8f9" stroke-width="8"/><text x="170" y="155" text-anchor="middle" fill="#fff" font-family="Arial,sans-serif" font-size="70" font-weight="900">15</text><text x="170" y="210" text-anchor="middle" fill="#e879f9" font-family="Arial,sans-serif" font-size="34" font-weight="800">MIN</text></g>
+</svg>

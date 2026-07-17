@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cartera;
 use App\Models\Partida;
+use App\Services\CampaignManager;
+use App\Services\GameBalanceService;
 use App\Services\GameCatalog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,6 +13,8 @@ use Illuminate\View\View;
 
 class ArcadeController extends Controller
 {
+    public function __construct(private readonly GameBalanceService $balances) {}
+
     public function index(Request $request, string $game, GameCatalog $catalog): View
     {
         $definition = $catalog->find($game);
@@ -27,6 +30,7 @@ class ArcadeController extends Controller
             'game' => $definition,
             'history' => Partida::where('usuario_id', $request->user()->id)->where('juego', $game)->latest()->take(10)->get(),
             'initialCard' => $definition['mode'] === 'hilo' ? $this->prepareHiLo() : null,
+            'gameBalance' => $this->balances->balance($request->user(), $game),
         ]);
     }
 
@@ -47,13 +51,13 @@ class ArcadeController extends Controller
         $this->validateChoice($definition['mode'], $choice, $data['numbers'] ?? []);
 
         $round = DB::transaction(function () use ($user, $bet, $game, $definition, $choice, $data) {
-            $wallet = Cartera::where('usuario_id', $user->id)->lockForUpdate()->first();
+            $campaignId = $this->balances->campaignId($user, $game);
             $existing = Partida::where('usuario_id', $user->id)->where('juego', $game)
                 ->where('request_token', $data['request_token'])->lockForUpdate()->first();
             if ($existing) {
                 return $existing;
             }
-            abort_unless($wallet?->apostar($bet, 'apuesta_original', ['juego' => $game]), 422, 'Saldo insuficiente.');
+            abort_unless($this->balances->debit($user, $game, $bet, 'apuesta_original', ['juego' => $game], null, $data['request_token'], $campaignId), 422, 'Saldo insuficiente.');
             $result = match ($definition['mode']) {
                 'wheel' => $this->wheel(), 'mines' => $this->mines($choice),
                 'dice' => $this->dice($choice), 'hilo' => $this->hiLo($choice),
@@ -63,17 +67,25 @@ class ArcadeController extends Controller
             };
             $win = round($bet * $result['multiplier'], 2);
             if ($win > 0) {
-                $wallet->ganar($win, 'premio_original', ['juego' => $game]);
+                $this->balances->credit($user, $game, $win, 'premio_original', ['juego' => $game], null, $campaignId);
             }
 
-            return Partida::create(['usuario_id' => $user->id, 'juego' => $game, 'request_token' => $data['request_token'], 'apuesta' => $bet, 'ganancia' => $win, 'detalles' => $result]);
+            $round = Partida::create([
+                'usuario_id' => $user->id, 'juego' => $game, 'request_token' => $data['request_token'],
+                'apuesta' => $bet, 'ganancia' => $win, 'detalles' => $result,
+                'campaign_challenge_id' => $campaignId,
+                'campaign_key' => $campaignId ? CampaignManager::KEY : null,
+            ]);
+            $this->balances->recordGame($round);
+
+            return $round;
         });
 
         return response()->json([
             ...$round->detalles,
             'apuesta' => (float) $round->apuesta,
             'ganancia' => (float) $round->ganancia,
-            'saldo' => (float) $user->cartera()->value('saldo'),
+            'saldo' => $this->balances->balance($user, $game, $round->campaign_challenge_id),
         ]);
     }
 

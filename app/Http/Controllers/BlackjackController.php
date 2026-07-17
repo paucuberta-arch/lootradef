@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\BlackjackHand;
-use App\Models\Cartera;
 use App\Models\Partida;
+use App\Models\Usuario;
+use App\Services\CampaignManager;
+use App\Services\GameBalanceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,6 +15,8 @@ use Illuminate\View\View;
 
 class BlackjackController extends Controller
 {
+    public function __construct(private readonly GameBalanceService $balances) {}
+
     private array $palos = ['♠', '♥', '♦', '♣'];
 
     private array $valores = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
@@ -20,8 +24,10 @@ class BlackjackController extends Controller
     public function index(string $variant = 'vip'): View
     {
         $this->validateVariant($variant);
+        $campaignId = $this->balances->campaignId(Auth::user(), 'blackjack_'.$variant);
         $partidas = Partida::where('usuario_id', Auth::id())->where('juego', 'blackjack_'.$variant)->latest()->take(10)->get();
-        $active = BlackjackHand::where('usuario_id', Auth::id())->where('variante', $variant)->where('estado', 'jugando')->latest()->first();
+        $active = BlackjackHand::where('usuario_id', Auth::id())->where('variante', $variant)
+            ->where('campaign_challenge_id', $campaignId)->where('estado', 'jugando')->latest()->first();
 
         return view('games.blackjack', [
             'partidas' => $partidas,
@@ -32,6 +38,7 @@ class BlackjackController extends Controller
             'standRoute' => $variant === 'vip' ? route('games.blackjack.vip.stand') : route('games.blackjack.classic.stand'),
             'statusRoute' => $variant === 'vip' ? route('games.blackjack.vip.status') : route('games.blackjack.classic.status'),
             'activeHand' => $active ? $this->handData($active) : null,
+            'gameBalance' => $this->balances->balance(Auth::user(), 'blackjack_'.$variant, $campaignId),
         ]);
     }
 
@@ -45,8 +52,8 @@ class BlackjackController extends Controller
             'request_token' => ['required', 'uuid'],
         ]);
 
-        $result = DB::transaction(function () use ($request, $variant, $validated) {
-            $wallet = Cartera::where('usuario_id', $request->user()->id)->lockForUpdate()->first();
+        $campaignId = $this->balances->campaignId($request->user(), 'blackjack_'.$variant);
+        $result = DB::transaction(function () use ($request, $variant, $validated, $campaignId) {
             $existing = BlackjackHand::where('usuario_id', $request->user()->id)
                 ->where('variante', $variant)
                 ->where('request_token', $validated['request_token'])
@@ -58,6 +65,7 @@ class BlackjackController extends Controller
 
             $active = BlackjackHand::where('usuario_id', $request->user()->id)
                 ->where('variante', $variant)
+                ->where('campaign_challenge_id', $campaignId)
                 ->where('estado', 'jugando')
                 ->lockForUpdate()
                 ->first();
@@ -66,9 +74,6 @@ class BlackjackController extends Controller
             }
 
             $bet = round((float) $validated['apuesta'], 2);
-            if (! $wallet || $wallet->saldo < $bet) {
-                abort(422, 'Saldo insuficiente.');
-            }
             $deck = $this->crearBaraja($variant === 'classic' ? 6 : 1);
             shuffle($deck);
             $player = [$this->draw($deck), $this->draw($deck)];
@@ -76,15 +81,17 @@ class BlackjackController extends Controller
             $hand = BlackjackHand::create([
                 'usuario_id' => $request->user()->id, 'variante' => $variant, 'request_token' => $validated['request_token'], 'apuesta' => $bet,
                 'baraja' => $deck, 'mano_jugador' => $player, 'mano_dealer' => $dealer,
+                'estado' => 'jugando', 'ganancia' => 0,
+                'campaign_challenge_id' => $campaignId, 'campaign_key' => $campaignId ? CampaignManager::KEY : null,
             ]);
-            abort_unless($wallet->apostar($bet, 'apuesta_blackjack', ['variante' => $variant], $hand), 422, 'Saldo insuficiente.');
+            abort_unless($this->balances->debit($request->user(), 'blackjack_'.$variant, $bet, 'apuesta_blackjack', ['variante' => $variant], $hand, $validated['request_token'], $campaignId), 422, 'Saldo insuficiente.');
 
             $playerBlackjack = $this->calcularPuntos($player) === 21;
             $dealerBlackjack = $this->calcularPuntos($dealer) === 21;
             if ($playerBlackjack || $dealerBlackjack) {
                 $state = $playerBlackjack && $dealerBlackjack ? 'push' : ($playerBlackjack ? 'blackjack' : 'lose');
                 $payout = $state === 'push' ? $bet : ($state === 'blackjack' ? round($bet * 2.5, 2) : 0);
-                $this->finish($hand, $state, $payout, $wallet);
+                $this->finish($hand, $state, $payout);
             }
 
             return ['hand' => $hand->fresh(), 'conflict' => false];
@@ -103,9 +110,10 @@ class BlackjackController extends Controller
     public function hit(Request $request, string $variant = 'vip'): JsonResponse
     {
         $this->validateVariant($variant);
+        $campaignId = $this->balances->campaignId($request->user(), 'blackjack_'.$variant);
 
-        $hand = DB::transaction(function () use ($request, $variant) {
-            $hand = $this->activeHand($request->user()->id, $variant);
+        $hand = DB::transaction(function () use ($request, $variant, $campaignId) {
+            $hand = $this->activeHand($request->user()->id, $variant, $campaignId);
             $deck = $hand->baraja;
             $player = $hand->mano_jugador;
             $player[] = $this->draw($deck);
@@ -126,8 +134,9 @@ class BlackjackController extends Controller
     public function stand(Request $request, string $variant = 'vip'): JsonResponse
     {
         $this->validateVariant($variant);
-        $hand = DB::transaction(function () use ($request, $variant) {
-            $hand = $this->activeHand($request->user()->id, $variant);
+        $campaignId = $this->balances->campaignId($request->user(), 'blackjack_'.$variant);
+        $hand = DB::transaction(function () use ($request, $variant, $campaignId) {
+            $hand = $this->activeHand($request->user()->id, $variant, $campaignId);
             $this->resolveDealer($hand);
 
             return $hand->fresh();
@@ -139,12 +148,14 @@ class BlackjackController extends Controller
     public function status(Request $request, string $variant = 'vip'): JsonResponse
     {
         $this->validateVariant($variant);
+        $campaignId = $this->balances->campaignId($request->user(), 'blackjack_'.$variant);
         $validated = $request->validate([
             'hand_id' => ['nullable', 'integer'],
             'request_token' => ['nullable', 'uuid'],
         ]);
 
-        $query = BlackjackHand::where('usuario_id', $request->user()->id)->where('variante', $variant);
+        $query = BlackjackHand::where('usuario_id', $request->user()->id)->where('variante', $variant)
+            ->where('campaign_challenge_id', $campaignId);
         if (! empty($validated['hand_id'])) {
             $query->whereKey($validated['hand_id']);
         } elseif (! empty($validated['request_token'])) {
@@ -159,9 +170,10 @@ class BlackjackController extends Controller
         return response()->json($this->handData($hand, $hand->estado !== 'jugando'));
     }
 
-    private function activeHand(int $userId, string $variant): BlackjackHand
+    private function activeHand(int $userId, string $variant, ?int $campaignId): BlackjackHand
     {
-        $hand = BlackjackHand::where('usuario_id', $userId)->where('variante', $variant)->where('estado', 'jugando')->lockForUpdate()->first();
+        $hand = BlackjackHand::where('usuario_id', $userId)->where('variante', $variant)
+            ->where('campaign_challenge_id', $campaignId)->where('estado', 'jugando')->lockForUpdate()->first();
         abort_unless($hand, 409, 'No hay ninguna mano activa. Reparte una nueva mano.');
 
         return $hand;
@@ -182,23 +194,27 @@ class BlackjackController extends Controller
         $this->finish($hand, $state, $payout);
     }
 
-    private function finish(BlackjackHand $hand, string $state, float $payout, ?Cartera $wallet = null): void
+    private function finish(BlackjackHand $hand, string $state, float $payout): void
     {
         abort_unless($hand->estado === 'jugando', 409, 'Esta mano ya está finalizada.');
         if ($payout > 0) {
-            ($wallet ?? Cartera::where('usuario_id', $hand->usuario_id)->lockForUpdate()->firstOrFail())
-                ->ganar($payout, 'premio_blackjack', ['resultado' => $state], $hand);
+            $this->balances->credit(
+                Usuario::findOrFail($hand->usuario_id), 'blackjack_'.$hand->variante, $payout,
+                'premio_blackjack', ['resultado' => $state], $hand, $hand->campaign_challenge_id
+            );
         }
         $hand->update(['estado' => $state, 'ganancia' => $payout, 'finalizada_at' => now()]);
-        Partida::create([
+        $game = Partida::create([
             'usuario_id' => $hand->usuario_id, 'juego' => 'blackjack_'.$hand->variante,
             'apuesta' => $hand->apuesta, 'ganancia' => $payout,
+            'campaign_challenge_id' => $hand->campaign_challenge_id, 'campaign_key' => $hand->campaign_key,
             'detalles' => [
                 'mano_jugador' => $hand->mano_jugador, 'mano_dealer' => $hand->mano_dealer,
                 'puntos_jugador' => $this->calcularPuntos($hand->mano_jugador),
                 'puntos_dealer' => $this->calcularPuntos($hand->mano_dealer), 'resultado' => $state,
             ],
         ]);
+        $this->balances->recordGame($game);
     }
 
     private function handData(BlackjackHand $hand, bool $revealDealer = false): array
@@ -212,7 +228,7 @@ class BlackjackController extends Controller
             'puntos_jugador' => $this->calcularPuntos($hand->mano_jugador),
             'puntos_dealer' => $revealDealer || $finished ? $this->calcularPuntos($hand->mano_dealer) : $this->calcularPuntos([$hand->mano_dealer[0]]),
             'estado' => $hand->estado, 'ganancia' => $hand->ganancia, 'apuesta' => $hand->apuesta,
-            'saldo' => (float) (Cartera::where('usuario_id', $hand->usuario_id)->value('saldo') ?? 0),
+            'saldo' => $this->balances->balance(Usuario::findOrFail($hand->usuario_id), 'blackjack_'.$hand->variante, $hand->campaign_challenge_id),
         ];
     }
 

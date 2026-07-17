@@ -13,34 +13,36 @@ class RolesPermissionsSeeder extends Seeder
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         $permissions = [
-            'users.view'      => ['label' => 'Ver usuarios',       'group' => 'Usuarios'],
-            'users.create'    => ['label' => 'Crear usuarios',     'group' => 'Usuarios'],
-            'users.edit'      => ['label' => 'Editar usuarios',    'group' => 'Usuarios'],
-            'users.delete'    => ['label' => 'Eliminar usuarios',  'group' => 'Usuarios'],
-            'users.ban'       => ['label' => 'Banear usuarios',    'group' => 'Usuarios'],
+            'users.view' => ['label' => 'Ver usuarios',       'group' => 'Usuarios'],
+            'users.create' => ['label' => 'Crear usuarios',     'group' => 'Usuarios'],
+            'users.edit' => ['label' => 'Editar usuarios',    'group' => 'Usuarios'],
+            'users.delete' => ['label' => 'Eliminar usuarios',  'group' => 'Usuarios'],
+            'users.ban' => ['label' => 'Banear usuarios',    'group' => 'Usuarios'],
 
-            'games.view'      => ['label' => 'Ver juegos',         'group' => 'Juegos'],
-            'games.create'    => ['label' => 'Crear juegos',       'group' => 'Juegos'],
-            'games.edit'      => ['label' => 'Editar juegos',      'group' => 'Juegos'],
-            'games.delete'    => ['label' => 'Eliminar juegos',    'group' => 'Juegos'],
+            'games.view' => ['label' => 'Ver juegos',         'group' => 'Juegos'],
+            'games.create' => ['label' => 'Crear juegos',       'group' => 'Juegos'],
+            'games.edit' => ['label' => 'Editar juegos',      'group' => 'Juegos'],
+            'games.delete' => ['label' => 'Eliminar juegos',    'group' => 'Juegos'],
 
-            'reviews.view'    => ['label' => 'Ver reviews',        'group' => 'Reviews'],
-            'reviews.moderate'=> ['label' => 'Moderar reviews',    'group' => 'Reviews'],
-            'reviews.delete'  => ['label' => 'Eliminar reviews',   'group' => 'Reviews'],
+            'reviews.view' => ['label' => 'Ver reviews',        'group' => 'Reviews'],
+            'reviews.moderate' => ['label' => 'Moderar reviews',    'group' => 'Reviews'],
+            'reviews.delete' => ['label' => 'Eliminar reviews',   'group' => 'Reviews'],
 
-            'feedback.view'   => ['label' => 'Ver feedback',       'group' => 'Feedback'],
-            'feedback.respond'=> ['label' => 'Responder feedback', 'group' => 'Feedback'],
-            'feedback.close'  => ['label' => 'Cerrar feedback',    'group' => 'Feedback'],
+            'feedback.view' => ['label' => 'Ver feedback',       'group' => 'Feedback'],
+            'feedback.respond' => ['label' => 'Responder feedback', 'group' => 'Feedback'],
+            'feedback.close' => ['label' => 'Cerrar feedback',    'group' => 'Feedback'],
 
-            'roles.view'      => ['label' => 'Ver roles',          'group' => 'Roles'],
-            'roles.manage'    => ['label' => 'Gestionar roles',    'group' => 'Roles'],
+            'roles.view' => ['label' => 'Ver roles',          'group' => 'Roles'],
+            'roles.manage' => ['label' => 'Gestionar roles',    'group' => 'Roles'],
 
-            'stats.view'      => ['label' => 'Ver estadisticas',   'group' => 'Estadisticas'],
-            'stats.revenue'   => ['label' => 'Ver ingresos/beneficios', 'group' => 'Estadisticas'],
-            'stats.growth'    => ['label' => 'Ver grafico de crecimiento', 'group' => 'Estadisticas'],
-            'logs.view'       => ['label' => 'Ver logs de actividad', 'group' => 'Estadisticas'],
+            'stats.view' => ['label' => 'Ver estadisticas',   'group' => 'Estadisticas'],
+            'stats.revenue' => ['label' => 'Ver ingresos/beneficios', 'group' => 'Estadisticas'],
+            'stats.growth' => ['label' => 'Ver grafico de crecimiento', 'group' => 'Estadisticas'],
+            'logs.view' => ['label' => 'Ver logs de actividad', 'group' => 'Estadisticas'],
 
-            'wallet.manage'   => ['label' => 'Gestionar carteras', 'group' => 'Cartera'],
+            'wallet.manage' => ['label' => 'Gestionar carteras', 'group' => 'Cartera'],
+            'case-prizes.manage' => ['label' => 'Gestionar probabilidades de cajas', 'group' => 'Juegos'],
+            'campaigns.stats.view' => ['label' => 'Ver analítica de campañas', 'group' => 'Campañas'],
         ];
 
         foreach ($permissions as $name => $attrs) {
@@ -66,6 +68,8 @@ class RolesPermissionsSeeder extends Seeder
                     'feedback.view', 'feedback.respond', 'feedback.close',
                     'stats.view',
                     'wallet.manage',
+                    'case-prizes.manage',
+                    'campaigns.stats.view',
                 ],
             ],
             'creator' => [

@@ -49,6 +49,7 @@
 @endsection
 
 @section('game-content')
+<div class="mx-auto max-w-[1400px] px-4 pt-5 sm:px-6"><x-campaign.rickyedit.sidebar /></div>
 <div class="mx-auto max-w-[1450px] px-4 py-7 sm:px-6 sm:py-10" x-data="rouletteGame()">
     <header class="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div><div class="flex items-center gap-3"><span class="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br {{ $variant === 'lightning' ? 'from-cyan-400 to-violet-600' : 'from-amber-300 to-red-600' }} shadow-lg">◆</span><div><h1 class="game-heading font-extrabold">{{ $gameName }}</h1><p class="mt-1 text-sm text-slate-500">Elige una casilla, confirma el boleto y sigue la bola</p></div></div></div>
@@ -105,7 +106,7 @@
 @push('scripts')
 <script>
 function rouletteGame(){return{
-    saldo:{{ Auth::user()?->cartera?->saldo ?? 0 }},apuesta:1,tipo:'rojo',valor:null,spinning:false,ganancia:0,lastNumero:null,lastColor:null,cameraStage:0,resultVisible:false,error:'',multipliers:{},wheelRotation:0,
+    saldo:{{ $gameBalance }},apuesta:1,tipo:'rojo',valor:null,spinning:false,ganancia:0,lastNumero:null,lastColor:null,cameraStage:0,resultVisible:false,error:'',multipliers:{},wheelRotation:0,
     wheelOrder:@js($rouletteConfig['wheel_order']),
     historial:@js($partidas->map(fn($p)=>['numero'=>$p->detalles['numero']??0,'color'=>$p->detalles['color']??'verde','tipo'=>$p->detalles['tipo_apuesta']??'','ganancia'=>(float)$p->ganancia,'apuesta'=>(float)$p->apuesta])->all()),
     red:@js($rouletteConfig['red_numbers']),animations:[],spinSequence:0,reducedMotion:window.matchMedia('(prefers-reduced-motion: reduce)').matches,
@@ -159,7 +160,7 @@ function rouletteGame(){return{
         this.$root.querySelector(`[data-pocket="${number}"]`)?.classList.add('winner');
         return true;
     },
-    async play(){if(this.spinning||this.apuesta>this.saldo)return;this.spinning=true;this.cameraStage=0;this.resultVisible=false;this.lastNumero=null;this.ganancia=0;this.error='';try{const r=await fetch(@js($playRoute),{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content},body:JSON.stringify({apuesta:this.apuesta,tipo:this.tipo,valor:this.valor})});const d=await r.json();if(!r.ok)throw new Error(d.error||d.message||'No se pudo completar el giro.');const landed=await this.animateSpin(d.numero);if(!landed)return;this.lastNumero=d.numero;this.lastColor=d.color;this.multipliers=d.multipliers||{};this.ganancia=Number(d.ganancia);this.saldo=Number(d.saldo);this.$store.wallet.saldo=this.saldo;this.historial.unshift({numero:d.numero,color:d.color,tipo:this.selectionLabel,ganancia:this.ganancia,apuesta:this.apuesta});this.resultVisible=true;window.dispatchEvent(new CustomEvent('saldo-updated',{detail:{saldo:this.saldo}}));await this.wait(this.reducedMotion?80:550);}catch(e){if(e.name!=='AbortError')this.error=e.message;this.cancelAnimations();}finally{this.cameraStage=0;this.spinning=false;}}
+    async play(){if(this.spinning||this.apuesta>this.saldo)return;this.spinning=true;this.cameraStage=0;this.resultVisible=false;this.lastNumero=null;this.ganancia=0;this.error='';try{const r=await fetch(@js($playRoute),{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content},body:JSON.stringify({apuesta:this.apuesta,tipo:this.tipo,valor:this.valor,request_token:window.lootraRequestToken()})});const d=await r.json();if(!r.ok)throw new Error(d.error||d.message||'No se pudo completar el giro.');const landed=await this.animateSpin(d.numero);if(!landed)return;this.lastNumero=d.numero;this.lastColor=d.color;this.multipliers=d.multipliers||{};this.ganancia=Number(d.ganancia);this.saldo=Number(d.saldo);this.$store.wallet.saldo=this.saldo;this.historial.unshift({numero:d.numero,color:d.color,tipo:this.selectionLabel,ganancia:this.ganancia,apuesta:this.apuesta});this.resultVisible=true;window.dispatchEvent(new CustomEvent('saldo-updated',{detail:{saldo:this.saldo}}));await this.wait(this.reducedMotion?80:550);}catch(e){if(e.name!=='AbortError')this.error=e.message;this.cancelAnimations();}finally{this.cameraStage=0;this.spinning=false;}}
 }}
 </script>
 @endpush

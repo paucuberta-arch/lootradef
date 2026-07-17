@@ -13,6 +13,7 @@
 </style>
 @endsection
 @section('game-content')
+<div class="mx-auto max-w-[1350px] px-4 pt-5"><x-campaign.rickyedit.sidebar /></div>
 <div class="mx-auto max-w-[1350px] px-4 py-8" x-data="pokerAllIn()">
     <header class="mb-6 flex flex-wrap items-center justify-between gap-4"><div class="min-w-0"><p class="text-xs font-black uppercase tracking-[.2em] text-fuchsia-400">Resolución instantánea</p><h1 class="game-heading mt-1 font-black">Poker All-In</h1><p class="mt-2 text-sm text-slate-500">Una apuesta, una mano completa y showdown inmediato.</p></div><div class="flex w-full flex-wrap gap-2 sm:w-auto"><a href="{{ route('games.poker.dealer') }}" class="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-400">Jugar contra el dealer</a><span class="rounded-xl border border-brand-400/20 bg-brand-400/10 px-3 sm:px-4 py-2 text-sm whitespace-nowrap">Saldo <b class="text-brand-300" x-text="money(saldo)"></b></span></div></header>
     <section class="allin-table rounded-[3rem] p-3 sm:p-9">
@@ -28,7 +29,7 @@
 <script>
 function pokerAllIn() {
     return {
-        saldo: {{ auth()->user()->saldo }},
+        saldo: {{ $gameBalance }},
         apuesta: 10,
         playing: false,
         result: null,

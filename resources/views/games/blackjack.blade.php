@@ -18,6 +18,7 @@
 @endsection
 
 @section('game-content')
+<div class="mx-auto max-w-[1400px] px-4 pt-5 sm:px-6"><x-campaign.rickyedit.sidebar /></div>
 <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10"
      x-data="blackjackGame()" :aria-busy="busy.toString()">
 
@@ -194,7 +195,7 @@ function blackjackGame() {
     const active = @js($activeHand);
     return {
         handId: active?.id ?? null,
-        saldo: {{ Auth::user()?->cartera?->saldo ?? 0 }},
+        saldo: {{ $gameBalance }},
         apuesta: active?.apuesta ?? {{ $variant === 'vip' ? 10 : 5 }},
         minBet: {{ $variant === 'vip' ? 5 : 1 }},
         maxBet: {{ $variant === 'vip' ? 5000 : 2000 }},

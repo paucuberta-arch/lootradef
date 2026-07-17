@@ -17,6 +17,7 @@
 @endsection
 
 @section('game-content')
+@if($rickyeditActiveChallenge ?? null)<div class="mx-auto max-w-[1400px] px-4 pt-5 sm:px-6"><x-campaign.rickyedit.progress /></div>@endif
 <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10"
      x-data="crashGame()" x-init="init()" :aria-busy="(actionInFlight || fase === 'preparando').toString()">
 
@@ -163,7 +164,7 @@ function crashGame() {
     const activeRound = @js($activeRound);
 
     return {
-        saldo: {{ Auth::user()?->cartera?->saldo ?? 1000 }},
+        saldo: {{ $gameBalance }},
         apuesta: 1,
         autoCashout: 2,
         fase: activeRound ? 'subiendo' : 'esperando',
@@ -218,7 +219,7 @@ function crashGame() {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'Accept': 'application/json',
                     },
-                    body: JSON.stringify({ apuesta: this.apuesta }),
+                    body: JSON.stringify({ apuesta: this.apuesta, request_token: window.lootraRequestToken() }),
                 });
                 const data = await res.json();
 

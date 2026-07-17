@@ -56,7 +56,9 @@
              return this.juegos.filter(j => j.cat === cat).length;
          }
      }">
-
+    @if($rickyeditCampaignEnabled ?? false)
+        <x-campaign.rickyedit.home-promo class="mb-8 sm:mb-10" />
+    @else
     <section class="relative mb-8 flex min-h-[360px] items-end overflow-hidden rounded-3xl border border-white/10 hero-casino sm:mb-10 sm:min-h-[420px] sm:rounded-[2rem]">
         <img src="{{ asset('images/lootra-hero.webp') }}"
              alt="Mesa de casino premium iluminada" class="absolute inset-0 w-full h-full object-cover" fetchpriority="high" decoding="async">
@@ -90,6 +92,7 @@
             @endforeach
         </div>
     </section>
+    @endif
 
     <div id="catalogo" class="flex flex-col lg:flex-row gap-8 scroll-mt-24">
 
@@ -155,6 +158,9 @@
                 </div>
 
                 {{-- Promo --}}
+                @if($rickyeditCampaignEnabled ?? false)
+                    <x-campaign.rickyedit.home-promo variant="card" class="hidden lg:block" />
+                @else
                 <div class="rounded-2xl bg-gradient-to-br from-brand-500/20 to-brand-600/10 border border-brand-500/20 p-5">
                     <div class="text-2xl mb-3">&#x1F389;</div>
                     <h3 class="text-sm font-bold text-white mb-1">Bonus de bienvenida</h3>
@@ -163,6 +169,7 @@
                         Registrarse
                     </a>
                 </div>
+                @endif
 
             </div>
         </aside>

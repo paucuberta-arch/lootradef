@@ -35,6 +35,9 @@
 @endsection
 
 @section('contenido')
+@if($rickyeditCampaignEnabled ?? false)
+<div class="mx-auto max-w-[1400px] px-4 pt-6 sm:px-6"><div class="flex items-center gap-3 rounded-xl border border-fuchsia-400/20 bg-fuchsia-400/10 p-4"><img src="{{ app(\App\Services\CampaignManager::class)->asset('badge') }}" alt="" class="h-9 w-9"><div><b class="text-fuchsia-100">Distintivo RickyEdit</b><p class="text-xs text-slate-400">Las cajas se muestran en la campaña, pero sus aperturas no consumen ni generan saldo del reto.</p></div></div></div>
+@endif
 <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10" x-data="caseCenter()" x-init="init()">
     <section class="case-hero relative mb-8 flex min-h-[340px] items-center overflow-hidden rounded-3xl border border-white/10 sm:mb-10 sm:min-h-[390px] sm:rounded-[2rem]">
         <img src="https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?auto=format&fit=crop&w=1800&q=80" alt="Colección de premios" class="absolute inset-0 w-full h-full object-cover opacity-20" decoding="async">
@@ -83,7 +86,7 @@
                         <h3 class="text-xl font-bold">{{ $caja['nombre'] }}</h3>
                         <p class="text-xs text-slate-500 mt-1 min-h-9">{{ $caja['descripcion'] }}</p>
                         <div class="flex items-center justify-between mt-5 mb-4"><strong class="text-2xl" style="color:{{ $accent }}">€{{ number_format($caja['precio'], 2) }}</strong><span class="text-[11px] text-slate-500">{{ count($caja['premios']) }} premios</span></div>
-                        <button @auth @click="selectCase('{{ $key }}')" @else onclick="window.location='{{ route('login') }}'" @endauth
+                        <button @auth @click="selectCase('{{ $key }}')" @if($rickyeditActiveChallenge ?? null) disabled title="No disponible durante el reto" @endif @else onclick="window.location='{{ route('login') }}'" @endauth
                                 class="cta-shine w-full py-3 rounded-xl text-sm font-extrabold text-black transition hover:scale-[1.02]" style="background:linear-gradient(90deg,{{ $accent }},#fbbf24)">
                             @auth Abrir ahora @else Inicia sesión para abrir @endauth
                         </button>

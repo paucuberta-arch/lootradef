@@ -5,7 +5,8 @@
     $categories = ['Slots' => 'slots', 'Ruleta' => 'ruleta', 'Blackjack' => 'blackjack', 'Póker' => 'poker', 'Live Casino' => 'live', 'Crash' => 'crash', 'Originales' => 'arcade'];
 @endphp
 
-<nav class="premium-nav sticky top-0 z-50 border-b border-white/5 bg-[#080d18]/85 backdrop-blur-2xl" x-data="navbar()" @keydown.escape.window="closeAll()">
+<div class="contents" x-data="navbar()" @keydown.escape.window="closeAll()">
+<nav class="premium-nav sticky top-0 z-[300] border-b border-white/5 bg-[#080d18]/85 backdrop-blur-2xl">
     <div class="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between">
             <a href="{{ route('inicio') }}" class="group flex shrink-0 items-center gap-2.5" aria-label="Lootra Casino, inicio">
@@ -28,6 +29,7 @@
                 </div>
                 <a href="{{ route('sports.index') }}" class="flex min-h-11 items-center rounded-xl border px-3 text-sm font-medium {{ $navLink(request()->routeIs('sports.*')) }}">Apuestas</a>
                 <a href="{{ route('cases.index') }}" class="flex min-h-11 items-center rounded-xl border px-3 text-sm font-medium {{ $navLink(request()->routeIs('cases.*') || request()->routeIs('inventory.*')) }}">Cajas</a>
+                @if($rickyeditCampaignEnabled ?? false)<a href="{{ route('rickyedit.landing') }}" class="flex min-h-11 items-center rounded-xl border border-fuchsia-400/20 bg-fuchsia-400/10 px-3 text-sm font-bold text-fuchsia-200">Reto RickyEdit</a>@endif
             </div>
 
             <div class="hidden items-center gap-2 lg:flex">
@@ -38,7 +40,7 @@
                     @if(auth()->user()->hasAnyRole(['super_admin', 'admin', 'moderator']))
                         <a href="{{ route('admin.dashboard') }}" class="rounded-xl px-3 py-2 text-sm font-medium text-brand-300 hover:bg-brand-400/10">Admin</a>
                     @endif
-                    <a href="{{ route('wallet.show') }}" class="balance-chip flex min-h-11 items-center rounded-xl px-3 text-sm" aria-label="Abrir cartera"><span class="text-slate-500">Saldo</span><b class="ml-2 text-brand-300" x-text="$store.wallet.saldo.toLocaleString('es-ES',{style:'currency',currency:'EUR'})">{{ number_format(auth()->user()->saldo, 2, ',', '.') }} €</b></a>
+                    <a href="{{ route('wallet.show') }}" class="balance-chip flex min-h-11 items-center rounded-xl px-3 text-sm" aria-label="Abrir cartera"><span class="text-slate-500">{{ ($displayBalanceKind ?? 'wallet') === 'campaign' ? 'Reto' : 'Saldo' }}</span><b class="ml-2 text-brand-300" x-text="$store.wallet.saldo.toLocaleString('es-ES',{maximumFractionDigits:2})">{{ number_format($displayBalance ?? auth()->user()->saldo, 2, ',', '.') }}</b></a>
                     <a href="{{ route('profile.show') }}" class="flex min-h-11 items-center gap-2 rounded-xl border px-2.5 text-sm {{ $navLink(request()->routeIs('profile.*') || request()->routeIs('wallet.*')) }}">
                         <span class="grid h-7 w-7 place-items-center rounded-lg bg-gradient-to-br from-brand-300 to-brand-500 text-xs font-black text-black">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
                         <span class="max-w-28 truncate">{{ auth()->user()->name }}</span>
@@ -46,18 +48,21 @@
                 @endguest
             </div>
 
-            <button @click="open=!open" class="grid min-h-11 min-w-11 place-items-center rounded-xl text-slate-300 hover:bg-white/5 lg:hidden" :aria-expanded="open.toString()" aria-controls="mobile-navigation" aria-label="Abrir navegación">
+            <button @click="open=!open" class="relative z-[320] grid min-h-11 min-w-11 place-items-center rounded-xl text-slate-300 hover:bg-white/5 lg:hidden" :aria-expanded="open.toString()" aria-controls="mobile-navigation" aria-label="Abrir navegación">
                 <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path x-show="!open" stroke-linecap="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/><path x-show="open" stroke-linecap="round" stroke-width="2" d="m6 6 12 12M18 6 6 18"/></svg>
             </button>
         </div>
     </div>
 
-    <button x-show="open" x-cloak x-transition.opacity @click="open=false" class="fixed inset-0 top-16 z-40 bg-black/65 backdrop-blur-sm lg:hidden" aria-label="Cerrar navegación"></button>
-    <div id="mobile-navigation" x-show="open" x-cloak x-transition:enter="transition duration-200" x-transition:enter-start="translate-x-full" x-transition:leave="transition duration-150" x-transition:leave-end="translate-x-full" class="fixed bottom-0 right-0 top-16 z-50 w-[min(92vw,24rem)] overflow-y-auto border-l border-white/10 bg-[#0f1626] p-4 shadow-2xl lg:hidden">
+</nav>
+
+    <button x-show="open" x-cloak x-transition.opacity @click="open=false" class="fixed inset-0 top-16 z-[300] bg-black/65 backdrop-blur-sm lg:hidden" aria-label="Cerrar navegación"></button>
+    <div id="mobile-navigation" x-show="open" x-cloak x-transition:enter="transition duration-200" x-transition:enter-start="translate-x-full" x-transition:leave="transition duration-150" x-transition:leave-end="translate-x-full" class="fixed bottom-0 right-0 top-16 z-[310] w-[min(92vw,24rem)] overflow-y-auto border-l border-white/10 bg-[#0f1626] p-4 shadow-2xl lg:hidden">
         <div class="space-y-1">
             <a href="{{ route('games.index') }}" class="block min-h-11 rounded-xl px-3 py-3 text-sm text-slate-200 hover:bg-white/5">Todos los juegos</a>
             <a href="{{ route('sports.index') }}" class="block min-h-11 rounded-xl px-3 py-3 text-sm text-slate-300 hover:bg-white/5">Apuestas deportivas</a>
             <a href="{{ route('cases.index') }}" class="block min-h-11 rounded-xl px-3 py-3 text-sm text-slate-300 hover:bg-white/5">Cajas e inventario</a>
+            @if($rickyeditCampaignEnabled ?? false)<a href="{{ route('rickyedit.landing') }}" class="block min-h-11 rounded-xl bg-fuchsia-400/10 px-3 py-3 text-sm font-bold text-fuchsia-200">Reto RickyEdit</a>@endif
             <div class="my-3 h-px bg-white/10"></div>
             <p class="px-3 pb-1 text-[10px] font-black uppercase tracking-[.18em] text-slate-600">Categorías</p>
             <div class="grid grid-cols-2 gap-1">@foreach($categories as $label => $category)<a href="{{ route('games.index', ['cat' => $category]) }}" class="min-h-11 rounded-xl px-3 py-3 text-sm text-slate-400 hover:bg-white/5 hover:text-white">{{ $label }}</a>@endforeach</div>
@@ -73,7 +78,7 @@
             @endguest
         </div>
     </div>
-</nav>
+</div>
 
 <script>
 function navbar(){return{open:false,catOpen:false,init(){this.$watch('open',value=>document.documentElement.classList.toggle('overflow-hidden',value));},closeAll(){this.open=false;this.catOpen=false;}}}
