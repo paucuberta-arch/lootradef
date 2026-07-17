@@ -41,4 +41,18 @@ class FrontendAssetBuildTest extends TestCase
             $this->assertLessThan(400_000, filesize($path));
         }
     }
+
+    public function test_google_tag_is_loaded_immediately_after_every_web_layout_head(): void
+    {
+        foreach (['app', 'admin', 'auth'] as $layout) {
+            $source = file_get_contents(resource_path("views/layouts/{$layout}.blade.php"));
+
+            $this->assertStringContainsString("<head>\n    @include('partials.google-tag')", $source);
+        }
+
+        $tag = file_get_contents(resource_path('views/partials/google-tag.blade.php'));
+        $this->assertSame(2, substr_count($tag, 'G-ZG7EW2QE96'));
+        $this->assertStringContainsString('https://www.googletagmanager.com/gtag/js', $tag);
+        $this->assertStringContainsString("gtag('config', 'G-ZG7EW2QE96')", $tag);
+    }
 }
