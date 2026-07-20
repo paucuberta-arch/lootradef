@@ -31,4 +31,9 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'google_analytics' => [
+        'measurement_id' => env('GOOGLE_ANALYTICS_MEASUREMENT_ID', 'G-ZG7EW2QE96'),
+        'debug' => env('GOOGLE_ANALYTICS_DEBUG', false),
+    ],
+
 ];

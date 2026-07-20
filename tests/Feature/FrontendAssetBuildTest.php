@@ -50,13 +50,25 @@ class FrontendAssetBuildTest extends TestCase
             $this->assertStringContainsString("<head>\n    @include('partials.google-tag')", $source);
         }
 
-        $tag = file_get_contents(resource_path('views/partials/google-tag.blade.php'));
-        $this->assertSame(2, substr_count($tag, 'G-ZG7EW2QE96'));
-        $this->assertStringContainsString('https://www.googletagmanager.com/gtag/js', $tag);
-        $this->assertStringContainsString("gtag('config', 'G-ZG7EW2QE96')", $tag);
-        $this->assertStringContainsString("gtag('event', 'reto_iniciado'", $tag);
+        config()->set('services.google_analytics.measurement_id', 'G-TEST123456');
+        config()->set('services.google_analytics.debug', true);
+        session()->flash('ga_reto_iniciado', true);
+
+        $tag = view('partials.google-tag')->render();
+
+        $this->assertStringContainsString(
+            '<script async src="https://www.googletagmanager.com/gtag/js?id=G-TEST123456"></script>',
+            $tag
+        );
+        $this->assertMatchesRegularExpression('/<\/script>\s*<script>\s*\(\(\) =>/', $tag);
+        $this->assertStringContainsString("gtag('config', measurementId, configParameters)", $tag);
+        $this->assertStringContainsString("gtag('event', 'reto_iniciado', eventParameters)", $tag);
         $this->assertStringContainsString("reto_id: 'reto_1'", $tag);
         $this->assertStringContainsString("reto_nombre: 'RickyEditXLootra'", $tag);
-        $this->assertStringContainsString("localStorage.getItem('reto_iniciado_reto_1')", $tag);
+        $this->assertStringContainsString("const analyticsDebugEnabled = true", $tag);
+        $this->assertStringContainsString("localStorage.getItem(sentKey)", $tag);
+        $this->assertStringContainsString("localStorage.setItem(pendingKey, 'true')", $tag);
+        $this->assertStringContainsString('event_callback: markChallengeStartAsSent', $tag);
+        $this->assertStringContainsString('send_to: measurementId', $tag);
     }
 }

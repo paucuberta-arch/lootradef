@@ -19,6 +19,8 @@ RICKYEDIT_CREATOR_SCORE=1250
 RICKYEDIT_START_AT=2026-07-20 10:00:00
 RICKYEDIT_END_AT=2026-08-20 23:59:59
 RICKYEDIT_YOUTUBE_URL=https://www.youtube.com/watch?v=...
+GOOGLE_ANALYTICS_MEASUREMENT_ID=G-ZG7EW2QE96
+GOOGLE_ANALYTICS_DEBUG=false
 ```
 
 `enabled=false` oculta las integraciones, impide nuevos inicios y expira de forma segura cualquier participación activa en la siguiente petición. Las fechas son opcionales y se interpretan con la zona horaria de Laravel.
@@ -149,7 +151,9 @@ Al crear por primera vez una participación activa, la siguiente página registr
 - `reto_id`: `reto_1`
 - `reto_nombre`: `RickyEditXLootra`
 
-El servidor solo activa la señal cuando la participación acaba de crearse. En el navegador, `localStorage.reto_iniciado_reto_1` evita duplicar el evento. Puede marcarse `reto_iniciado` como evento clave/conversión desde GA4.
+El servidor solo activa la señal cuando la participación acaba de crearse. El navegador conserva primero el evento como pendiente, lo reintenta con una espera mínima de 10 segundos si `gtag.js` no llegó a procesarlo y solo escribe `localStorage.reto_iniciado_reto_1=true` desde `event_callback`. De esta forma un bloqueador o un fallo temporal no marca prematuramente el evento como enviado.
+
+El ID del flujo se configura con `GOOGLE_ANALYTICS_MEASUREMENT_ID`. Para validar una instalación en GA4 DebugView puede activarse temporalmente `GOOGLE_ANALYTICS_DEBUG=true`; debe permanecer en `false` en producción una vez terminada la comprobación. En una prueba manual con un usuario que ya hubiese iniciado el reto, elimine las claves `reto_iniciado_reto_1*` del almacenamiento local y utilice una participación nueva, ya que el servidor no permite generar un segundo inicio real. Puede marcarse `reto_iniciado` como evento clave/conversión desde GA4.
 
 ## Seeder
 

@@ -1,31 +1,92 @@
+@php
+    $googleAnalyticsId = (string) config('services.google_analytics.measurement_id', '');
+    $googleAnalyticsDebug = (bool) config('services.google_analytics.debug', false);
+@endphp
+
+@if($googleAnalyticsId !== '')
 <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZG7EW2QE96"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id={{ rawurlencode($googleAnalyticsId) }}"></script>
 <script>
+(() => {
+  const measurementId = @json($googleAnalyticsId);
+  const analyticsDebugEnabled = @json($googleAnalyticsDebug);
+  const shouldRegisterChallengeStart = @json((bool) session('ga_reto_iniciado'));
+  const sentKey = 'reto_iniciado_reto_1';
+  const pendingKey = 'reto_iniciado_reto_1_pending';
+  const attemptedAtKey = 'reto_iniciado_reto_1_attempted_at';
+  const retryDelayMilliseconds = 10000;
+
   window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
+  function gtag(){window.dataLayer.push(arguments);}
+  window.gtag = window.gtag || gtag;
   gtag('js', new Date());
 
-  gtag('config', 'G-ZG7EW2QE96');
+  const configParameters = {};
+  if (analyticsDebugEnabled) {
+    configParameters.debug_mode = true;
+  }
+  gtag('config', measurementId, configParameters);
 
-  @if(session('ga_reto_iniciado'))
-  let retoIniciadoRegistrado = false;
+  let challengeStartSent = false;
+  let challengeStartPending = shouldRegisterChallengeStart;
+  let lastAttemptAt = 0;
+
   try {
-    retoIniciadoRegistrado = localStorage.getItem('reto_iniciado_reto_1') === 'true';
-  } catch (error) {
-    // El evento sigue siendo válido aunque el navegador bloquee localStorage.
-  }
+    challengeStartSent = localStorage.getItem(sentKey) === 'true';
+    challengeStartPending = challengeStartPending || localStorage.getItem(pendingKey) === 'true';
+    lastAttemptAt = Number(localStorage.getItem(attemptedAtKey) || 0);
 
-  if (!retoIniciadoRegistrado) {
-    gtag('event', 'reto_iniciado', {
-      reto_id: 'reto_1',
-      reto_nombre: 'RickyEditXLootra'
-    });
-
-    try {
-      localStorage.setItem('reto_iniciado_reto_1', 'true');
-    } catch (error) {
-      // No interrumpir el inicio del reto por restricciones de almacenamiento.
+    if (shouldRegisterChallengeStart && !challengeStartSent) {
+      localStorage.setItem(pendingKey, 'true');
     }
+  } catch (error) {
+    // El evento sigue funcionando aunque el navegador bloquee localStorage.
   }
-  @endif
+
+  if (challengeStartSent || !challengeStartPending) {
+    return;
+  }
+
+  const attemptedAt = Date.now();
+  if (lastAttemptAt > 0 && attemptedAt - lastAttemptAt < retryDelayMilliseconds) {
+    return;
+  }
+
+  try {
+    localStorage.setItem(attemptedAtKey, String(attemptedAt));
+  } catch (error) {
+    // La deduplicación del servidor sigue evitando nuevos inicios del reto.
+  }
+
+  let callbackHandled = false;
+  const markChallengeStartAsSent = () => {
+    if (callbackHandled) {
+      return;
+    }
+
+    callbackHandled = true;
+    try {
+      localStorage.setItem(sentKey, 'true');
+      localStorage.removeItem(pendingKey);
+      localStorage.removeItem(attemptedAtKey);
+    } catch (error) {
+      // No interrumpir la navegación por restricciones de almacenamiento.
+    }
+  };
+
+  const eventParameters = {
+    reto_id: 'reto_1',
+    reto_nombre: 'RickyEditXLootra',
+    send_to: measurementId,
+    event_callback: markChallengeStartAsSent,
+    event_timeout: 2000
+  };
+
+  if (analyticsDebugEnabled) {
+    eventParameters.debug_mode = true;
+  }
+
+  gtag('event', 'reto_iniciado', eventParameters);
+})();
 </script>
+@endif
