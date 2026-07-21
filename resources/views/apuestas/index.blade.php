@@ -14,8 +14,9 @@
 @section('contenido')
 <div class="sports-grid min-h-screen" x-data="sportsbook()" x-init="start()">
     <section class="relative overflow-hidden border-b border-white/10">
-        <img src="https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=1800&h=700&fit=crop" class="absolute inset-0 h-full w-full object-cover opacity-30" alt="Estadio de fútbol" decoding="async">
-        <div class="absolute inset-0 bg-gradient-to-r from-[#07152d] via-[#07152d]/90 to-fuchsia-950/60"></div>
+        <img src="{{ asset('images/lootra_visual_pack/13_sports/sports_hero_960x540.webp') }}" srcset="{{ asset('images/lootra_visual_pack/13_sports/sports_hero_960x540.webp') }} 960w, {{ asset('images/lootra_visual_pack/13_sports/sports_hero_1672x941.webp') }} 1672w" sizes="100vw" width="1672" height="941" class="absolute inset-0 h-full w-full object-cover object-center" alt="Futbolista ejecutando un disparo en el estadio digital de Lootra" fetchpriority="high" decoding="async">
+        <div class="absolute inset-0 bg-gradient-to-r from-[#061027]/98 via-[#07152d]/88 to-[#071128]/20"></div>
+        <div class="absolute inset-0 bg-[linear-gradient(115deg,transparent_55%,rgba(34,211,238,.12)_55.2%,transparent_55.5%)]"></div>
         <div class="relative mx-auto max-w-[1450px] px-4 py-12 sm:px-5 sm:py-20">
             <div class="mb-5 inline-flex items-center gap-3 rounded-full border border-rose-400/30 bg-rose-500/10 px-4 py-2 text-xs font-black uppercase tracking-[.22em] text-rose-300">
                 <span class="live-dot h-2.5 w-2.5 rounded-full bg-rose-400"></span> Simulación en directo
@@ -30,12 +31,13 @@
         </div>
     </section>
 
-    <div class="mx-auto grid max-w-[1450px] gap-6 px-4 py-7 sm:px-5 sm:py-9 lg:grid-cols-[minmax(0,1fr)_minmax(300px,380px)] lg:gap-7">
-        <main>
-            <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-                <div class="flex rounded-xl border border-white/10 bg-white/5 p-1">
+    <div class="relative mx-auto grid max-w-[1450px] gap-6 overflow-hidden px-4 py-7 sm:px-5 sm:py-9 lg:grid-cols-[minmax(0,1fr)_minmax(300px,380px)] lg:gap-7">
+        <img src="{{ asset('images/lootra_visual_pack/13_sports/sports_stadium_1200x675.webp') }}" alt="" class="pointer-events-none absolute inset-x-0 top-0 h-[42rem] w-full object-cover opacity-[.07] [mask-image:linear-gradient(to_bottom,black,transparent)]" width="1200" height="675" loading="lazy" decoding="async" aria-hidden="true">
+        <main class="relative">
+            <div class="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:flex-wrap sm:items-center">
+                <div class="flex max-w-full overflow-x-auto rounded-xl border border-white/10 bg-white/5 p-1">
                     <template x-for="item in [{id:'all',label:'Todos'},{id:'en_vivo',label:'En vivo'},{id:'programado',label:'Próximos'},{id:'finalizado',label:'Finalizados'}]">
-                        <button @click="filter=item.id" class="rounded-lg px-3 py-2 text-sm font-bold transition" :class="filter===item.id?'bg-cyan-400 text-slate-950':'text-slate-400 hover:text-white'" x-text="item.label"></button>
+                        <button @click="filter=item.id" class="shrink-0 rounded-lg px-3 py-2 text-sm font-bold transition" :class="filter===item.id?'bg-cyan-400 text-slate-950':'text-slate-400 hover:text-white'" x-text="item.label"></button>
                     </template>
                 </div>
                 <div class="flex items-center gap-2 text-xs text-slate-500"><span class="h-2 w-2 rounded-full bg-emerald-400"></span> Actualización automática cada 3 segundos</div>
@@ -78,9 +80,9 @@
             </div>
         </main>
 
-        <aside class="space-y-5 lg:sticky lg:top-24 lg:self-start">
+        <aside class="relative space-y-5 lg:sticky lg:top-24 lg:self-start">
             <section class="overflow-hidden rounded-3xl border border-white/10 bg-[#11182b] shadow-2xl shadow-black/30">
-                <div class="border-b border-white/10 bg-gradient-to-r from-cyan-500/15 to-fuchsia-500/15 p-5"><h2 class="font-display text-xl font-bold">Tu boleto</h2><p class="mt-1 text-xs text-slate-400">Apuesta simple · cuota fija</p></div>
+                <div class="relative overflow-hidden border-b border-white/10 p-5"><img src="{{ asset('images/lootra_visual_pack/13_sports/sports_ball_768x512.webp') }}" alt="" class="absolute inset-0 h-full w-full object-cover opacity-35" width="768" height="512" loading="lazy" decoding="async" aria-hidden="true"><div class="absolute inset-0 bg-gradient-to-r from-[#10182d] via-[#10182d]/85 to-fuchsia-950/45"></div><div class="relative"><h2 class="font-display text-xl font-bold">Tu boleto</h2><p class="mt-1 text-xs text-slate-300">Apuesta simple · cuota fija</p></div></div>
                 <div class="p-5">
                     <div x-show="!selected" class="py-9 text-center"><div class="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-white/5 text-2xl">＋</div><p class="mt-4 font-semibold text-slate-300">Elige una cuota</p><p class="mt-1 text-xs text-slate-500">Tu selección aparecerá aquí</p></div>
                     <div x-show="selected" x-cloak>
@@ -114,9 +116,9 @@ function sportsbook() {
         matches: @json($matches), bets: @json($bets), filter: 'all', selected: null, stake: 10, submitting: false, message: '', error: false,
         get filteredMatches(){ return this.matches.filter(m=>this.filter==='all'||m.status===this.filter).sort((a,b)=>({en_vivo:0,programado:1,finalizado:2}[a.status]-{en_vivo:0,programado:1,finalizado:2}[b.status])); },
         get liveCount(){ return this.matches.filter(m=>m.status==='en_vivo').length; }, get openCount(){ return this.matches.filter(m=>m.betting_open).length; },
-        poller:null,
-        start(){this.resumePolling();document.addEventListener('visibilitychange',()=>document.hidden?this.pausePolling():this.resumePolling())},
-        destroy(){this.pausePolling()},
+        poller:null,visibilityHandler:null,
+        start(){this.visibilityHandler=()=>document.hidden?this.pausePolling():this.resumePolling();this.resumePolling();document.addEventListener('visibilitychange',this.visibilityHandler)},
+        destroy(){this.pausePolling();document.removeEventListener('visibilitychange',this.visibilityHandler)},
         pausePolling(){if(this.poller){clearInterval(this.poller);this.poller=null}},
         resumePolling(){if(this.poller)return;this.refresh();this.poller=setInterval(()=>this.refresh(),3000)},
         async refresh(){ try{const r=await fetch('{{ route('sports.feed') }}',{headers:{Accept:'application/json'},cache:'no-store'});if(!r.ok)return;const d=await r.json();this.matches=d.matches;this.bets=d.bets||[];if(d.balance!==null&&d.balance!==undefined)this.$store.wallet.saldo=Number(d.balance);if(this.selected){const fresh=this.matches.find(m=>m.id===this.selected.match.id);if(!fresh?.betting_open)this.selected=null;else this.selected.match=fresh;}}catch(e){} },

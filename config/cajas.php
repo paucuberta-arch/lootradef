@@ -3,7 +3,7 @@
 return [
     'starter' => [
         'nombre' => 'Starter Drop', 'precio' => 2.99, 'color' => 'cyan', 'tier' => 'low',
-        'imagen' => 'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=900&q=85',
+        'imagen' => '/images/lootra_visual_pack/12_cases/case_starter.webp',
         'descripcion' => 'Accesorios y premios instantáneos para empezar.',
         'premios' => [
             ['nombre' => 'Sticker Pack Neon', 'valor' => 0.75, 'rareza' => 'comun', 'peso' => 30, 'imagen' => 'https://images.unsplash.com/photo-1561214115-f2f134cc4912?auto=format&fit=crop&w=500&q=80'],
@@ -16,7 +16,7 @@ return [
     ],
     'gaming' => [
         'nombre' => 'Gaming Vault', 'precio' => 9.99, 'color' => 'purple', 'tier' => 'mid',
-        'imagen' => 'https://images.unsplash.com/photo-1598550476439-6847785fcea6?auto=format&fit=crop&w=900&q=85',
+        'imagen' => '/images/lootra_visual_pack/12_cases/case_gaming.webp',
         'descripcion' => 'Periféricos, hardware y equipo para tu setup.',
         'premios' => [
             ['nombre' => 'Alfombrilla RGB', 'valor' => 4, 'rareza' => 'comun', 'peso' => 30, 'imagen' => 'https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&w=500&q=80'],
@@ -29,7 +29,7 @@ return [
     ],
     'tech' => [
         'nombre' => 'Tech Pulse', 'precio' => 24.99, 'color' => 'blue', 'tier' => 'mid',
-        'imagen' => 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=900&q=85',
+        'imagen' => '/images/lootra_visual_pack/12_cases/case_tech.webp',
         'descripcion' => 'Tecnología premium y dispositivos para el día a día.',
         'premios' => [
             ['nombre' => 'Cargador inalámbrico', 'valor' => 9, 'rareza' => 'comun', 'peso' => 29, 'imagen' => 'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?auto=format&fit=crop&w=500&q=80'],
@@ -42,7 +42,7 @@ return [
     ],
     'luxury' => [
         'nombre' => 'Luxury Black', 'precio' => 49.99, 'color' => 'amber', 'tier' => 'high',
-        'imagen' => 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&w=900&q=85',
+        'imagen' => '/images/lootra_visual_pack/12_cases/case_luxury.webp',
         'descripcion' => 'Piezas exclusivas, diseño y experiencias premium.',
         'premios' => [
             ['nombre' => 'Cartera de piel', 'valor' => 18, 'rareza' => 'comun', 'peso' => 29, 'imagen' => 'https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=500&q=80'],

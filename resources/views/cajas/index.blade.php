@@ -7,19 +7,17 @@
     .case-hero { background: radial-gradient(circle at 75% 30%, rgba(168,85,247,.38), transparent 28rem), linear-gradient(125deg,#090719,#17103d 55%,#071827); }
     .case-card { --accent:#a855f7; transform-style:preserve-3d; transition:transform .45s cubic-bezier(.2,.8,.2,1),border-color .3s,box-shadow .3s; }
     .case-card:hover { transform:translateY(-10px) rotateX(2deg); border-color:color-mix(in srgb,var(--accent),transparent 55%); box-shadow:0 30px 70px -25px var(--accent); }
-    .case-card img { transition:transform .7s cubic-bezier(.2,.8,.2,1),filter .4s; }
-    .case-card:hover img { transform:scale(1.1); filter:saturate(1.25); }
+    .case-card__image { transition:transform .7s cubic-bezier(.2,.8,.2,1),filter .4s; filter:drop-shadow(0 22px 24px rgba(0,0,0,.48)); }
+    .case-card:hover .case-card__image { transform:scale(1.08) translateY(-3px); filter:saturate(1.2) drop-shadow(0 28px 28px rgba(0,0,0,.52)); }
     .case-glint { position:absolute; inset:-50%; background:linear-gradient(110deg,transparent 43%,rgba(255,255,255,.22) 50%,transparent 57%); transform:translateX(-60%) rotate(8deg); transition:transform .8s; pointer-events:none; z-index:4; }
     .case-card:hover .case-glint { transform:translateX(60%) rotate(8deg); }
-    .loot-box { position:relative;width:150px;height:120px;margin:auto;perspective:600px;filter:drop-shadow(0 24px 32px rgba(0,0,0,.5)); }
-    .loot-box__base { position:absolute;left:12px;right:12px;bottom:0;height:88px;border-radius:12px 12px 24px 24px;background:linear-gradient(145deg,#7c3aed,#312e81 65%,#171744);border:2px solid rgba(255,255,255,.28);box-shadow:inset 0 0 32px rgba(34,211,238,.22); }
-    .loot-box__base::after { content:"L";position:absolute;inset:22px 44px;display:grid;place-items:center;border-radius:50%;background:linear-gradient(145deg,#fde68a,#f59e0b);color:#271405;font:900 22px "Space Grotesk";box-shadow:0 0 24px #f59e0b; }
-    .loot-box__lid { position:absolute;left:2px;right:2px;top:9px;height:42px;border-radius:18px 18px 8px 8px;background:linear-gradient(135deg,#d946ef,#7c3aed 55%,#22d3ee);border:2px solid rgba(255,255,255,.35);transform-origin:15px 38px;z-index:2; }
+    .loot-box { position:relative;width:min(240px,72vw);height:180px;margin:auto;perspective:600px;filter:drop-shadow(0 24px 32px rgba(0,0,0,.5)); }
+    .loot-box__image { position:absolute;inset:0;width:100%;height:100%;object-fit:contain; }
     .loot-box.is-opening { animation:box-rumble .12s linear 9; }
-    .loot-box.is-opening .loot-box__lid { animation:lid-open 1.45s .8s cubic-bezier(.2,.9,.2,1) forwards; }
+    .loot-box.is-opening .loot-box__image { animation:box-charge 2.6s cubic-bezier(.2,.8,.2,1) both; }
     .loot-box.is-opening::after { content:"";position:absolute;inset:-80px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.9),rgba(217,70,239,.28) 25%,transparent 65%);animation:prize-burst 1.4s 1.1s both; }
     @keyframes box-rumble { 25%{transform:translateX(-4px) rotate(-2deg)}75%{transform:translateX(4px) rotate(2deg)} }
-    @keyframes lid-open { to{transform:translateY(-65px) rotateZ(-12deg) rotateX(75deg);opacity:.1} }
+    @keyframes box-charge { 0%,100%{transform:none;filter:none}55%{transform:translateY(-9px) scale(1.08);filter:brightness(1.3) saturate(1.3)} }
     @keyframes prize-burst { from{opacity:0;transform:scale(.1)}50%{opacity:1}to{opacity:0;transform:scale(1.35)} }
     .prize-reveal { animation:reveal .65s cubic-bezier(.16,1,.3,1) both; }
     @keyframes reveal { from{opacity:0;transform:translateY(35px) scale(.82)}to{opacity:1;transform:none} }
@@ -36,12 +34,12 @@
 
 @section('contenido')
 @if($rickyeditCampaignEnabled ?? false)
-<div class="mx-auto max-w-[1400px] px-4 pt-6 sm:px-6"><div class="flex items-center gap-3 rounded-xl border border-fuchsia-400/20 bg-fuchsia-400/10 p-4"><img src="{{ app(\App\Services\CampaignManager::class)->asset('badge') }}" alt="" class="h-9 w-9"><div><b class="text-fuchsia-100">Distintivo RickyEdit</b><p class="text-xs text-slate-400">Las cajas se muestran en la campaña, pero sus aperturas no consumen ni generan saldo del reto.</p></div></div></div>
+<div class="mx-auto max-w-[1400px] px-4 pt-6 sm:px-6"><div class="flex items-center gap-3 rounded-xl border border-fuchsia-400/20 bg-fuchsia-400/10 p-4"><img src="{{ app(\App\Services\CampaignManager::class)->asset('badge') }}" alt="" class="h-9 w-9" width="36" height="36" decoding="async"><div><b class="text-fuchsia-100">Distintivo RickyEdit</b><p class="text-xs text-slate-400">Las cajas se muestran en la campaña, pero sus aperturas no consumen ni generan saldo del reto.</p></div></div></div>
 @endif
 <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10" x-data="caseCenter()" x-init="init()">
     <section class="case-hero relative mb-8 flex min-h-[340px] items-center overflow-hidden rounded-3xl border border-white/10 sm:mb-10 sm:min-h-[390px] sm:rounded-[2rem]">
-        <img src="https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?auto=format&fit=crop&w=1800&q=80" alt="Colección de premios" class="absolute inset-0 w-full h-full object-cover opacity-20" decoding="async">
-        <div class="absolute inset-0 bg-gradient-to-r from-[#090719] via-[#0b0920]/85 to-transparent"></div>
+        <img src="{{ asset('images/lootra_visual_pack/12_cases/cases_hero_960x540.webp') }}" srcset="{{ asset('images/lootra_visual_pack/12_cases/cases_hero_960x540.webp') }} 960w, {{ asset('images/lootra_visual_pack/12_cases/cases_hero_1672x941.webp') }} 1672w" sizes="(min-width: 1400px) 1344px, calc(100vw - 2rem)" width="1672" height="941" alt="Cajas Lootra abiertas con recompensas digitales" class="absolute inset-0 h-full w-full object-cover object-center opacity-90" fetchpriority="high" decoding="async">
+        <div class="absolute inset-0 bg-gradient-to-r from-[#090719] via-[#0b0920]/88 to-[#090719]/15"></div>
         <div class="relative z-10 max-w-3xl p-6 sm:p-12 lg:p-16">
             <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-fuchsia-400/10 border border-fuchsia-300/20 text-fuchsia-200 text-xs font-bold uppercase tracking-[.18em] mb-5"><i class="w-2 h-2 rounded-full bg-cyan-300 animate-pulse"></i> Lootra Drops</span>
             <h1 class="font-display text-3xl min-[420px]:text-4xl sm:text-6xl font-bold tracking-[-.06em] leading-[.95] mb-5">Abre. Descubre.<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 via-brand-300 to-cyan-300">Hazlo tuyo.</span></h1>
@@ -74,8 +72,8 @@
                 <article x-show="filter==='all' || filter==='{{ $caja['tier'] }}'" x-transition
                          class="case-card group relative rounded-[1.5rem] bg-white/[0.035] border border-white/10 overflow-hidden" style="--accent:{{ $accent }}">
                     <div class="case-glint"></div>
-                    <div class="h-52 relative overflow-hidden">
-                        <img src="{{ $caja['imagen'] }}" alt="{{ $caja['nombre'] }}" class="w-full h-full object-cover" loading="lazy" decoding="async">
+                    <div class="relative h-52 overflow-hidden bg-[radial-gradient(circle_at_50%_42%,color-mix(in_srgb,var(--accent)_24%,transparent),transparent_62%)]">
+                        <img src="{{ $caja['imagen'] }}" alt="{{ $caja['nombre'] }}" class="case-card__image h-full w-full object-contain px-3 pt-2" width="1254" height="1254" loading="lazy" decoding="async">
                         <div class="absolute inset-0 bg-gradient-to-t from-[#090914] via-transparent to-transparent"></div>
                         <span class="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-black/50 border border-white/10 backdrop-blur text-[10px] uppercase tracking-widest">Hasta €{{ number_format($top['valor'], 0) }}</span>
                     </div>
@@ -120,8 +118,8 @@
             <button x-show="!opening" @click="closeModal()" class="absolute right-5 top-5 z-20 w-9 h-9 rounded-full bg-white/5 text-slate-400 hover:text-white">×</button>
             <template x-if="!prize">
                 <div>
-                    <div class="loot-box my-8" :class="opening && 'is-opening'"><div class="loot-box__lid"></div><div class="loot-box__base"></div></div>
-                    <div x-show="opening" class="case-reel relative my-5 rounded-2xl border border-white/10 bg-black/25 p-3" x-ref="caseViewport"><div class="absolute left-1/2 top-0 bottom-0 z-10 w-0.5 -translate-x-1/2 bg-amber-300 shadow-[0_0_12px_#fbbf24]"></div><div class="case-reel__track" x-ref="caseTrack"><template x-for="(item,index) in reelItems" :key="`${spinId}-${index}`"><div class="case-reel__item" :data-reel-index="index" :class="spinSettled && index === winnerIndex && 'ring-2 ring-amber-300 shadow-[0_0_24px_rgba(251,191,36,.35)]'"><img :src="item.imagen" :alt="item.nombre" class="h-20 w-full rounded-lg object-cover" decoding="async"><p class="mt-2 truncate text-[10px]" x-text="item.nombre"></p></div></template></div></div>
+                    <div class="loot-box my-7" :class="opening && 'is-opening'"><img :src="selected?.imagen" :alt="selected?.nombre" class="loot-box__image" width="1254" height="1254" decoding="async"></div>
+                    <div x-show="opening" class="case-reel relative my-5 rounded-2xl border border-white/10 bg-black/25 p-3" x-ref="caseViewport"><div class="absolute bottom-0 left-1/2 top-0 z-10 w-0.5 -translate-x-1/2 bg-amber-300 shadow-[0_0_12px_#fbbf24]"></div><div class="case-reel__track" x-ref="caseTrack"><template x-for="(item,index) in reelItems" :key="`${spinId}-${index}`"><div class="case-reel__item" :data-reel-index="index" :data-prize-key="item.prize_key" :class="spinSettled && index === winnerIndex && 'ring-2 ring-amber-300 shadow-[0_0_24px_rgba(251,191,36,.35)]'"><img :src="item.imagen" :alt="item.nombre" class="h-20 w-full rounded-lg object-cover" decoding="async"><p class="mt-2 truncate text-[10px]" x-text="item.nombre"></p></div></template></div></div>
                     <p x-show="spinSettled" x-transition class="-mt-2 text-xs font-bold text-amber-200">Premio señalado: <span x-text="reelItems[winnerIndex]?.nombre"></span></p>
                     <h2 class="text-2xl font-bold" x-text="selected?.nombre"></h2>
                     <p class="text-slate-500 text-sm mt-2" x-text="opening ? 'Generando y guardando tu premio...' : 'El premio se añadirá automáticamente a tu inventario.'"></p>
@@ -152,19 +150,42 @@ function caseCenter() {
     return {
         cases: @js($cajas),
         inventory: @js($inventario->map(fn ($item) => ['id' => $item->id, 'nombre' => $item->nombre, 'imagen' => $item->imagen, 'rareza' => $item->rareza, 'valor_canje' => $item->valor_canje, 'estado' => $item->estado, 'created_at' => $item->created_at->diffForHumans()])),
-        filter: 'all', selectedKey: null, selected: null, opening: false, prize: null, error: '', redeeming: null, confirming: null, toast: '', reelItems: [], spinId: 0, winnerIndex: 0, spinSettled: false,
+        filter: 'all', selectedKey: null, selected: null, opening: false, prize: null, committedPrize: null, error: '', redeeming: null, confirming: null, toast: '', reelItems: [], spinId: 0, winnerIndex: 0, spinSettled: false,
         get availableCount() { return this.inventory.filter(item => item.estado === 'disponible').length; },
         get inventoryValue() { return this.inventory.filter(item => item.estado === 'disponible').reduce((sum, item) => sum + Number(item.valor_canje), 0); },
         money(value) { return new Intl.NumberFormat('es-ES', { style:'currency', currency:'EUR' }).format(Number(value || 0)); },
         rarityName(value) { return ({comun:'Común', poco_comun:'Poco común', raro:'Raro', epico:'Épico', legendario:'Legendario'})[value] || value; },
         init(){this.escapeHandler=e=>{if(e.key==='Escape'&&!this.opening){this.confirming=null;this.closeModal()}};document.addEventListener('keydown',this.escapeHandler)},
         destroy(){document.removeEventListener('keydown',this.escapeHandler);document.body.style.overflow=''},
-        selectCase(key) { this.selectedKey=key; this.selected=this.cases[key]; this.prize=null; this.error=''; document.body.style.overflow='hidden'; },
-        closeModal() { if (this.opening) return; this.selected=null; this.selectedKey=null; this.prize=null; this.error=''; document.body.style.overflow=''; },
+        selectCase(key) { this.selectedKey=key; this.selected=this.cases[key]; this.prize=null; this.committedPrize=null; this.reelItems=[]; this.spinSettled=false; this.error=''; document.body.style.overflow='hidden'; },
+        closeModal() { if (this.opening) return; this.selected=null; this.selectedKey=null; this.prize=null; this.committedPrize=null; this.reelItems=[]; this.spinSettled=false; this.error=''; document.body.style.overflow=''; },
         addToInventory(item) {
             const saved={...item,estado:item.estado || 'disponible',created_at:item.created_at || 'ahora'};
             this.inventory=[saved,...this.inventory.filter(current=>Number(current.id)!==Number(saved.id))];
             window.dispatchEvent(new CustomEvent('inventory-updated',{detail:{item:saved}}));
+        },
+        samePrize(left,right) {
+            return Boolean(left && right
+                && String(left.prize_key) === String(right.prize_key)
+                && String(left.nombre) === String(right.nombre)
+                && String(left.imagen) === String(right.imagen)
+                && String(left.rareza) === String(right.rareza)
+                && Math.abs(Number(left.valor_canje)-Number(right.valor_canje)) < .001);
+        },
+        async preloadReel(items) {
+            const sources=[...new Set(items.map(item=>item.imagen).filter(Boolean))];
+            const loading=Promise.allSettled(sources.map(source=>new Promise(resolve=>{const image=new Image();image.onload=image.onerror=resolve;image.src=source;})));
+            await Promise.race([loading,new Promise(resolve=>setTimeout(resolve,900))]);
+        },
+        frame() { return new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))); },
+        centeredReelIndex(track,viewport) {
+            const viewportRect=viewport.getBoundingClientRect();
+            const centerX=viewportRect.left+viewportRect.width/2;
+            return [...track.children].reduce((nearest,item)=>{
+                const rect=item.getBoundingClientRect();
+                const distance=Math.abs((rect.left+rect.width/2)-centerX);
+                return !nearest || distance < nearest.distance ? {index:Number(item.dataset.reelIndex),distance} : nearest;
+            },null)?.index;
         },
         async spinToPrize(winner,reel,winnerIndex) {
             const items=Array.isArray(reel) ? [...reel] : [];
@@ -172,12 +193,16 @@ function caseCenter() {
             if (!Number.isInteger(parsedIndex) || parsedIndex < 0 || parsedIndex >= items.length) {
                 throw new Error('El servidor no devolvió una tirada válida. No se ha alterado el premio guardado.');
             }
+            if (!this.samePrize(winner,items[parsedIndex])) {
+                throw new Error('El premio guardado y el ganador de la rueda no coinciden. Actualiza la página para ver tu inventario.');
+            }
             this.winnerIndex=parsedIndex;
-            items[this.winnerIndex]=winner;
             this.spinSettled=false;
             this.spinId+=1;
             this.reelItems=items;
             await this.$nextTick();
+            await this.preloadReel(items);
+            await this.frame();
 
             const track=this.$refs.caseTrack;
             const viewport=this.$refs.caseViewport;
@@ -186,39 +211,35 @@ function caseCenter() {
 
             track.getAnimations().forEach(animation=>animation.cancel());
             track.style.transform='translate3d(0,0,0)';
-            track.getBoundingClientRect();
+            await this.frame();
             const viewportRect=viewport.getBoundingClientRect();
             const targetRect=target.getBoundingClientRect();
-            const shift=(viewportRect.left+viewportRect.width/2)-(targetRect.left+targetRect.width/2);
+            let shift=(viewportRect.left+viewportRect.width/2)-(targetRect.left+targetRect.width/2);
             const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            const duration=reduceMotion ? 80 : 2400;
+            const duration=reduceMotion ? 80 : 3000;
             const animation=track.animate(
                 [
-                    {transform:'translate3d(0,0,0)'},
-                    {transform:`translate3d(${shift}px,0,0)`},
+                    {transform:'translate3d(0,0,0)',offset:0},
+                    {transform:`translate3d(${shift-26}px,0,0)`,offset:.86},
+                    {transform:`translate3d(${shift+8}px,0,0)`,offset:.95},
+                    {transform:`translate3d(${shift}px,0,0)`,offset:1},
                 ],
-                {duration,easing:'cubic-bezier(.12,.72,.12,1)',fill:'forwards'}
+                {duration,easing:'cubic-bezier(.12,.68,.16,1)',fill:'forwards'}
             );
             await animation.finished;
             track.style.transform=`translate3d(${shift}px,0,0)`;
             animation.cancel();
-            await new Promise(resolve=>requestAnimationFrame(resolve));
-
-            const settledViewport=viewport.getBoundingClientRect();
-            const settledTarget=target.getBoundingClientRect();
-            const correction=(settledViewport.left+settledViewport.width/2)-(settledTarget.left+settledTarget.width/2);
-            if (Math.abs(correction) > 0.5) {
-                track.style.transform=`translate3d(${shift+correction}px,0,0)`;
-                await new Promise(resolve=>requestAnimationFrame(resolve));
+            for (let attempt=0;attempt<3;attempt++) {
+                await this.frame();
+                const settledViewport=viewport.getBoundingClientRect();
+                const settledTarget=target.getBoundingClientRect();
+                const correction=(settledViewport.left+settledViewport.width/2)-(settledTarget.left+settledTarget.width/2);
+                if (Math.abs(correction)<=.5) break;
+                shift+=correction;
+                track.style.transform=`translate3d(${shift}px,0,0)`;
             }
-
-            const centerX=settledViewport.left+settledViewport.width/2;
-            const centeredItem=[...track.children].reduce((nearest,item)=>{
-                const rect=item.getBoundingClientRect();
-                const distance=Math.abs((rect.left+rect.width/2)-centerX);
-                return !nearest || distance < nearest.distance ? {item,distance} : nearest;
-            },null)?.item;
-            if (Number(centeredItem?.dataset.reelIndex) !== this.winnerIndex) {
+            await this.frame();
+            if (this.centeredReelIndex(track,viewport) !== this.winnerIndex) {
                 throw new Error('La rueda no pudo alinear el premio. El objeto sí está guardado en tu inventario.');
             }
 
@@ -234,13 +255,26 @@ function caseCenter() {
                 const response=await fetch(url, { method:'POST', headers:{'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content,'Accept':'application/json'} });
                 const data=await response.json();
                 if (!response.ok) throw new Error(data.message || 'No se pudo abrir la caja.');
+                const reelWinner=data.reel?.[Number(data.winner_index)];
+                if (!this.samePrize(data.item,data.winner) || !this.samePrize(data.item,reelWinner)) {
+                    throw new Error('La respuesta de apertura no es consistente. Actualiza la página para comprobar tu inventario.');
+                }
+                this.committedPrize=data.item;
                 this.addToInventory(data.item);
                 await this.$nextTick();
                 Alpine.store('wallet').saldo=Number(data.saldo);
                 window.dispatchEvent(new CustomEvent('saldo-updated',{detail:{saldo:Number(data.saldo)}}));
-                await this.spinToPrize(data.item,data.reel,data.winner_index);
+                await this.spinToPrize(data.winner,data.reel,data.winner_index);
                 this.prize=data.item;
-            } catch (error) { this.error=error.message; }
+            } catch (error) {
+                if (this.committedPrize) {
+                    this.prize=this.committedPrize;
+                    this.toast='El premio se guardó correctamente en tu inventario.';
+                    setTimeout(()=>this.toast='',3500);
+                } else {
+                    this.error=error.message;
+                }
+            }
             this.opening=false;
         },
         async redeem(item) {

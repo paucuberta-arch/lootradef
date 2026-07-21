@@ -3,6 +3,7 @@
         ? 'border-brand-400/25 bg-brand-400/10 text-brand-300'
         : 'border-transparent text-slate-400 hover:border-white/10 hover:bg-white/5 hover:text-white';
     $categories = ['Slots' => 'slots', 'Ruleta' => 'ruleta', 'Blackjack' => 'blackjack', 'Póker' => 'poker', 'Live Casino' => 'live', 'Crash' => 'crash', 'Originales' => 'arcade'];
+    $categoryIcons = ['slots' => 6, 'ruleta' => 3, 'blackjack' => 5, 'poker' => 7, 'live' => 10, 'crash' => 1, 'arcade' => 13];
 @endphp
 
 <div class="contents" x-data="navbar()" @keydown.escape.window="closeAll()">
@@ -21,10 +22,10 @@
                         Casino
                         <svg class="h-4 w-4 transition" :class="catOpen&&'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"/></svg>
                     </button>
-                    <div x-show="catOpen" x-cloak x-transition.origin.top.left @click.outside="catOpen=false" class="absolute left-0 top-full mt-2 w-56 rounded-2xl border border-white/10 bg-[#0f1626] p-2 shadow-2xl">
-                        <a href="{{ route('games.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-300 hover:bg-white/5 hover:text-white">Todos los juegos</a>
+                    <div x-show="catOpen" x-cloak x-transition.origin.top.left @click.outside="catOpen=false" class="absolute left-0 top-full mt-2 w-64 rounded-2xl border border-white/10 bg-[#0b1120]/98 p-2 shadow-2xl">
+                        <a href="{{ route('games.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-200 hover:bg-white/5 hover:text-white"><img src="{{ asset('images/lootra_visual_pack/09_icons/icon_ui_01_256.webp') }}" alt="" class="nav-world-icon h-7 w-7 object-contain" width="28" height="28" loading="lazy" decoding="async" aria-hidden="true">Todos los juegos</a>
                         @foreach($categories as $label => $category)
-                            <a href="{{ route('games.index', ['cat' => $category]) }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-400 hover:bg-white/5 hover:text-white">{{ $label }}</a>
+                            <a href="{{ route('games.index', ['cat' => $category]) }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-slate-400 hover:bg-white/5 hover:text-white"><img src="{{ asset(sprintf('images/lootra_visual_pack/09_icons/icon_ui_%02d_256.webp', $categoryIcons[$category])) }}" alt="" class="nav-world-icon h-7 w-7 object-contain" width="28" height="28" loading="lazy" decoding="async" aria-hidden="true">{{ $label }}</a>
                         @endforeach
                     </div>
                 </div>
@@ -58,7 +59,7 @@
 </nav>
 
     <button x-show="open" x-cloak x-transition.opacity @click="open=false" class="fixed inset-0 top-16 z-[300] bg-black/65 backdrop-blur-sm lg:hidden" aria-label="Cerrar navegación"></button>
-    <div id="mobile-navigation" x-show="open" x-cloak x-transition:enter="transition duration-200" x-transition:enter-start="translate-x-full" x-transition:leave="transition duration-150" x-transition:leave-end="translate-x-full" class="fixed bottom-0 right-0 top-16 z-[310] w-[min(92vw,24rem)] overflow-y-auto border-l border-white/10 bg-[#0f1626] p-4 shadow-2xl lg:hidden">
+    <div id="mobile-navigation" x-show="open" x-cloak x-transition:enter="transition duration-200" x-transition:enter-start="translate-x-full" x-transition:leave="transition duration-150" x-transition:leave-end="translate-x-full" class="mobile-navigation fixed bottom-0 right-0 top-16 z-[310] w-[min(92vw,24rem)] overflow-y-auto overscroll-contain border-l border-white/10 bg-[#0f1626] p-4 shadow-2xl lg:hidden">
         <div class="space-y-1">
             <a href="{{ route('inicio') }}" class="block min-h-11 rounded-xl px-3 py-3 text-sm text-slate-200 hover:bg-white/5">Inicio</a>
             <a href="{{ route('games.index') }}" class="block min-h-11 rounded-xl px-3 py-3 text-sm text-slate-200 hover:bg-white/5">Casino · Todos los juegos</a>
@@ -67,7 +68,7 @@
             @if($rickyeditCampaignEnabled ?? false)<a href="{{ route('rickyedit.landing') }}" class="block min-h-11 rounded-xl bg-fuchsia-400/10 px-3 py-3 text-sm font-bold text-fuchsia-200">Reto RickyEdit</a>@endif
             <div class="my-3 h-px bg-white/10"></div>
             <p class="px-3 pb-1 text-[10px] font-black uppercase tracking-[.18em] text-slate-600">Categorías</p>
-            <div class="grid grid-cols-2 gap-1">@foreach($categories as $label => $category)<a href="{{ route('games.index', ['cat' => $category]) }}" class="min-h-11 rounded-xl px-3 py-3 text-sm text-slate-400 hover:bg-white/5 hover:text-white">{{ $label }}</a>@endforeach</div>
+            <div class="grid grid-cols-2 gap-1">@foreach($categories as $label => $category)<a href="{{ route('games.index', ['cat' => $category]) }}" class="flex min-h-12 items-center gap-2 rounded-xl px-2 py-2 text-sm text-slate-400 hover:bg-white/5 hover:text-white"><img src="{{ asset(sprintf('images/lootra_visual_pack/09_icons/icon_ui_%02d_256.webp', $categoryIcons[$category])) }}" alt="" class="h-7 w-7 object-contain" width="28" height="28" loading="lazy" decoding="async" aria-hidden="true">{{ $label }}</a>@endforeach</div>
             <div class="my-3 h-px bg-white/10"></div>
             @guest
                 <a href="{{ route('login') }}" class="block min-h-11 rounded-xl px-3 py-3 text-center text-sm text-slate-300">Iniciar sesión</a>
@@ -83,5 +84,5 @@
 </div>
 
 <script>
-function navbar(){return{open:false,catOpen:false,init(){this.$watch('open',value=>document.documentElement.classList.toggle('overflow-hidden',value));},closeAll(){this.open=false;this.catOpen=false;}}}
+function navbar(){return{open:false,catOpen:false,desktopQuery:null,desktopHandler:null,init(){this.$watch('open',value=>document.documentElement.classList.toggle('overflow-hidden',value));this.desktopQuery=window.matchMedia('(min-width:1024px)');this.desktopHandler=event=>{if(event.matches)this.closeAll()};this.desktopQuery.addEventListener?.('change',this.desktopHandler)},destroy(){this.desktopQuery?.removeEventListener?.('change',this.desktopHandler);document.documentElement.classList.remove('overflow-hidden')},closeAll(){this.open=false;this.catOpen=false;}}}
 </script>

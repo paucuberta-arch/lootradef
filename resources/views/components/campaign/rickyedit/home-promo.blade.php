@@ -27,24 +27,18 @@
                 decoding="async"
             >
         @else
-            <img
-                src="{{ $campaign->asset('home_mobile') }}"
-                alt="RickyEdit x Lootra, El Reto de los 1.000: supera su puntuación en 15 minutos con créditos demo"
-                class="campaign-home-promo__image h-auto w-full sm:hidden"
-                width="497"
-                height="608"
-                fetchpriority="high"
-                decoding="async"
-            >
-            <img
-                src="{{ $campaign->asset('home_hero') }}"
-                alt="RickyEdit x Lootra, El Reto de los 1.000: supera su puntuación en 15 minutos con créditos demo"
-                class="campaign-home-promo__image hidden h-auto w-full sm:block"
-                width="1512"
-                height="386"
-                fetchpriority="high"
-                decoding="async"
-            >
+            <picture>
+                <source media="(min-width: 640px)" srcset="{{ $campaign->asset('home_hero') }}" width="1512" height="386">
+                <img
+                    src="{{ $campaign->asset('home_mobile') }}"
+                    alt="RickyEdit x Lootra, El Reto de los 1.000: supera su puntuación en 15 minutos con créditos demo"
+                    class="campaign-home-promo__image block h-auto w-full"
+                    width="497"
+                    height="608"
+                    fetchpriority="high"
+                    decoding="async"
+                >
+            </picture>
         @endif
         <span class="campaign-home-promo__wash pointer-events-none absolute inset-0" aria-hidden="true"></span>
         <span class="campaign-home-promo__spark campaign-home-promo__spark--one" aria-hidden="true"></span>

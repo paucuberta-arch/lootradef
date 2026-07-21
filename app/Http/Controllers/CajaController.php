@@ -82,11 +82,20 @@ class CajaController extends Controller
             return response()->json(['message' => 'No tienes saldo suficiente para abrir esta caja.'], 422);
         }
 
+        $serializedItem = $this->serializeItem($item['item']);
+        $winnerIndex = $item['reel']['winner_index'];
+        $reel = array_map(fn (array $prize) => $this->serializePrize($prize), $item['reel']['items']);
+
+        // The reel winner is built from the persisted inventory item itself. This keeps
+        // the visual result and the authoritative server award as one identical object.
+        $reel[$winnerIndex] = $this->serializeWinner($serializedItem);
+
         return response()->json([
-            'item' => $this->serializeItem($item['item']),
+            'item' => $serializedItem,
+            'winner' => $this->serializeWinner($serializedItem),
             'saldo' => $item['saldo'],
-            'reel' => array_map(fn (array $prize) => $this->serializePrize($prize), $item['reel']['items']),
-            'winner_index' => $item['reel']['winner_index'],
+            'reel' => $reel,
+            'winner_index' => $winnerIndex,
         ]);
     }
 
@@ -131,6 +140,7 @@ class CajaController extends Controller
     {
         return [
             'id' => $item->id,
+            'prize_key' => $this->prizes->prizeKey(['nombre' => $item->nombre]),
             'nombre' => $item->nombre,
             'imagen' => $item->imagen,
             'rareza' => $item->rareza,
@@ -143,10 +153,22 @@ class CajaController extends Controller
     private function serializePrize(array $prize): array
     {
         return [
+            'prize_key' => $this->prizes->prizeKey($prize),
             'nombre' => $prize['nombre'],
             'imagen' => $prize['imagen'],
             'rareza' => $prize['rareza'],
             'valor_canje' => (float) $prize['valor'],
+        ];
+    }
+
+    private function serializeWinner(array $item): array
+    {
+        return [
+            'prize_key' => $item['prize_key'],
+            'nombre' => $item['nombre'],
+            'imagen' => $item['imagen'],
+            'rareza' => $item['rareza'],
+            'valor_canje' => (float) $item['valor_canje'],
         ];
     }
 }

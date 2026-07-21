@@ -36,7 +36,7 @@ class SlotsController extends Controller
             'tagline' => 'Viaja al Monte del Olimpo con Zeus',
             'provider' => 'Pragmatic Play',
             'atlas' => 'images/slots/olympus-symbols-v2.webp',
-            'hero' => 'https://images.unsplash.com/photo-1603565816030-6b389eeb23cb?auto=format&fit=crop&w=1400&q=85',
+            'hero' => '/images/lootra_visual_pack/01_heroes/hero_slots_olympus_1920x900.webp',
             'symbols' => ['👑', '⚡', '💎', '🏆', '🏺', '🪙', '🔴', '🔵'],
             'weights' => ['👑' => 5, '⚡' => 8, '💎' => 10, '🏆' => 12, '🏺' => 18, '🪙' => 20, '🔴' => 25, '🔵' => 25],
             'paytable' => [
@@ -54,7 +54,7 @@ class SlotsController extends Controller
             'tagline' => 'Un mundo de dulces y frutas te espera',
             'provider' => 'Pragmatic Play',
             'atlas' => 'images/slots/sweet-symbols-v2.webp',
-            'hero' => 'https://images.unsplash.com/photo-1575224300306-1b8da36134ec?auto=format&fit=crop&w=1400&q=85',
+            'hero' => '/images/lootra_visual_pack/01_heroes/hero_slots_sweet_1920x900.webp',
             'symbols' => ['🍭', '🍫', '🍬', '🍰', '🍩', '🍒', '🫐', '🟣'],
             'weights' => ['🍭' => 8, '🍫' => 10, '🍬' => 15, '🍰' => 15, '🍩' => 20, '🍒' => 22, '🫐' => 25, '🟣' => 25],
             'paytable' => [
@@ -72,7 +72,7 @@ class SlotsController extends Controller
             'tagline' => 'Aventura por el antiguo Egipto con Rich Wilde',
             'provider' => "Play'n GO",
             'atlas' => 'images/slots/book-symbols-v2.webp',
-            'hero' => 'https://images.unsplash.com/photo-1539768942893-daf53e736b68?auto=format&fit=crop&w=1400&q=85',
+            'hero' => '/images/lootra_visual_pack/03_game_covers/game_book_of_dead_800x1000.webp',
             'symbols' => ['📖', '💀', '🧔', '🦅', '🏛️', '🃏', '🔟', '👑'],
             'weights' => ['📖' => 5, '💀' => 8, '🧔' => 10, '🦅' => 15, '🏛️' => 18, '🃏' => 20, '🔟' => 25, '👑' => 25],
             'paytable' => [
@@ -90,7 +90,7 @@ class SlotsController extends Controller
             'tagline' => 'La slot mas iconica de NetEnt',
             'provider' => 'NetEnt',
             'atlas' => 'images/slots/starburst-symbols-v2.webp',
-            'hero' => 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=1400&q=85',
+            'hero' => '/images/lootra_visual_pack/03_game_covers/game_starburst_800x1000.webp',
             'symbols' => ['💎', '⭐', '🌟', '✨', '🔵', '🟢', '🔴', '🟠'],
             'weights' => ['💎' => 5, '⭐' => 8, '🌟' => 12, '✨' => 15, '🔵' => 20, '🟢' => 22, '🔴' => 25, '🟠' => 25],
             'paytable' => [
@@ -108,7 +108,7 @@ class SlotsController extends Controller
             'tagline' => 'Salva de pesca en esta slot acuatica',
             'provider' => 'Pragmatic Play',
             'atlas' => 'images/slots/bass-symbols-v2.webp',
-            'hero' => 'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=1400&q=85',
+            'hero' => '/images/lootra_visual_pack/03_game_covers/game_big_bass_bonanza_800x1000.webp',
             'symbols' => ['🐟', '🎣', '🪣', '🦞', '🐡', '🌊', '⚓', '🐠'],
             'weights' => ['🐟' => 5, '🎣' => 8, '🪣' => 12, '🦞' => 15, '🐡' => 20, '🌊' => 22, '⚓' => 25, '🐠' => 25],
             'paytable' => [

@@ -16,8 +16,17 @@
             @endif
 
             <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                @foreach([['Saldo', number_format($usuario->saldo, 2, ',', '.').' €'], ['Partidas', $resumen['partidas']], ['Inventario', $resumen['inventario']], ['Apuestas', $resumen['apuestas']]] as [$label, $value])
-                    <x-ui.card padding="p-3 min-[420px]:p-4"><p class="text-[10px] min-[420px]:text-xs font-bold uppercase tracking-wider text-slate-500">{{ $label }}</p><p class="mt-2 break-words font-display text-lg min-[420px]:text-xl font-bold text-white">{{ $value }}</p></x-ui.card>
+                @foreach([
+                    ['Saldo', number_format($usuario->saldo, 2, ',', '.').' €', 3],
+                    ['Partidas', $resumen['partidas'], 8],
+                    ['Inventario', $resumen['inventario'], 6],
+                    ['Apuestas', $resumen['apuestas'], 2],
+                ] as [$label, $value, $badge])
+                    <div class="world-panel group rounded-2xl p-3 min-[420px]:p-4">
+                        <img src="{{ asset(sprintf('images/lootra_visual_pack/07_badges/badge_%02d_512.png', $badge)) }}" alt="" class="pointer-events-none absolute -bottom-5 -right-4 h-24 w-24 object-contain opacity-20 transition duration-500 group-hover:scale-110 group-hover:opacity-35" loading="lazy" aria-hidden="true">
+                        <p class="relative text-[10px] font-bold uppercase tracking-wider text-slate-500 min-[420px]:text-xs">{{ $label }}</p>
+                        <p class="relative mt-2 break-words font-display text-lg font-bold text-white min-[420px]:text-xl">{{ $value }}</p>
+                    </div>
                 @endforeach
             </div>
 
@@ -37,17 +46,24 @@
             </section>
             @endif
 
-            <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-6 sm:p-8 backdrop-blur-sm">
-
-                <div class="text-center mb-8">
-                    <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-black text-3xl font-black mx-auto mb-4 shadow-lg shadow-brand-500/20">
-                        {{ strtoupper(substr($usuario->name, 0, 1)) }}
+            @php($avatarIndex = (($usuario->id - 1) % 5) + 1)
+            <section class="world-panel relative overflow-hidden rounded-3xl">
+                <img src="{{ asset('images/lootra_visual_pack/05_top_panels/panel_perfil_1920x360.webp') }}" alt="" class="absolute inset-x-0 top-0 h-64 w-full object-cover opacity-70" aria-hidden="true" decoding="async">
+                <div class="absolute inset-0 bg-gradient-to-b from-[#070816]/10 via-[#070816]/75 to-[#070816]"></div>
+                <div class="relative grid gap-8 p-5 sm:p-8 lg:grid-cols-[280px_minmax(0,1fr)] lg:p-10">
+                    <div class="flex flex-col items-center justify-center text-center lg:items-start lg:text-left">
+                        <div class="visual-float relative mb-5 h-32 w-32 sm:h-40 sm:w-40">
+                            <div class="absolute inset-3 rounded-[2rem] bg-gradient-to-br from-cyan-300 via-fuchsia-500 to-amber-300 blur-xl opacity-40"></div>
+                            <img src="{{ asset(sprintf('images/lootra_visual_pack/06_avatars/avatar_neon_%02d_512.png', $avatarIndex)) }}" alt="Avatar de {{ $usuario->name }}" class="relative h-full w-full rounded-[2rem] object-cover ring-1 ring-white/20 shadow-2xl shadow-fuchsia-950/60" decoding="async">
+                        </div>
+                        <span class="world-kicker">Perfil de jugador</span>
+                        <h1 class="mt-3 break-words font-display text-3xl font-black text-white sm:text-4xl">{{ $usuario->name }}</h1>
+                        <p class="mt-2 text-sm text-cyan-200/70">Miembro desde {{ $usuario->created_at->format('Y') }}</p>
                     </div>
-                    <h1 class="text-2xl font-bold text-white">{{ $usuario->name }}</h1>
-                    <p class="text-slate-500 text-sm mt-1">Mi perfil</p>
-                </div>
 
-                <div class="space-y-3 mb-8">
+                    <div class="self-end rounded-2xl border border-white/10 bg-[#070816]/65 p-4 backdrop-blur-xl sm:p-6">
+                        <div class="mb-5 flex flex-wrap items-center justify-between gap-3"><div><p class="text-xs font-black uppercase tracking-[.18em] text-fuchsia-300">Identidad Lootra</p><h2 class="mt-1 text-xl font-bold">Tu centro personal</h2></div><span class="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-bold text-cyan-200">Cuenta activa</span></div>
+                        <div class="space-y-3 mb-6">
                     <div class="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/5">
                         <div>
                             <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Nombre</p>
@@ -73,10 +89,10 @@
                         </div>
                         @if(!$campaignChallenge || $campaignChallenge->status !== 'active')<button @click="depositOpen=true" class="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition text-sm font-bold">Añadir saldo demo</button>@else<span class="text-xs text-cyan-300">La cartera normal permanece separada durante el reto</span>@endif
                     </div>
-                </div>
+                        </div>
 
-                <div class="space-y-3">
-                    <a href="{{ route('games.index') }}" class="block w-full text-center rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold py-3 border border-white/10 hover:border-white/20 transition-all">
+                        <div class="grid gap-3 sm:grid-cols-2">
+                    <a href="{{ route('games.index') }}" class="block w-full text-center rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 font-bold py-3 transition hover:brightness-110">
                         Volver al casino
                     </a>
                     <form action="{{ route('logout') }}" method="POST">
@@ -85,9 +101,10 @@
                             Cerrar sesion
                         </button>
                     </form>
+                        </div>
+                    </div>
                 </div>
-
-            </div>
+            </section>
 
             <div class="mt-6 grid gap-6 lg:grid-cols-2">
                 <x-ui.card>

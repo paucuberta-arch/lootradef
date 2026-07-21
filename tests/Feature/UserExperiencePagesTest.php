@@ -51,6 +51,14 @@ class UserExperiencePagesTest extends TestCase
             ->assertSee('Slots');
     }
 
+    public function test_sports_page_uses_the_dedicated_visual_pack(): void
+    {
+        $this->get(route('sports.index'))->assertOk()
+            ->assertSee('sports_hero_960x540.webp')
+            ->assertSee('sports_stadium_1200x675.webp')
+            ->assertSee('sports_ball_768x512.webp');
+    }
+
     private function player(): Usuario
     {
         $user = Usuario::create(['name' => 'UX Tester', 'email' => fake()->unique()->safeEmail(), 'password' => bcrypt('password')]);

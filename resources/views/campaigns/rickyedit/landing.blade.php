@@ -50,9 +50,9 @@
             </div>
             <div class="mt-8 overflow-hidden rounded-2xl border border-white/10 bg-black/25">
                 @if($campaign['youtube_url'])
-                    <a href="{{ $campaign['youtube_url'] }}" rel="noopener noreferrer" target="_blank"><img src="{{ app(\App\Services\CampaignManager::class)->asset('video_poster') }}" alt="Ver vídeo oficial del reto" class="aspect-video w-full object-cover" width="1280" height="720"></a>
+                    <a href="{{ $campaign['youtube_url'] }}" rel="noopener noreferrer" target="_blank"><img src="{{ app(\App\Services\CampaignManager::class)->asset('video_poster') }}" alt="Ver vídeo oficial del reto" class="aspect-video w-full object-cover" width="1280" height="720" loading="lazy" decoding="async"></a>
                 @else
-                    <img src="{{ app(\App\Services\CampaignManager::class)->asset('video_poster') }}" alt="Espacio reservado para el vídeo oficial" class="aspect-video w-full object-cover" width="1280" height="720">
+                    <img src="{{ app(\App\Services\CampaignManager::class)->asset('video_poster') }}" alt="Espacio reservado para el vídeo oficial" class="aspect-video w-full object-cover" width="1280" height="720" loading="lazy" decoding="async">
                 @endif
                 <p class="p-4 text-xs text-slate-500">Espacio preparado para el vídeo oficial. Los recursos actuales son provisionales.</p>
             </div>

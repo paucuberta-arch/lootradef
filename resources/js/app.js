@@ -1,8 +1,6 @@
 import Alpine from 'alpinejs';
-import Chart from 'chart.js/auto';
 
 window.Alpine = Alpine;
-window.Chart = Chart;
 
 window.lootraRequestToken = () => {
     const webCrypto = globalThis.crypto;
@@ -49,6 +47,116 @@ Alpine.data('rickyChallenge', (initial) => ({
     },
 }));
 
+Alpine.data('promoCarousel', ({ count, interval = 6500 }) => ({
+    active: 0,
+    timer: null,
+    observer: null,
+    visible: false,
+    interacting: false,
+    userPaused: false,
+    reducedMotion: false,
+    visibilityHandler: null,
+    get autoplaying() {
+        return !this.userPaused && !this.reducedMotion;
+    },
+    get status() {
+        return `Promoción ${this.active + 1} de ${count}`;
+    },
+    init() {
+        this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        this.visibilityHandler = () => (document.hidden ? this.stop() : this.start());
+        document.addEventListener('visibilitychange', this.visibilityHandler);
+        this.load(0);
+
+        if (!('IntersectionObserver' in window)) {
+            this.visible = true;
+            this.preloadNext();
+            this.start();
+            return;
+        }
+
+        this.observer = new IntersectionObserver(([entry]) => {
+            this.visible = entry.isIntersecting;
+            if (this.visible) {
+                this.preloadNext();
+                this.start();
+            } else {
+                this.stop();
+            }
+        }, { threshold: 0.2 });
+        this.observer.observe(this.$root);
+    },
+    destroy() {
+        this.stop();
+        this.observer?.disconnect();
+        document.removeEventListener('visibilitychange', this.visibilityHandler);
+    },
+    image(index) {
+        return this.$root.querySelector(`[data-promo-image="${index}"]`);
+    },
+    load(index) {
+        const image = this.image(index);
+        if (image?.dataset.src && !image.hasAttribute('src')) {
+            if (image.dataset.srcset) {
+                image.srcset = image.dataset.srcset;
+                image.sizes = image.dataset.sizes || '100vw';
+                image.removeAttribute('data-srcset');
+                image.removeAttribute('data-sizes');
+            }
+            image.src = image.dataset.src;
+            image.removeAttribute('data-src');
+        }
+    },
+    preloadNext() {
+        if (navigator.connection?.saveData) return;
+        const index = (this.active + 1) % count;
+        const image = this.image(index);
+        if (!image?.dataset.src || image.hasAttribute('src')) return;
+        const preload = new Image();
+        preload.onload = () => this.load(index);
+        if (image.dataset.srcset) {
+            preload.srcset = image.dataset.srcset;
+            preload.sizes = image.dataset.sizes || '100vw';
+        }
+        preload.src = image.dataset.src;
+    },
+    go(index, manual = true) {
+        const next = (index + count) % count;
+        this.load(next);
+        this.active = next;
+        this.$nextTick(() => this.preloadNext());
+        if (manual) this.start();
+    },
+    next(manual = true) {
+        this.go(this.active + 1, manual);
+    },
+    previous() {
+        this.go(this.active - 1);
+    },
+    stop() {
+        window.clearInterval(this.timer);
+        this.timer = null;
+    },
+    start() {
+        this.stop();
+        if (!this.visible || this.interacting || this.userPaused || this.reducedMotion || document.hidden) return;
+        this.timer = window.setInterval(() => this.next(false), interval);
+    },
+    pauseInteraction() {
+        this.interacting = true;
+        this.stop();
+    },
+    resumeInteraction() {
+        this.interacting = false;
+        this.start();
+    },
+    toggleAutoplay() {
+        if (this.reducedMotion) return;
+        this.userPaused = !this.userPaused;
+        this.start();
+    },
+}));
+
 let lastWalletRefresh = Date.now();
 
 const refreshWallet = async ({ force = false } = {}) => {
@@ -74,6 +182,15 @@ const refreshWallet = async ({ force = false } = {}) => {
 };
 
 Alpine.start();
+
+if (document.querySelector('[data-admin-charts]')) {
+    import('chart.js/auto')
+        .then(({ default: Chart }) => {
+            window.Chart = Chart;
+            window.dispatchEvent(new CustomEvent('lootra:charts-ready', { detail: { Chart } }));
+        })
+        .catch(() => window.dispatchEvent(new CustomEvent('lootra:charts-error')));
+}
 
 if (document.body?.dataset.walletUrl) {
     window.setInterval(refreshWallet, 45000);

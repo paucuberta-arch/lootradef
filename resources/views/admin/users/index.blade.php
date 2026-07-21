@@ -3,16 +3,16 @@
 
 @section('admin-content')
 <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-    <div class="flex gap-2">
-        <a href="{{ route('admin.users', array_filter(['search' => request('search')])) }}" class="px-3 py-1.5 rounded-lg text-xs font-medium {{ !request('role') ? 'bg-brand-500/10 text-brand-400 border border-brand-500/20' : 'text-slate-400 hover:text-white bg-white/5 border border-white/5' }}">Todos</a>
+    <div class="flex max-w-full gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
+        <a href="{{ route('admin.users', array_filter(['search' => request('search')])) }}" class="shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium {{ !request('role') ? 'bg-brand-500/10 text-brand-400 border border-brand-500/20' : 'text-slate-400 hover:text-white bg-white/5 border border-white/5' }}">Todos</a>
         @foreach($roles as $r)
-            <a href="{{ route('admin.users', array_filter(['role' => $r->name, 'search' => request('search')])) }}" class="px-3 py-1.5 rounded-lg text-xs font-medium {{ request('role') === $r->name ? 'bg-brand-500/10 text-brand-400 border border-brand-500/20' : 'text-slate-400 hover:text-white bg-white/5 border border-white/5' }}">{{ $r->label }}</a>
+            <a href="{{ route('admin.users', array_filter(['role' => $r->name, 'search' => request('search')])) }}" class="shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium {{ request('role') === $r->name ? 'bg-brand-500/10 text-brand-400 border border-brand-500/20' : 'text-slate-400 hover:text-white bg-white/5 border border-white/5' }}">{{ $r->label }}</a>
         @endforeach
     </div>
-    <form method="GET" class="flex gap-2">
+    <form method="GET" class="flex w-full gap-2 sm:w-auto">
         @if(request('role'))<input type="hidden" name="role" value="{{ request('role') }}">@endif
         <input type="text" name="search" value="{{ request('search') }}" placeholder="Buscar..."
-               class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-slate-500 outline-none focus:border-brand-500 transition w-48">
+               class="min-w-0 flex-1 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-slate-500 outline-none focus:border-brand-500 transition sm:w-48 sm:flex-none">
         <button class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-slate-400 hover:text-white transition">Buscar</button>
     </form>
 </div>
@@ -37,9 +37,9 @@
                                 <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-black text-xs font-bold shrink-0">
                                     {{ strtoupper(substr($u->name, 0, 1)) }}
                                 </div>
-                                <div>
+                                <div class="min-w-0">
                                     <p class="font-semibold text-white">{{ $u->name }}</p>
-                                    <p class="text-xs text-slate-500">{{ $u->email }}</p>
+                                    <p class="break-all text-xs text-slate-500">{{ $u->email }}</p>
                                 </div>
                             </div>
                         </td>

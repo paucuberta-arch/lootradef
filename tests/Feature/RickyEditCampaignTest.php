@@ -35,14 +35,25 @@ class RickyEditCampaignTest extends TestCase
         config(['campaigns.rickyedit.enabled' => false]);
         $this->get('/')->assertOk()
             ->assertDontSee('Reto RickyEdit')
-            ->assertSee('lootra-hero.webp');
+            ->assertSee('hero_home_lootra_1920x900.webp');
 
         config(['campaigns.rickyedit.enabled' => true]);
-        $this->get('/')->assertOk()
+        $home = $this->get('/')->assertOk()
             ->assertSee('Reto RickyEdit')
             ->assertSee('aifaceswap-390bed6ee726c1170c6d1df14ca5d5b4.webp')
             ->assertSee('aifaceswap-a2a4b24b66d4ab9e64b25f2d6df8e767.webp')
+            ->assertSee('promoCarousel', false)
+            ->assertSee('Ver promoción anterior')
+            ->assertSee('Ver promoción siguiente')
+            ->assertSee('data-srcset', false)
+            ->assertDontSee('campaign-banner--global', false)
             ->assertDontSee('lootra-hero.webp');
+
+        $this->assertLessThan(
+            strpos($home->getContent(), 'home-hero relative'),
+            strpos($home->getContent(), 'home-challenge-lead'),
+            'El reto destacado debe aparecer antes del hero principal en Inicio.'
+        );
 
         $this->get(route('rickyedit.landing'))->assertOk()
             ->assertSee('challenge-hero-v2.webp')

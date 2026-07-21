@@ -189,6 +189,6 @@ class CasePrizeService
             'prize' => $prize,
             'isGood' => in_array($prize['rareza'], ['epico', 'legendario'], true),
             'adjusted_weight' => max(1, (int) $prize['peso']),
-        ]));
+        ]))['prize'];
     }
 }

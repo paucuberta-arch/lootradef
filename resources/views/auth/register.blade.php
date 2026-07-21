@@ -7,20 +7,31 @@
 <div class="mx-auto mt-8 max-w-lg px-4"><div class="rounded-xl border border-fuchsia-400/25 bg-fuchsia-400/10 p-4 text-center font-bold text-fuchsia-100">Crea tu cuenta y recibe {{ number_format($rickyeditCampaign['initial_balance'] ?? 1000, 0, ',', '.') }} créditos demo para el reto.</div></div>
 @endif
 
-    <div class="relative min-h-[80vh] flex items-center justify-center px-4 py-8 sm:py-16">
+    <div class="relative min-h-screen flex items-center justify-center px-4 py-8 sm:py-12">
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[min(500px,90vw)] w-[min(500px,90vw)] bg-brand-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 
-        <div class="relative w-full max-w-md">
+        <div class="relative grid w-full max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-[#080a16]/85 shadow-2xl shadow-black/50 backdrop-blur-xl lg:grid-cols-[.95fr_1.05fr]">
+            <aside class="relative hidden min-h-[760px] overflow-hidden lg:block">
+                <img src="{{ asset('images/lootra_visual_pack/02_promo_banners/banner_bonus_bienvenida_960x300.webp') }}" srcset="{{ asset('images/lootra_visual_pack/02_promo_banners/banner_bonus_bienvenida_960x300.webp') }} 960w, {{ asset('images/lootra_visual_pack/02_promo_banners/banner_bonus_bienvenida_1920x600.webp') }} 1920w" sizes="(min-width: 1024px) 520px, 1px" width="1920" height="600" alt="Bienvenida a Lootra" class="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async">
+                <div class="absolute inset-0 bg-gradient-to-t from-[#070816] via-[#070816]/30 to-fuchsia-950/20"></div>
+                <div class="absolute inset-x-0 bottom-0 p-10">
+                    <span class="world-kicker">Empieza tu historia</span>
+                    <h2 class="mt-4 font-display text-4xl font-black leading-tight">Una cuenta. Muchos mundos.</h2>
+                    <div class="mt-6 flex flex-wrap gap-2 text-xs font-bold text-slate-200"><span class="rounded-full border border-white/15 bg-black/25 px-3 py-2">Casino</span><span class="rounded-full border border-white/15 bg-black/25 px-3 py-2">Originales</span><span class="rounded-full border border-white/15 bg-black/25 px-3 py-2">Drops</span><span class="rounded-full border border-white/15 bg-black/25 px-3 py-2">Sports</span></div>
+                </div>
+            </aside>
+
+            <div class="p-5 sm:p-10 lg:p-12">
 
             <div class="text-center mb-8">
                 <a href="{{ route('inicio') }}" class="inline-flex items-center gap-2 mb-6">
-                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-black text-xl font-black shadow-lg shadow-brand-500/20">L</div>
+                    <div class="brand-orbit w-12 h-12 rounded-xl bg-gradient-to-br from-brand-400 to-cyan-300 flex items-center justify-center text-black text-xl font-black shadow-lg shadow-brand-500/20">L</div>
                 </a>
                 <h1 class="text-2xl sm:text-3xl font-bold text-white">Crear una cuenta</h1>
                 <p class="text-slate-500 mt-2">Unete a Lootra Casino</p>
             </div>
 
-            <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-6 sm:p-8 backdrop-blur-sm">
+            <div class="rounded-2xl bg-white/[0.035] border border-white/10 p-5 sm:p-7 backdrop-blur-sm">
 
                 @if($errors->any())
                     <x-ui.alert type="error" class="mb-6">
@@ -70,6 +81,7 @@
                         <a href="{{ route('login') }}" class="font-semibold text-brand-400 hover:text-brand-300 transition">Inicia sesion</a>
                     </p>
                 </div>
+            </div>
             </div>
 
         </div>

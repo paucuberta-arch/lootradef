@@ -30,7 +30,7 @@ class SportsSimulationService
             PartidoDeportivo::create([
                 'liga' => $league, 'local' => $home, 'visitante' => $away,
                 'local_siglas' => $homeShort, 'visitante_siglas' => $awayShort,
-                'imagen' => 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=1200&h=600&fit=crop',
+                'imagen' => '/images/lootra_visual_pack/04_backgrounds/bg_emerald_forest_1920x1080.webp',
                 'inicia_at' => now()->addSeconds($offset), 'duracion_segundos' => 360,
                 'cuota_local' => random_int(165, 275) / 100,
                 'cuota_empate' => random_int(280, 390) / 100,

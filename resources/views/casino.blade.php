@@ -6,16 +6,16 @@
 
 @php
     $cats = [
-        ['id' => 'todos', 'label' => 'Todos', 'icon' => '&#x1F3AE;'],
-        ['id' => 'slots', 'label' => 'Slots', 'icon' => '&#x1F3B0;'],
-        ['id' => 'ruleta', 'label' => 'Ruleta', 'icon' => '&#x1F3B2;'],
-        ['id' => 'blackjack', 'label' => 'Blackjack', 'icon' => '&#x1F0CF;'],
-        ['id' => 'poker', 'label' => 'Poker', 'icon' => '&#x1F0AD;'],
-        ['id' => 'live', 'label' => 'Live Casino', 'icon' => '&#x1F4FA;'],
-        ['id' => 'crash', 'label' => 'Crash', 'icon' => '&#x1F680;'],
-        ['id' => 'arcade', 'label' => 'Originales', 'icon' => '&#x2728;'],
-        ['id' => 'cartas', 'label' => 'Cartas', 'icon' => '&#x1F0CF;'],
-        ['id' => 'numeros', 'label' => 'Números', 'icon' => '&#x1F522;'],
+        ['id' => 'todos', 'label' => 'Todos', 'icon' => 1],
+        ['id' => 'slots', 'label' => 'Slots', 'icon' => 6],
+        ['id' => 'ruleta', 'label' => 'Ruleta', 'icon' => 3],
+        ['id' => 'blackjack', 'label' => 'Blackjack', 'icon' => 5],
+        ['id' => 'poker', 'label' => 'Poker', 'icon' => 7],
+        ['id' => 'live', 'label' => 'Live Casino', 'icon' => 10],
+        ['id' => 'crash', 'label' => 'Crash', 'icon' => 23],
+        ['id' => 'arcade', 'label' => 'Originales', 'icon' => 13],
+        ['id' => 'cartas', 'label' => 'Cartas', 'icon' => 22],
+        ['id' => 'numeros', 'label' => 'Números', 'icon' => 8],
     ];
 @endphp
 
@@ -60,8 +60,10 @@
         <x-campaign.rickyedit.home-promo class="mb-8 sm:mb-10" />
     @endif
     <section class="relative mb-8 flex min-h-[360px] items-end overflow-hidden rounded-3xl border border-white/10 hero-casino sm:mb-10 sm:min-h-[420px] sm:rounded-[2rem]">
-        <img src="{{ asset('images/lootra-hero.webp') }}"
-             alt="Mesa de casino premium iluminada" class="absolute inset-0 w-full h-full object-cover" fetchpriority="high" decoding="async">
+        <img src="{{ asset('images/lootra_visual_pack/01_heroes/hero_casino_roulette_960x450.webp') }}"
+             srcset="{{ asset('images/lootra_visual_pack/01_heroes/hero_casino_roulette_960x450.webp') }} 960w, {{ asset('images/lootra_visual_pack/01_heroes/hero_casino_roulette_1920x900.webp') }} 1920w"
+             sizes="(min-width: 1400px) 1344px, calc(100vw - 2rem)" width="1920" height="900"
+             alt="Mesa de casino premium iluminada" class="absolute inset-0 w-full h-full object-cover" @if($rickyeditCampaignEnabled ?? false) loading="lazy" fetchpriority="low" @else fetchpriority="high" @endif decoding="async">
         <div class="absolute inset-0 bg-gradient-to-r from-[#070712] via-[#09081a]/90 to-fuchsia-950/25"></div>
         <div class="absolute inset-0 bg-gradient-to-t from-[#070712] via-transparent to-cyan-500/10"></div>
         <div class="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-fuchsia-500/25 blur-[90px]"></div>
@@ -84,7 +86,7 @@
             </div>
         </div>
         <div class="absolute right-8 bottom-8 hidden lg:grid grid-cols-3 gap-2 z-10">
-            @foreach([['20', 'Juegos'], ['97%', 'RTP máx.'], ['24/7', 'Acceso']] as [$value, $label])
+            @foreach([[$juegos->count(), 'Juegos'], ['97%', 'RTP máx.'], ['24/7', 'Acceso']] as [$value, $label])
                 <div class="min-w-24 p-3 rounded-xl bg-black/30 border border-white/10 backdrop-blur-xl text-center">
                     <div class="font-display font-bold text-white">{{ $value }}</div>
                     <div class="text-[10px] uppercase tracking-widest text-slate-400">{{ $label }}</div>
@@ -121,7 +123,7 @@
                                 class="w-full flex items-center justify-between gap-1 px-2 min-[420px]:px-3 py-2.5 rounded-xl text-xs min-[420px]:text-sm font-medium border transition-all"
                             >
                                 <span class="flex items-center gap-2.5">
-                                    <span class="text-base">{!! $cat['icon'] !!}</span>
+                                    <img src="{{ asset(sprintf('images/lootra_visual_pack/09_icons/icon_ui_%02d_256.png', $cat['icon'])) }}" alt="" class="h-7 w-7 shrink-0 object-contain" loading="lazy" aria-hidden="true">
                                     {{ $cat['label'] }}
                                 </span>
                                 <span class="text-xs font-mono" :class="selected === '{{ $cat['id'] }}' ? 'text-brand-400/70' : 'text-slate-600'" x-text="catCount('{{ $cat['id'] }}')"></span>
@@ -160,13 +162,17 @@
                 @if($rickyeditCampaignEnabled ?? false)
                     <x-campaign.rickyedit.home-promo variant="card" class="hidden lg:block" />
                 @else
-                <div class="rounded-2xl bg-gradient-to-br from-brand-500/20 to-brand-600/10 border border-brand-500/20 p-5">
-                    <div class="text-2xl mb-3">&#x1F389;</div>
-                    <h3 class="text-sm font-bold text-white mb-1">Bonus de bienvenida</h3>
-                    <p class="text-xs text-slate-400 leading-relaxed mb-4">Registrate y recibe un bonus exclusivo para empezar a jugar.</p>
-                    <a href="{{ route('registro') }}" class="block w-full text-center rounded-xl bg-brand-500 hover:bg-brand-400 text-black text-sm font-bold py-2.5 transition">
-                        Registrarse
-                    </a>
+                <div class="group relative hidden min-h-64 overflow-hidden rounded-2xl border border-brand-300/20 lg:flex lg:items-end">
+                    <img src="{{ asset('images/lootra_visual_pack/02_promo_banners/banner_bonus_bienvenida_1920x600.webp') }}" alt="Bonus de bienvenida Lootra" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" loading="lazy" decoding="async">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#05040d] via-[#05040d]/75 to-transparent"></div>
+                    <div class="relative z-10 p-5">
+                        <span class="mb-2 block text-[10px] font-black uppercase tracking-[.2em] text-brand-300">Primera misión</span>
+                        <h3 class="mb-1 text-base font-bold text-white">Empieza con ventaja</h3>
+                        <p class="mb-4 text-xs leading-relaxed text-slate-300">Crea tu perfil y desbloquea la experiencia completa de Lootra.</p>
+                        <a href="{{ route('registro') }}" class="block w-full rounded-xl bg-brand-400 py-2.5 text-center text-sm font-bold text-black transition hover:bg-brand-300">
+                            Entrar en Lootra
+                        </a>
+                    </div>
                 </div>
                 @endif
 
@@ -192,7 +198,7 @@
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                     <a href="{{ route('games.show', 'gates-of-olympus') }}" class="featured-card game-gradient-5 aspect-[16/9] sm:aspect-[16/10] flex items-end">
-                        <img src="https://images.unsplash.com/photo-1551524559-8af4e6624178?w=1200&h=675&fit=crop" alt="Gates of Olympus" class="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async">
+                        <img src="{{ asset('images/lootra_visual_pack/01_heroes/hero_slots_olympus_1920x900.webp') }}" alt="Gates of Olympus" class="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async">
                         <div class="featured-overlay"></div>
                         <div class="absolute top-4 left-4 z-10"><span class="px-3 py-1 rounded-lg bg-brand-500/90 text-black text-xs font-bold uppercase tracking-wider">Popular</span></div>
                         <div class="relative z-10 p-5 sm:p-6 w-full">
@@ -209,7 +215,7 @@
                         </div>
                     </a>
                     <a href="{{ route('games.show', 'texas-holdem') }}" class="featured-card game-gradient-2 aspect-[16/9] sm:aspect-[16/10] flex items-end">
-                        <img src="{{ asset('images/poker-live.webp') }}" alt="Texas Hold'em Live" class="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async">
+                        <img src="{{ asset('images/lootra_visual_pack/01_heroes/hero_live_poker_1920x900.webp') }}" alt="Texas Hold'em Live" class="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async">
                         <div class="featured-overlay"></div>
                         <div class="absolute top-4 left-4 z-10"><span class="px-3 py-1 rounded-lg bg-emerald-500/90 text-black text-xs font-bold uppercase tracking-wider">Nuevo</span></div>
                         <div class="relative z-10 p-5 sm:p-6 w-full">

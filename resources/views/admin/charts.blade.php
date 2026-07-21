@@ -9,7 +9,7 @@
     </div>
 </div>
 
-<div class="grid gap-5 xl:grid-cols-3">
+<div class="grid gap-5 xl:grid-cols-3" data-admin-charts>
     <section class="xl:col-span-2 rounded-2xl border border-white/10 bg-white/[.025] p-5"><div class="mb-5"><h3 class="font-bold">Flujo económico diario</h3><p class="text-xs text-slate-500">Volumen por producto frente a pagos totales</p></div><div class="h-80"><canvas id="financeChart"></canvas></div></section>
     <section class="rounded-2xl border border-white/10 bg-white/[.025] p-5"><div class="mb-5"><h3 class="font-bold">Actividad total</h3><p class="text-xs text-slate-500">Operaciones registradas por día</p></div><div class="h-80"><canvas id="activityChart"></canvas></div></section>
     <section class="rounded-2xl border border-white/10 bg-white/[.025] p-5"><h3 class="mb-1 font-bold">Mix de juegos</h3><p class="mb-5 text-xs text-slate-500">Partidas por modalidad</p><div class="h-64"><canvas id="gamesChart"></canvas></div></section>
@@ -21,11 +21,14 @@
 
 @push('admin-scripts')
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    if (!window.Chart) {
+(() => {
+    let initialized = false;
+    const showError = () => {
         document.querySelectorAll('canvas').forEach(canvas => canvas.replaceWith(Object.assign(document.createElement('p'), {className: 'py-12 text-center text-sm text-red-300', textContent: 'No se pudieron cargar los gráficos.'})));
-        return;
-    }
+    };
+    const renderCharts = (Chart) => {
+    if (initialized) return;
+    initialized = true;
     Chart.defaults.color='#94a3b8'; Chart.defaults.borderColor='rgba(255,255,255,.06)'; Chart.defaults.font.family='Inter';
     const series=@json($series); const palette=['#22d3ee','#a78bfa','#f472b6','#34d399','#fbbf24','#fb7185'];
     const tooltip={backgroundColor:'#111827',padding:12,cornerRadius:10};
@@ -41,6 +44,10 @@ document.addEventListener('DOMContentLoaded', () => {
     doughnut('sportsChart',@json($sports->pluck('label')),@json($sports->pluck('total')));
     doughnut('boxesChart',@json($rarities->pluck('label')),@json($rarities->pluck('total')));
     new Chart(document.getElementById('usersChart'),{type:'bar',data:{labels:series.labels,datasets:[{label:'Nuevos usuarios',data:series.users,backgroundColor:series.users.map((_,i)=>i%2?'#22d3ee99':'#a78bfa99'),borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip},scales:{y:{beginAtZero:true,ticks:{precision:0}}}}});
-});
+    };
+    window.addEventListener('lootra:charts-ready', event => renderCharts(event.detail.Chart), { once: true });
+    window.addEventListener('lootra:charts-error', showError, { once: true });
+    if (window.Chart) renderCharts(window.Chart);
+})();
 </script>
 @endpush

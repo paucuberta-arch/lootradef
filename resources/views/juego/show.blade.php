@@ -19,42 +19,48 @@
         <div class="flex-1 min-w-0">
 
             {{-- Hero del juego --}}
-            <div class="rounded-2xl overflow-hidden mb-8 {{ $juego['grad'] }}" x-data="{ imageLoaded: false }">
-                <div class="relative flex min-h-[290px] h-full flex-col justify-end p-5 sm:min-h-[350px] sm:p-10">
-                    <div x-show="!imageLoaded" class="absolute inset-0 animate-pulse bg-gradient-to-br from-white/5 to-transparent" aria-hidden="true"></div>
-                    @if(!empty($juego['image']))
-                        <img src="{{ $juego['image'] }}" alt="{{ $juego['name'] }}" class="absolute inset-0 w-full h-full object-cover" loading="eager" decoding="async" fetchpriority="high" x-on:load="imageLoaded=true" x-on:error="$event.currentTarget.src=@js(asset('images/game-fallback.svg')); imageLoaded=true">
-                    @endif
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                    <div class="relative z-10">
-                        <div class="flex items-center gap-3 mb-3">
-                            <span class="px-3 py-1 rounded-lg bg-white/10 border border-white/10 text-xs font-semibold text-white backdrop-blur-sm">{{ $juego['cat'] }}</span>
-                            <span class="px-3 py-1 rounded-lg bg-white/10 border border-white/10 text-xs font-semibold text-white backdrop-blur-sm">{{ $juego['provider'] }}</span>
+            <div class="game-detail-hero world-panel mb-8 overflow-hidden rounded-3xl {{ $juego['grad'] }}" x-data="{ imageLoaded: false }">
+                <div x-show="!imageLoaded" class="absolute inset-0 animate-pulse bg-gradient-to-br from-white/5 to-transparent" aria-hidden="true"></div>
+                @if(!empty($juego['image']))
+                    <img src="{{ $juego['image'] }}" alt="" class="absolute inset-0 h-full w-full scale-110 object-cover opacity-25 blur-xl" aria-hidden="true" fetchpriority="high" decoding="async">
+                @endif
+                <div class="absolute inset-0 bg-[linear-gradient(100deg,rgba(5,7,17,.98)_6%,rgba(5,7,17,.88)_53%,rgba(5,7,17,.3))]"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-[#050711] via-transparent to-transparent"></div>
+
+                <div class="relative grid min-h-[330px] items-end gap-8 p-6 sm:p-9 md:grid-cols-[minmax(0,1fr)_210px] lg:min-h-[410px] lg:grid-cols-[minmax(0,1fr)_260px] lg:p-12">
+                    <div class="relative z-10 max-w-2xl py-3">
+                        <p class="world-kicker">Ficha de juego</p>
+                        <div class="mb-4 mt-4 flex flex-wrap items-center gap-2">
+                            <span class="rounded-lg border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">{{ ucfirst($juego['cat']) }}</span>
+                            <span class="rounded-lg border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">{{ $juego['provider'] }}</span>
                         </div>
-                        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-4">{{ $juego['name'] }}</h1>
-                        <div class="flex flex-wrap gap-3">
+                        <h1 class="font-display text-4xl font-black leading-[.94] tracking-[-.05em] text-white sm:text-5xl lg:text-6xl">{{ $juego['name'] }}</h1>
+                        <p class="mt-4 max-w-xl text-sm leading-6 text-slate-300">{{ $juego['description'] }}</p>
+                        <div class="mt-7 flex flex-wrap gap-3">
                             @if($playUrl)
-                                <a href="{{ $playUrl }}" class="px-6 py-3 rounded-xl bg-brand-500 hover:bg-brand-400 text-black font-bold transition shadow-lg shadow-brand-500/20">
-                                    Jugar ahora
-                                </a>
+                                <a href="{{ $playUrl }}" class="cta-shine rounded-xl bg-gradient-to-r from-brand-300 via-brand-400 to-emerald-400 px-6 py-3 font-extrabold text-black shadow-lg shadow-brand-500/20 transition hover:-translate-y-1">Jugar ahora <span class="ml-2">→</span></a>
                             @else
-                                <a href="#" class="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold border border-white/10 transition backdrop-blur-sm opacity-50 cursor-not-allowed">
-                                    Proximamente
-                                </a>
+                                <span class="cursor-not-allowed rounded-xl border border-white/10 bg-white/10 px-6 py-3 font-semibold text-slate-400">Próximamente</span>
                             @endif
                         </div>
                     </div>
+                    @if(!empty($juego['image']))
+                        <div class="relative hidden self-center md:block">
+                            <div class="absolute inset-5 rounded-3xl bg-[var(--world-accent)] opacity-20 blur-3xl"></div>
+                            <img src="{{ $juego['image'] }}" alt="Portada de {{ $juego['name'] }}" class="game-detail-poster relative aspect-[4/5] w-full rounded-2xl object-cover ring-1 ring-white/15" decoding="async" fetchpriority="high" x-on:load="imageLoaded=true" x-on:error="$event.currentTarget.src=@js(asset('images/game-fallback.svg')); imageLoaded=true">
+                        </div>
+                    @endif
                 </div>
             </div>
 
             {{-- Info del juego --}}
-            <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-6 sm:p-8 mb-6">
+            <div class="world-panel rounded-2xl p-6 sm:p-8 mb-6">
                 <h2 class="text-xl font-bold text-white mb-4">Sobre el juego</h2>
                 <p class="text-slate-400 leading-relaxed">{{ $juego['description'] }}</p>
             </div>
 
             {{-- Caracteristicas --}}
-            <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-6 sm:p-8">
+            <div class="world-panel rounded-2xl p-6 sm:p-8">
                 <h2 class="text-xl font-bold text-white mb-5">Caracteristicas</h2>
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
                     @foreach([
@@ -85,7 +91,7 @@
         <aside class="w-full lg:w-80 shrink-0 space-y-6">
 
             {{-- Resumen rapido --}}
-            <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-6">
+            <div class="world-panel rounded-2xl p-6">
                 <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Resumen</h3>
                 <div class="space-y-3">
                     <div class="flex justify-between items-center">
@@ -120,7 +126,7 @@
             </div>
 
             {{-- Juegos similares --}}
-            <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-6">
+            <div class="world-panel rounded-2xl p-6">
                 <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Juegos similares</h3>
                 <div class="space-y-3">
                     @forelse($similarGames as $similar)
