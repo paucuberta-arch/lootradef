@@ -91,6 +91,29 @@ class FrontendAssetBuildTest extends TestCase
         }
     }
 
+    public function test_realistic_table_assets_are_optimized_and_used_by_the_games(): void
+    {
+        foreach ([
+            'blackjack-table.webp',
+            'roulette-table.webp',
+            'betting-layout.webp',
+        ] as $asset) {
+            $path = public_path("images/lootra_visual_pack/realista/optimized/{$asset}");
+
+            $this->assertFileExists($path);
+            $this->assertLessThan(250_000, filesize($path));
+        }
+
+        $roulette = file_get_contents(resource_path('views/games/ruleta.blade.php'));
+        $blackjack = file_get_contents(resource_path('views/games/blackjack.blade.php'));
+
+        $this->assertStringContainsString('realista/optimized/roulette-table.webp', $roulette);
+        $this->assertStringContainsString('realista/optimized/betting-layout.webp', $roulette);
+        $this->assertStringContainsString('realista/optimized/blackjack-table.webp', $blackjack);
+        $this->assertStringNotContainsString('realista/optimized/card-shoe.webp', $blackjack);
+        $this->assertStringNotContainsString('realista/optimized/casino-chips.webp', $blackjack);
+    }
+
     public function test_google_tag_is_loaded_immediately_after_every_web_layout_head(): void
     {
         foreach (['app', 'admin', 'auth'] as $layout) {

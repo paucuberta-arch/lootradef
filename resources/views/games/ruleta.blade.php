@@ -5,12 +5,15 @@
 <style>
     @keyframes result-in{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}
     @keyframes winning-glow{0%,100%{filter:brightness(1);box-shadow:inset 0 0 8px #0008}50%{filter:brightness(1.8);box-shadow:inset 0 0 8px #fff8,0 0 18px #fde68a}}
-    .roulette-stage{overflow:hidden;background:radial-gradient(circle at 50% 34%,rgba(146,39,43,.25),transparent 22rem),linear-gradient(145deg,#170d13,#080b12 58%,#071712)}
-    .roulette-stage::before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 0 38%,rgba(255,255,255,.035) 38.5% 39%,transparent 39.5% 100%),repeating-linear-gradient(90deg,transparent 0 42px,rgba(255,255,255,.018) 43px);pointer-events:none}
-    .roulette-camera{position:relative;z-index:1;width:min(100%,410px);aspect-ratio:1;margin:auto;perspective:900px;transition:transform .8s cubic-bezier(.16,1,.3,1);transform:rotateX(7deg) scale(.9)}
+    @keyframes studio-sweep{0%,100%{opacity:.28;transform:translateX(-16%) rotate(8deg)}50%{opacity:.52;transform:translateX(16%) rotate(8deg)}}
+    @keyframes rim-breathe{0%,100%{filter:drop-shadow(0 24px 28px #000a) brightness(.96)}50%{filter:drop-shadow(0 30px 38px #000d) brightness(1.06)}}
+    .roulette-stage{isolation:isolate;overflow:hidden;min-height:590px;background:linear-gradient(180deg,rgba(3,5,8,.14),rgba(3,5,8,.78)),url('/images/lootra_visual_pack/realista/optimized/roulette-table.webp') center/cover no-repeat,#050806}
+    .roulette-stage::before{content:"";position:absolute;z-index:-1;inset:-20%;background:linear-gradient(100deg,transparent 32%,rgba(255,224,153,.12) 46%,transparent 58%);pointer-events:none;animation:studio-sweep 9s ease-in-out infinite}
+    .roulette-stage::after{content:"LOOTRA  •  EUROPEAN SERIES";position:absolute;left:50%;bottom:1.15rem;transform:translateX(-50%);color:rgba(244,216,151,.42);font-size:.58rem;font-weight:900;letter-spacing:.32em;white-space:nowrap}
+    .roulette-camera{position:relative;z-index:1;width:min(100%,470px);aspect-ratio:1;margin:1.5rem auto .5rem;perspective:1200px;transition:transform .9s cubic-bezier(.16,1,.3,1);transform:rotateX(13deg) rotateZ(-2deg) scale(.92);animation:rim-breathe 5s ease-in-out infinite}
     .roulette-camera::before{content:"";position:absolute;z-index:-1;left:9%;right:9%;bottom:-5%;height:18%;border-radius:50%;background:#000;filter:blur(14px);opacity:.72;transform:rotateX(65deg)}
-    .roulette-camera.zooming{transform:rotateX(3deg) scale(1.04)}
-    .roulette-camera.holding{transform:rotateX(1deg) scale(1.08)}
+    .roulette-camera.zooming{transform:rotateX(7deg) rotateZ(0) scale(1.035)}
+    .roulette-camera.holding{transform:rotateX(4deg) rotateZ(0) scale(1.075)}
     .roulette-shell{position:relative;width:100%;height:100%;border-radius:50%;background:radial-gradient(circle,#180a07 0 54%,#d3a84e 55% 57%,#351208 58% 69%,#925025 70% 79%,#e1b767 80% 82%,#311008 83% 91%,#a3612e 92% 96%,#1b0805 97%);box-shadow:0 34px 64px #000c,inset 0 0 24px #f5c56c66,0 0 0 2px #e7c477,0 0 0 7px #351208;overflow:hidden;contain:layout paint}
     .roulette-shell::before{content:"";position:absolute;inset:0;border-radius:50%;background:repeating-conic-gradient(from 8deg,rgba(255,255,255,.08) 0 3deg,rgba(43,10,5,.13) 3deg 8deg);mask-image:radial-gradient(circle,transparent 0 68%,#000 69% 100%);pointer-events:none;z-index:1}
     .roulette-shell::after{content:"";position:absolute;inset:1.5%;border-radius:50%;background:linear-gradient(120deg,rgba(255,255,255,.3) 0 3%,transparent 17% 72%,rgba(0,0,0,.58));pointer-events:none;z-index:15}
@@ -29,8 +32,15 @@
     .roulette-edition{position:relative;z-index:1;margin:-.15rem auto 0;width:max-content;max-width:100%;border:1px solid rgba(231,196,119,.25);border-radius:99px;background:rgba(5,8,15,.72);padding:.4rem .75rem;color:#c9b98e;font-size:.62rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
     .roulette-camera.is-spinning .roulette-rotor,.roulette-camera.is-spinning .roulette-ball{will-change:transform}
     .roulette-ball.travelling{box-shadow:0 3px 7px #000,0 0 13px #fff;filter:brightness(1.2)}
-    .roulette-result{animation:result-in .65s cubic-bezier(.16,1,.3,1)}
-    .lightning-stage{background:radial-gradient(circle at 50% 34%,rgba(58,63,188,.3),transparent 23rem),linear-gradient(145deg,#080b1e,#060b18 58%,#0b1029)}
+    .roulette-result{animation:result-in .65s cubic-bezier(.16,1,.3,1);text-shadow:0 4px 24px #000}
+    .roulette-status-glass{position:relative;z-index:2;margin:.75rem auto 1.4rem;width:min(94%,410px);border:1px solid rgba(255,232,179,.16);border-radius:1rem;background:linear-gradient(135deg,rgba(5,8,10,.84),rgba(15,10,8,.58));padding:.8rem 1rem;box-shadow:0 14px 35px #0008,inset 0 1px #fff1;backdrop-filter:blur(14px)}
+    .roulette-console{position:relative;overflow:hidden;background:linear-gradient(155deg,rgba(17,25,28,.98),rgba(6,10,13,.98));box-shadow:0 26px 70px #0008,inset 0 1px #fff1}
+    .roulette-console::before{content:"";position:absolute;inset:0;background:linear-gradient(rgba(6,10,12,.74),rgba(6,10,12,.9)),url('/images/lootra_visual_pack/realista/optimized/betting-layout.webp') center 44%/115% auto no-repeat;opacity:.3;pointer-events:none}
+    .roulette-console>*{position:relative}
+    .roulette-ticket{background:linear-gradient(145deg,rgba(20,26,31,.96),rgba(7,10,13,.96));box-shadow:0 20px 55px #0007,inset 0 1px #fff1}
+    .casino-chip-button{position:relative;isolation:isolate;transition:transform .18s ease,filter .18s ease;color:#f8e7ba!important;background:radial-gradient(circle at 35% 30%,#4c3a19,#17130c 55%,#050505 57%)!important;border:2px dashed rgba(244,207,120,.42);box-shadow:0 6px 13px #0008,inset 0 0 0 3px #080808}
+    .casino-chip-button:hover{transform:translateY(-3px) rotate(-2deg);filter:brightness(1.18)}
+    .lightning-stage{background:linear-gradient(180deg,rgba(3,5,18,.12),rgba(3,5,18,.76)),url('/images/lootra_visual_pack/realista/optimized/roulette-table.webp') center/cover no-repeat,#050718}
     .lightning-stage .roulette-shell{background:radial-gradient(circle,#0b1228 0 54%,#7dd3fc 55% 57%,#111938 58% 69%,#312e81 70% 79%,#a5f3fc 80% 82%,#11152f 83% 91%,#4338ca 92% 96%,#050816 97%);box-shadow:0 34px 64px #000c,inset 0 0 24px #67e8f977,0 0 0 2px #a5f3fc,0 0 32px #6366f144}
     .lightning-stage .roulette-ball-track{border-color:#090d22;box-shadow:inset 0 0 0 2px #67e8f9,inset 0 0 15px #000,0 0 0 2px #4338ca}
     .lightning-stage .roulette-hub{border-color:#a5f3fc;box-shadow:inset 0 0 18px #000b,0 0 22px #22d3ee55}
@@ -39,12 +49,13 @@
     .number-cell{transition:transform .16s,border-color .16s,background-color .16s}
     @media (hover:hover){.number-cell:hover{transform:translateY(-2px)}}
     @media (max-width:639px){
-        .roulette-stage{padding-inline:.75rem}
+        .roulette-stage{min-height:500px;padding-inline:.75rem}
         .roulette-camera{width:min(100%,350px)}
         .roulette-camera.zooming{transform:rotateX(3deg) scale(1.02)}
         .roulette-camera.holding{transform:rotateX(1deg) scale(1.05)}
         .roulette-edition{font-size:.55rem;letter-spacing:.12em}
     }
+    @media (prefers-reduced-motion:reduce){.roulette-stage::before,.roulette-camera{animation:none}}
 </style>
 @endsection
 
@@ -56,8 +67,8 @@
         <div class="flex w-full flex-wrap gap-2 sm:w-auto"><a href="{{ route('games.roulette.european') }}" class="rounded-xl border px-3 py-2 text-xs font-bold {{ $variant === 'european' ? 'border-amber-400/40 bg-amber-400/10 text-amber-300' : 'border-white/10 text-slate-400' }}">Europea</a><a href="{{ route('games.roulette.lightning') }}" class="rounded-xl border px-3 py-2 text-xs font-bold {{ $variant === 'lightning' ? 'border-cyan-400/40 bg-cyan-400/10 text-cyan-300' : 'border-white/10 text-slate-400' }}">Lightning</a><div class="rounded-xl border border-white/10 bg-white/5 px-3 sm:px-4 py-2 text-sm whitespace-nowrap"><span class="text-slate-500">Saldo</span> <b class="ml-1 text-brand-400" x-text="money(saldo)"></b></div></div>
     </header>
 
-    <div class="grid gap-6 lg:grid-cols-[minmax(300px,.82fr)_minmax(0,1.18fr)] xl:grid-cols-[minmax(360px,.82fr)_minmax(520px,1.18fr)_290px]">
-        <section class="roulette-stage game-stage rounded-[1.75rem] border border-white/5 p-4 sm:p-7 {{ $variant === 'lightning' ? 'lightning-stage' : '' }}">
+    <div class="grid gap-6 lg:grid-cols-[minmax(390px,1.08fr)_minmax(420px,.92fr)]">
+        <section class="roulette-stage game-stage rounded-[1.75rem] border border-amber-200/10 p-4 sm:p-7 {{ $variant === 'lightning' ? 'lightning-stage' : '' }}">
             @php($wheelOrder = $rouletteConfig['wheel_order'])
             @php($redNumbers = $rouletteConfig['red_numbers'])
             <div class="roulette-camera" x-ref="camera" :class="[cameraStage===1?'zooming':cameraStage===2?'holding':'',spinning?'is-spinning':'']">
@@ -74,13 +85,13 @@
                 </div>
             </div>
             <div class="roulette-edition">{{ $variant === 'lightning' ? 'Lightning multipliers · single zero' : 'European wheel · single zero' }}</div>
-            <div class="mt-3 min-h-20 text-center">
+            <div class="roulette-status-glass min-h-20 text-center">
                 <p class="text-xs font-black uppercase tracking-[.2em]" :class="spinning?'text-cyan-300':'text-slate-500'" x-text="statusText"></p>
                 <div x-show="resultVisible" class="roulette-result mt-3"><b class="text-xl">Número ganador: <span :class="lastColor==='rojo'?'text-red-400':lastColor==='negro'?'text-slate-300':'text-emerald-400'" x-text="lastNumero"></span></b><p class="mt-1 text-sm capitalize text-slate-400" x-text="lastColor"></p><p class="mt-1 text-sm" :class="ganancia>0?'text-emerald-300':'text-slate-500'" x-text="ganancia>0?'Premio '+money(ganancia):'La próxima puede ser la tuya'"></p></div>
             </div>
         </section>
 
-        <section class="rounded-[1.75rem] border border-white/5 bg-[#0e1424] p-4 sm:p-7">
+        <section class="roulette-console rounded-[1.75rem] border border-white/10 p-4 sm:p-7">
             <div class="mb-5 flex flex-wrap items-start justify-between gap-3"><div><p class="text-[10px] font-black uppercase tracking-[.2em] text-cyan-400">Paso 1</p><h2 class="mt-1 text-xl font-black">Elige dónde apostar</h2></div><span class="max-w-full rounded-lg bg-white/5 px-3 py-2 text-xs text-slate-400 break-words">Seleccionado: <b class="text-white" x-text="selectionLabel"></b></span></div>
             <div class="mb-5 grid grid-cols-3 gap-2">
                 <button @click="select('rojo')" :class="selected('rojo')?'ring-2 ring-white':''" class="rounded-xl bg-red-600 py-3 font-black">Rojo <small class="block opacity-70">x2</small></button>
@@ -95,8 +106,8 @@
             <div class="mt-2 grid grid-cols-3 gap-2"><template x-for="d in [{id:'docena1',t:'1–12'},{id:'docena2',t:'13–24'},{id:'docena3',t:'25–36'}]"><button @click="select(d.id)" :class="selected(d.id)?'border-cyan-400 bg-cyan-400/15 text-cyan-300':'border-white/10 bg-white/5 text-slate-400'" class="rounded-xl border py-3 text-sm font-bold" x-text="d.t+' · x3'"></button></template></div>
         </section>
 
-        <aside class="space-y-5 lg:col-span-2 xl:col-span-1">
-            <section class="rounded-2xl border border-white/10 bg-white/[.035] p-5"><p class="text-[10px] font-black uppercase tracking-[.2em] text-brand-400">Paso 2</p><h2 class="mt-1 text-lg font-black">Confirma tu boleto</h2><div class="mt-4 rounded-xl border border-white/10 bg-black/20 p-3"><p class="text-xs text-slate-500">Tu selección</p><b class="mt-1 block text-cyan-300" x-text="selectionLabel"></b></div><label class="mt-4 block text-xs text-slate-500">Importe de la apuesta</label><div class="mt-2 flex items-center rounded-xl border border-white/10 bg-black/20 px-3"><span class="text-slate-500">€</span><input x-model.number="apuesta" type="number" min=".1" max="500" step=".1" :disabled="spinning" class="w-full bg-transparent px-2 py-3 font-bold outline-none"></div><div class="mt-2 grid grid-cols-4 gap-1"><template x-for="v in [1,5,10,25]"><button @click="apuesta=v" class="rounded-lg bg-white/5 py-2 text-xs text-slate-400 hover:text-white" x-text="v+'€'"></button></template></div><button @click="play" :disabled="spinning||apuesta>saldo||!apuesta" class="mt-4 w-full rounded-xl bg-gradient-to-r {{ $variant === 'lightning' ? 'from-cyan-400 to-violet-500' : 'from-amber-300 to-orange-500' }} py-3.5 font-black text-slate-950 shadow-lg disabled:opacity-40" x-text="spinning?'La bola está girando…':'Girar ruleta'"></button><p x-show="error" class="mt-3 text-center text-xs text-red-300" x-text="error"></p></section>
+        <aside class="grid gap-5 sm:grid-cols-2 lg:col-span-2 xl:grid-cols-[1.1fr_.9fr]">
+            <section class="roulette-ticket rounded-2xl border border-amber-200/10 p-5"><p class="text-[10px] font-black uppercase tracking-[.2em] text-brand-400">Mesa privada · Paso 2</p><h2 class="mt-1 text-lg font-black">Confirma tu boleto</h2><div class="mt-4 rounded-xl border border-white/10 bg-black/20 p-3"><p class="text-xs text-slate-500">Tu selección</p><b class="mt-1 block text-amber-200" x-text="selectionLabel"></b></div><label class="mt-4 block text-xs text-slate-500">Importe de la apuesta</label><div class="mt-2 flex items-center rounded-xl border border-white/10 bg-black/30 px-3"><span class="text-amber-300">€</span><input x-model.number="apuesta" type="number" min=".1" max="500" step=".1" :disabled="spinning" class="w-full bg-transparent px-2 py-3 font-bold outline-none"></div><div class="mt-3 grid grid-cols-4 gap-2"><template x-for="v in [1,5,10,25]"><button @click="apuesta=v" class="casino-chip-button aspect-square rounded-full text-xs font-black" x-text="v+'€'"></button></template></div><button @click="play" :disabled="spinning||apuesta>saldo||!apuesta" class="mt-4 w-full rounded-xl bg-gradient-to-r {{ $variant === 'lightning' ? 'from-cyan-300 via-indigo-300 to-violet-400' : 'from-[#f5dc92] via-[#d7a94f] to-[#a65d22]' }} py-4 font-black uppercase tracking-[.12em] text-slate-950 shadow-[0_12px_30px_rgba(214,170,79,.22)] transition hover:brightness-110 disabled:opacity-40" x-text="spinning?'La bola está girando…':'Girar ruleta'"></button><p x-show="error" class="mt-3 text-center text-xs text-red-300" x-text="error"></p></section>
             @if($variant === 'lightning')<section class="rounded-2xl border border-cyan-400/20 bg-cyan-400/[.06] p-4"><h3 class="text-sm font-bold text-cyan-300">⚡ Números Lightning</h3><p class="mt-2 text-xs leading-relaxed text-slate-400">En cada giro se cargan cinco números con multiplicadores de x50 a x500. Se revelan con el resultado.</p><div x-show="Object.keys(multipliers).length" class="mt-3 flex flex-wrap gap-1"><template x-for="(boost,n) in multipliers"><span class="rounded-lg bg-violet-500/15 px-2 py-1 text-xs text-violet-300" x-text="n+' · x'+boost"></span></template></div></section>@endif
             <section class="rounded-2xl border border-white/10 bg-white/[.035] p-5"><h3 class="mb-3 text-sm font-black uppercase tracking-wider">Últimos giros</h3><div class="space-y-2"><template x-for="h in historial.slice(0,8)"><div class="flex items-center text-xs"><span class="grid h-7 w-7 place-items-center rounded-full font-black" :class="resultClass(h.color)" x-text="h.numero"></span><span class="ml-2 text-slate-500" x-text="h.tipo"></span><b class="ml-auto" :class="h.ganancia>0?'text-emerald-300':'text-slate-600'" x-text="h.ganancia>0?'+'+money(h.ganancia):'-'+money(h.apuesta)"></b></div></template><p x-show="!historial.length" class="py-3 text-center text-xs text-slate-600">Todavía no hay giros.</p></div></section>
         </aside>

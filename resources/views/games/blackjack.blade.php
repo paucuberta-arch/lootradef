@@ -3,17 +3,33 @@
 
 @section('styles')
 <style>
-    @keyframes deal-card { 0% { transform:translate3d(76px,-42px,0) rotate(12deg) scale(.82);opacity:0 } 72%{transform:translate3d(-3px,2px,0) rotate(-1.5deg) scale(1.015)} 100% { transform:none;opacity:1 } }
-    .deal-card { position:relative;animation:deal-card .34s cubic-bezier(.16,1,.3,1) both;animation-delay:calc(var(--deal-index,0) * 55ms);box-shadow:0 10px 20px #0007,inset 0 0 0 1px #ffffff88;backface-visibility:hidden;transform-origin:center bottom; }
-    .casino-table{background:radial-gradient(ellipse at 50% 45%,var(--felt-light),var(--felt-dark) 70%);box-shadow:inset 0 0 80px #0009,0 30px 70px #0008;border:12px solid var(--rail);border-bottom-width:22px}
-    .casino-table::before{content:"";position:absolute;inset:12%;border:2px solid #f8e7a622;border-radius:45%}
-    .table-vip{--felt-light:#174c3b;--felt-dark:#031d16;--rail:#3a1609}.table-classic{--felt-light:#17456d;--felt-dark:#061426;--rail:#6b3f16}
-    .card-corner{position:absolute;left:7px;top:5px;display:flex;flex-direction:column;align-items:center;line-height:.9}.card-center{font-size:2rem;filter:drop-shadow(0 2px 1px #0002)}
+    @keyframes deal-card { 0% { transform:translate3d(190px,-115px,80px) rotateZ(19deg) rotateY(38deg) scale(.64);opacity:0 } 68%{transform:translate3d(-5px,3px,4px) rotateZ(-2deg) rotateY(-3deg) scale(1.025)} 100% { transform:rotateX(2deg);opacity:1 } }
+    @keyframes table-focus{0%,100%{opacity:.22;transform:translateX(-18%) skewX(-12deg)}50%{opacity:.5;transform:translateX(18%) skewX(-12deg)}}
+    @keyframes win-aura{0%,100%{box-shadow:0 0 0 rgba(251,191,36,0)}50%{box-shadow:0 0 55px rgba(251,191,36,.24)}}
+    .deal-card { position:relative;animation:deal-card .52s cubic-bezier(.16,1,.3,1) both;animation-delay:calc(var(--deal-index,0) * 90ms);box-shadow:0 16px 24px #0009,inset 0 0 0 1px #ffffffaa;backface-visibility:hidden;transform-origin:center bottom;transform-style:preserve-3d; }
+    .casino-table{isolation:isolate;background:linear-gradient(180deg,rgba(2,8,6,.18),rgba(2,8,6,.42)),url('/images/lootra_visual_pack/realista/optimized/blackjack-table.webp') center/cover no-repeat,#031b12;box-shadow:inset 0 0 100px #0008,0 34px 80px #000b;border:1px solid rgba(243,211,137,.2);transform:translateZ(0)}
+    .casino-table::before{content:"";position:absolute;z-index:-1;inset:-15%;background:linear-gradient(105deg,transparent 36%,rgba(255,229,170,.12) 47%,transparent 58%);animation:table-focus 10s ease-in-out infinite;pointer-events:none}
+    .casino-table::after{content:"BLACKJACK PAYS 3 TO 2  •  DEALER STANDS ON 17";position:absolute;left:50%;top:49%;transform:translate(-50%,-50%);width:max-content;max-width:76%;color:rgba(241,216,160,.38);font-size:clamp(.48rem,1.2vw,.7rem);font-weight:900;letter-spacing:.18em;text-align:center;text-shadow:0 2px 8px #000;pointer-events:none}
+    .table-vip{--table-accent:#e8c477}.table-classic{--table-accent:#8ed7ff}
+    .hand-zone{position:relative;z-index:7;display:flex;min-height:150px;flex-direction:column;align-items:center;justify-content:center;perspective:900px}
+    .hand-zone-player{margin-top:5rem}.hand-label{display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;border:1px solid rgba(255,255,255,.1);border-radius:999px;background:rgba(2,9,7,.72);padding:.38rem .8rem;box-shadow:0 8px 24px #0006;backdrop-filter:blur(10px)}
+    .hand-cards{display:flex;min-height:112px;justify-content:center;padding-left:18px}.hand-cards .deal-card{margin-left:-18px}.hand-cards .deal-card:hover{z-index:20;transform:translateY(-7px) rotateX(0deg)}
+    .playing-card{width:74px;height:104px;border-radius:10px;background:linear-gradient(145deg,#fffef8,#e8e2d4);border:1px solid #fff;transition:transform .2s ease}
+    .playing-card.is-hidden{background:linear-gradient(145deg,#172a33,#071014);border-color:#d9bd71}
+    .playing-card.is-hidden::after{content:"L";display:grid;position:absolute;inset:7px;place-items:center;border:1px solid #d9bd71;border-radius:6px;background:repeating-linear-gradient(45deg,#081a20 0 5px,#18343e 5px 10px);color:#ddc27e;font:900 1.4rem serif}
+    .card-corner{position:absolute;left:7px;top:6px;display:flex;flex-direction:column;align-items:center;line-height:.88}.card-center{font-size:2rem;filter:drop-shadow(0 2px 1px #0002)}
+    .result-plaque{position:absolute;z-index:30;left:50%;top:50%;transform:translate(-50%,-50%);animation:win-aura 1.5s ease-in-out infinite;border:1px solid rgba(255,255,255,.2);box-shadow:0 18px 60px #000c!important;backdrop-filter:blur(16px)}
+    .blackjack-controls{background:linear-gradient(145deg,rgba(17,23,25,.96),rgba(5,8,10,.98));box-shadow:0 22px 55px #0007,inset 0 1px #fff1}
+    .action-button{position:relative;overflow:hidden;border:1px solid rgba(244,215,151,.28);box-shadow:0 10px 25px #0007,inset 0 1px #fff2;text-transform:uppercase;letter-spacing:.08em}
+    .action-button::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 20%,rgba(255,255,255,.2),transparent 70%);transform:translateX(-130%);transition:transform .55s ease}.action-button:hover::after{transform:translateX(130%)}
+    .bet-chip{aspect-ratio:1;border-radius:999px;background:radial-gradient(circle at 35% 28%,#66532b,#18140e 50%,#050505 52%);border:2px dashed #d9bc77;box-shadow:0 7px 15px #0009,inset 0 0 0 3px #0c0c0c;color:#f3dfac;font-size:.68rem;font-weight:900;transition:transform .18s}.bet-chip:hover{transform:translateY(-4px) rotate(-3deg)}
     @media (max-width:639px) {
-        .casino-table{border-width:6px;border-bottom-width:10px;border-radius:1.5rem;box-shadow:inset 0 0 45px #0009,0 22px 45px #0008}
-        .casino-table::before{inset:7%}
+        .casino-table{border-radius:1.5rem;box-shadow:inset 0 0 45px #0009,0 22px 45px #0008}
+        .casino-table::after{top:50%;font-size:.43rem;letter-spacing:.1em}
+        .hand-zone{min-height:125px}.hand-zone-player{margin-top:3.5rem}.playing-card{width:60px;height:86px}.hand-cards{min-height:90px}
         .card-center{font-size:1.5rem}
     }
+    @media (prefers-reduced-motion:reduce){.casino-table::before,.result-plaque{animation:none}.deal-card{animation-duration:.01ms}}
 </style>
 @endsection
 
@@ -41,31 +57,25 @@
             </div>
 
             {{-- Mesa --}}
-            <div class="casino-table {{ $variant === 'vip' ? 'table-vip' : 'table-classic' }} game-stage rounded-[3rem] p-3 sm:p-8 mb-6 relative overflow-hidden min-h-[440px] sm:min-h-[520px]">
-                {{-- Felt texture --}}
-                <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle, #fff 1px, transparent 1px); background-size: 20px 20px;"></div>
-
+            <div class="casino-table {{ $variant === 'vip' ? 'table-vip' : 'table-classic' }} game-stage rounded-[2rem] p-3 sm:p-8 mb-6 relative overflow-hidden min-h-[540px] sm:min-h-[650px]" :class="{'is-dealing':busy}">
                 <div class="relative z-10">
 
                     {{-- Dealer --}}
-                    <div class="mb-8">
-                        <div class="flex items-center gap-2 mb-3">
+                    <div class="hand-zone">
+                        <div class="hand-label">
                             <span class="text-sm font-bold text-emerald-300">Dealer</span>
                             <span x-show="manoDealer.length > 0" class="text-sm text-emerald-400/70"
                                   x-text="'— ' + puntosDealer + ' pts'"></span>
                         </div>
-                        <div class="flex gap-2 flex-wrap">
+                        <div class="hand-cards">
                             <template x-for="(carta, i) in manoDealer" :key="carta._key">
-                                <div class="deal-card w-16 h-22 sm:w-20 sm:h-28 rounded-xl flex flex-col items-center justify-center text-sm font-bold shadow-lg"
-                                     :class="carta.oculta ? 'bg-slate-700 border-2 border-slate-600' : 'bg-white border-2 border-slate-200'"
+                                <div class="deal-card playing-card flex flex-col items-center justify-center text-sm font-bold"
+                                     :class="carta.oculta ? 'is-hidden' : ''"
                                      :style="'--deal-index:' + (carta._dealIndex ?? i)">
                                     <template x-if="!carta.oculta">
                                         <div>
                                             <span class="card-corner" :class="isRed(carta)?'text-red-600':'text-slate-900'"><b x-text="carta.valor"></b><small x-text="carta.palo"></small></span><span class="card-center" :class="isRed(carta)?'text-red-600':'text-slate-900'" x-text="carta.palo"></span>
                                         </div>
-                                    </template>
-                                    <template x-if="carta.oculta">
-                                        <span class="w-11 h-16 rounded-md border border-cyan-300/40 bg-[repeating-linear-gradient(45deg,#312e81_0_5px,#0e7490_5px_10px)] shadow-inner"></span>
                                     </template>
                                 </div>
                             </template>
@@ -73,20 +83,17 @@
                         </div>
                     </div>
 
-                    {{-- Separador --}}
-                    <div class="border-t border-emerald-800/50 my-4"></div>
-
                     {{-- Jugador --}}
-                    <div>
-                        <div class="flex items-center gap-2 mb-3">
+                    <div class="hand-zone hand-zone-player">
+                        <div class="hand-label">
                             <span class="text-sm font-bold text-emerald-300">Tu mano</span>
                             <span x-show="manoJugador.length > 0" class="text-sm text-emerald-400/70"
                                   x-text="'— ' + puntosJugador + ' pts'"
                                   :class="puntosJugador > 21 ? 'text-red-400' : ''"></span>
                         </div>
-                        <div class="flex gap-2 flex-wrap">
+                        <div class="hand-cards">
                             <template x-for="(carta, i) in manoJugador" :key="carta._key">
-                                <div class="deal-card w-16 h-22 sm:w-20 sm:h-28 rounded-xl bg-white border-2 border-slate-200 flex flex-col items-center justify-center text-sm font-bold shadow-lg"
+                                <div class="deal-card playing-card flex flex-col items-center justify-center text-sm font-bold"
                                      :style="'--deal-index:' + (carta._dealIndex ?? i)">
                                     <span class="card-corner" :class="isRed(carta)?'text-red-600':'text-slate-900'"><b x-text="carta.valor"></b><small x-text="carta.palo"></small></span><span class="card-center" :class="isRed(carta)?'text-red-600':'text-slate-900'" x-text="carta.palo"></span>
                                 </div>
@@ -95,8 +102,8 @@
                     </div>
 
                     {{-- Resultado --}}
-                    <div x-show="estado !== 'jugando' && estado !== ''" class="mt-6 text-center" aria-live="polite">
-                        <div class="inline-block px-6 py-3 rounded-xl font-bold text-lg"
+                    <div x-show="estado !== 'jugando' && estado !== ''" class="text-center" aria-live="polite">
+                        <div class="result-plaque inline-block px-7 py-4 rounded-2xl font-black text-lg"
                              :class="{
                                 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30': estado === 'win' || estado === 'blackjack',
                                 'bg-slate-500/20 text-slate-300 border border-slate-500/30': estado === 'push',
@@ -114,7 +121,7 @@
             </div>
 
             {{-- Controles --}}
-            <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
+            <div class="blackjack-controls rounded-2xl border border-white/10 p-5">
                 <div x-show="notice" x-transition class="mb-4 rounded-xl border border-cyan-400/20 bg-cyan-400/10 px-4 py-3 text-sm text-cyan-200" role="status" x-text="notice"></div>
                 <div x-show="error" x-transition class="mb-4 rounded-xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-200" role="alert" x-text="error"></div>
                 <template x-if="fase === ''">
@@ -124,10 +131,11 @@
                             <input type="number" x-model.number="apuesta" min="{{ $variant === 'vip' ? 5 : 1 }}" max="{{ $variant === 'vip' ? 5000 : 2000 }}" step="1"
                                    :class="canDeal ? 'border-white/10' : 'border-red-400/40'"
                                    class="w-full px-4 py-3 rounded-xl bg-white/5 border text-white text-sm outline-none focus:border-brand-500 transition">
+                            <div class="mt-3 flex gap-2"><template x-for="value in [5,10,25,100]" :key="value"><button type="button" class="bet-chip h-11" @click="apuesta=Math.min(value,maxBet)" x-text="value+'€'"></button></template></div>
                         </div>
                         <div class="min-[420px]:mt-5">
                             <button @click="deal()" :disabled="busy || !canDeal"
-                                    class="w-full min-[420px]:w-auto px-8 py-3 rounded-xl bg-brand-500 hover:bg-brand-400 text-black font-bold transition shadow-lg shadow-brand-500/20 disabled:opacity-50">
+                                    class="action-button w-full min-[420px]:w-auto px-9 py-4 rounded-xl bg-gradient-to-r from-[#f5dc92] to-[#b9792f] text-black font-black transition disabled:opacity-50">
                                 <span x-text="busy ? 'Repartiendo…' : 'Repartir'"></span>
                             </button>
                         </div>
@@ -136,11 +144,11 @@
                 <template x-if="fase === 'jugando' && puntosJugador < 21">
                     <div class="flex items-center gap-3">
                         <button @click="hit()" :disabled="busy"
-                                class="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition">
+                                class="action-button flex-1 py-4 rounded-xl bg-gradient-to-b from-emerald-500 to-emerald-800 text-white font-black transition">
                             Pedir carta
                         </button>
                         <button @click="stand()" :disabled="busy"
-                                class="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold transition">
+                                class="action-button flex-1 py-4 rounded-xl bg-gradient-to-b from-red-500 to-red-900 text-white font-black transition">
                             Plantarse
                         </button>
                     </div>
