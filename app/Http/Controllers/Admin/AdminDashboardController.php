@@ -71,10 +71,8 @@ class AdminDashboardController extends Controller
             $stats['tendencia_jugadores'] = $this->percentageChange($stats['jugadores_periodo'], $previousPlayers);
         }
 
-        if ($user->hasAnyRole(['super_admin', 'admin', 'moderator'])) {
-            $stats['reviews_pendientes'] = Review::where('estado', 'pendiente')->count();
-            $stats['feedback_abierto'] = Feedback::abiertos()->count();
-        }
+        if ($user->can('reviews.view')) $stats['reviews_pendientes'] = Review::where('estado', 'pendiente')->count();
+        if ($user->can('feedback.view')) $stats['feedback_abierto'] = Feedback::abiertos()->count();
 
         $partidasPorJuego = [];
         $ultimasPartidas = [];
@@ -110,7 +108,7 @@ class AdminDashboardController extends Controller
                 ->get();
         }
 
-        if ($user->hasAnyRole(['super_admin', 'admin', 'moderator'])) {
+        if ($user->can('logs.view')) {
             $ultimasActividades = ActivityLog::with('usuario')->latest()->take(15)->get();
         }
 

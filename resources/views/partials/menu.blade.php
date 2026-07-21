@@ -15,9 +15,10 @@
             </a>
 
             <div class="hidden items-center gap-1 lg:flex">
+                <a href="{{ route('inicio') }}" class="flex min-h-11 items-center rounded-xl border px-3 text-sm font-medium {{ $navLink(request()->routeIs('inicio')) }}">Inicio</a>
                 <div class="relative" @mouseenter="catOpen=true" @mouseleave="catOpen=false">
                     <button @click="catOpen=!catOpen" class="flex min-h-11 items-center gap-1.5 rounded-xl border px-3 text-sm font-medium {{ $navLink(request()->routeIs('games.*')) }}" :aria-expanded="catOpen.toString()">
-                        Juegos
+                        Casino
                         <svg class="h-4 w-4 transition" :class="catOpen&&'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"/></svg>
                     </button>
                     <div x-show="catOpen" x-cloak x-transition.origin.top.left @click.outside="catOpen=false" class="absolute left-0 top-full mt-2 w-56 rounded-2xl border border-white/10 bg-[#0f1626] p-2 shadow-2xl">
@@ -59,7 +60,8 @@
     <button x-show="open" x-cloak x-transition.opacity @click="open=false" class="fixed inset-0 top-16 z-[300] bg-black/65 backdrop-blur-sm lg:hidden" aria-label="Cerrar navegación"></button>
     <div id="mobile-navigation" x-show="open" x-cloak x-transition:enter="transition duration-200" x-transition:enter-start="translate-x-full" x-transition:leave="transition duration-150" x-transition:leave-end="translate-x-full" class="fixed bottom-0 right-0 top-16 z-[310] w-[min(92vw,24rem)] overflow-y-auto border-l border-white/10 bg-[#0f1626] p-4 shadow-2xl lg:hidden">
         <div class="space-y-1">
-            <a href="{{ route('games.index') }}" class="block min-h-11 rounded-xl px-3 py-3 text-sm text-slate-200 hover:bg-white/5">Todos los juegos</a>
+            <a href="{{ route('inicio') }}" class="block min-h-11 rounded-xl px-3 py-3 text-sm text-slate-200 hover:bg-white/5">Inicio</a>
+            <a href="{{ route('games.index') }}" class="block min-h-11 rounded-xl px-3 py-3 text-sm text-slate-200 hover:bg-white/5">Casino · Todos los juegos</a>
             <a href="{{ route('sports.index') }}" class="block min-h-11 rounded-xl px-3 py-3 text-sm text-slate-300 hover:bg-white/5">Apuestas deportivas</a>
             <a href="{{ route('cases.index') }}" class="block min-h-11 rounded-xl px-3 py-3 text-sm text-slate-300 hover:bg-white/5">Cajas e inventario</a>
             @if($rickyeditCampaignEnabled ?? false)<a href="{{ route('rickyedit.landing') }}" class="block min-h-11 rounded-xl bg-fuchsia-400/10 px-3 py-3 text-sm font-bold text-fuchsia-200">Reto RickyEdit</a>@endif

@@ -41,6 +41,7 @@
                 </div>
 
                 <div class="w-full shrink-0 md:w-auto">
+                    @can('feedback.respond')
                     <form method="POST" action="{{ route('admin.feedback.update', $fb) }}" class="space-y-2" x-data="{ open: false }">
                         @csrf @method('PUT')
                         <button type="button" @click="open = !open" class="text-xs text-brand-400 hover:text-brand-300 transition">Responder</button>
@@ -62,10 +63,13 @@
                             <button class="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-black text-xs font-bold transition">Guardar</button>
                         </div>
                     </form>
+                    @endcan
+                    @can('feedback.close')
                     <form method="POST" action="{{ route('admin.feedback.destroy', $fb) }}" class="mt-2" @submit.prevent="requestDelete($el, 'Se eliminará este feedback de forma permanente.')">
                         @csrf @method('DELETE')
                         <button class="text-xs text-red-400 hover:text-red-300">Eliminar</button>
                     </form>
+                    @endcan
                 </div>
             </div>
         </div>

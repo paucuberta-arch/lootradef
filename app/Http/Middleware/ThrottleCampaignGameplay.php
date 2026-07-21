@@ -28,6 +28,12 @@ class ThrottleCampaignGameplay
 
     private function isGameplayRoute(Request $request): bool
     {
+        // Crash status is a read-only heartbeat. Counting it as a gameplay action
+        // adds cache/database work every second and can delay a real cashout.
+        if ($request->routeIs('games.crash.status', 'crash.status', 'crash.crash')) {
+            return false;
+        }
+
         return $request->routeIs(
             'games.*.play', 'games.originals.play', 'games.poker.*', 'games.crash.*',
             'slots.play', 'ruleta*.play', 'blackjack.*', 'crash.*', 'poker.*', 'arcade.play'

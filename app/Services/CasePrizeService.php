@@ -12,6 +12,10 @@ use Illuminate\Support\Str;
 
 class CasePrizeService
 {
+    private const REEL_SIZE = 30;
+
+    private const REEL_WINNER_INDEX = 24;
+
     public function syncDefinitions(): void
     {
         foreach (config('cajas', []) as $caseKey => $definition) {
@@ -112,6 +116,44 @@ class CasePrizeService
     public function prizeKey(array $prize): string
     {
         return Str::slug($prize['nombre']);
+    }
+
+    /**
+     * Build the visual reel around the already selected server prize.
+     * The reel is display-only: its winner is never calculated again.
+     *
+     * @return array{items: array<int, array>, winner_index: int}
+     */
+    public function buildReel(array $prizes, array $winner): array
+    {
+        $pool = array_values($prizes);
+        abort_if($pool === [], 409, 'Esta caja no tiene premios disponibles.');
+
+        $items = [];
+        $previousName = null;
+        for ($index = 0; $index < self::REEL_SIZE; $index++) {
+            if ($index === self::REEL_WINNER_INDEX) {
+                $items[] = $winner;
+                $previousName = $winner['nombre'];
+
+                continue;
+            }
+
+            $candidates = array_values(array_filter(
+                $pool,
+                fn (array $prize) => $prize['nombre'] !== $previousName
+                    && ($index !== self::REEL_WINNER_INDEX + 1 || $prize['nombre'] !== $winner['nombre'])
+            ));
+            if ($candidates === []) {
+                $candidates = $pool;
+            }
+
+            $visualPrize = $candidates[random_int(0, count($candidates) - 1)];
+            $items[] = $visualPrize;
+            $previousName = $visualPrize['nombre'];
+        }
+
+        return ['items' => $items, 'winner_index' => self::REEL_WINNER_INDEX];
     }
 
     private function dailyStat(CaseRewardSetting $setting): CaseRewardDailyStat

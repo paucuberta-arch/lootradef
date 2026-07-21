@@ -21,6 +21,7 @@ class Usuario extends Authenticatable
         'password',
         'is_demo',
         'data_origin',
+        'marketing_emails_opted_out_at',
     ];
 
     protected $hidden = [
@@ -28,7 +29,10 @@ class Usuario extends Authenticatable
         'remember_token',
     ];
 
-    protected $casts = ['is_demo' => 'boolean'];
+    protected $casts = [
+        'is_demo' => 'boolean',
+        'marketing_emails_opted_out_at' => 'datetime',
+    ];
 
     protected $appends = ['role_badge', 'role_color'];
 

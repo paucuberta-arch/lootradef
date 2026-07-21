@@ -54,24 +54,24 @@
                             </span>
                         </td>
                         <td data-label="Acciones" class="px-5 py-3 text-right space-x-2">
-                            @if($r->estado !== 'aprobado')
+                            @if(auth()->user()->can('reviews.moderate') && $r->estado !== 'aprobado')
                                 <form method="POST" action="{{ route('admin.reviews.update', $r) }}" class="inline">
                                     @csrf @method('PUT')
                                     <input type="hidden" name="estado" value="aprobado">
                                     <button class="text-xs text-emerald-400 hover:text-emerald-300">Aprobar</button>
                                 </form>
                             @endif
-                            @if($r->estado !== 'rechazado')
+                            @if(auth()->user()->can('reviews.moderate') && $r->estado !== 'rechazado')
                                 <form method="POST" action="{{ route('admin.reviews.update', $r) }}" class="inline">
                                     @csrf @method('PUT')
                                     <input type="hidden" name="estado" value="rechazado">
                                     <button class="text-xs text-amber-400 hover:text-amber-300">Rechazar</button>
                                 </form>
                             @endif
-                            <form method="POST" action="{{ route('admin.reviews.destroy', $r) }}" class="inline" @submit.prevent="requestDelete($el, 'Se eliminará esta review de forma permanente.')">
+                            @can('reviews.delete')<form method="POST" action="{{ route('admin.reviews.destroy', $r) }}" class="inline" @submit.prevent="requestDelete($el, 'Se eliminará esta review de forma permanente.')">
                                 @csrf @method('DELETE')
                                 <button class="text-xs text-red-400 hover:text-red-300">Eliminar</button>
-                            </form>
+                            </form>@endcan
                         </td>
                     </tr>
                 @empty

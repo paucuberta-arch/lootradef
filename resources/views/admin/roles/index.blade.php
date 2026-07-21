@@ -13,7 +13,7 @@
                         <span class="tone-badge tone-{{ $role->color }} px-3 py-1 rounded-lg text-xs font-bold">{{ $role->label }}</span>
                         <span class="text-xs text-slate-500">{{ $role->users_count }} usuarios</span>
                     </div>
-                    @if($role->name !== 'super_admin')
+                    @if(auth()->user()->can('roles.manage') && $role->name !== 'super_admin')
                         <form method="POST" action="{{ route('admin.roles.destroy', $role) }}" @submit.prevent="requestDelete($el, 'Se eliminará el rol {{ addslashes($role->label) }}.')">
                             @csrf @method('DELETE')
                             <button class="text-xs text-red-400 hover:text-red-300">Eliminar</button>
@@ -24,14 +24,14 @@
                 <form method="POST" action="{{ route('admin.roles.update', $role) }}" class="space-y-3">
                     @csrf @method('PUT')
                     <div class="flex flex-col sm:flex-row gap-3">
-                        <input type="text" name="label" value="{{ $role->label }}" placeholder="Label"
+                        <input type="text" name="label" value="{{ $role->label }}" placeholder="Label" @disabled(!auth()->user()->can('roles.manage'))
                                class="w-full sm:flex-1 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-brand-500">
-                        <select name="color" class="w-full sm:w-auto px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-brand-500">
+                        <select name="color" @disabled(!auth()->user()->can('roles.manage')) class="w-full sm:w-auto px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-brand-500">
                             @foreach(['red','purple','blue','amber','emerald','slate','pink','cyan'] as $c)
                                 <option value="{{ $c }}" {{ $role->color === $c ? 'selected' : '' }} class="bg-[#14142a]">{{ ucfirst($c) }}</option>
                             @endforeach
                         </select>
-                        <button class="w-full sm:w-auto px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-black text-sm font-bold transition">Guardar</button>
+                        @can('roles.manage')<button class="w-full sm:w-auto px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-black text-sm font-bold transition">Guardar</button>@endcan
                     </div>
 
                     <div class="space-y-2">
@@ -41,7 +41,7 @@
                                 <div class="flex flex-wrap gap-1.5">
                                     @foreach($perms as $perm)
                                         <label class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/[0.02] border border-white/5 cursor-pointer hover:bg-white/5 transition">
-                                            <input type="checkbox" name="permissions[]" value="{{ $perm->name }}"
+                                            <input type="checkbox" name="permissions[]" value="{{ $perm->name }}" @disabled(!auth()->user()->can('roles.manage'))
                                                    {{ $role->hasPermissionTo($perm->name) ? 'checked' : '' }}
                                                    class="rounded border-white/20 bg-white/5 text-brand-500 focus:ring-brand-500">
                                             <span class="text-[11px] text-slate-400">{{ $perm->label }}</span>
@@ -57,7 +57,7 @@
     </div>
 
     {{-- Nuevo rol --}}
-    <div>
+    @can('roles.manage')<div>
         <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5 sticky top-20">
             <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Crear nuevo rol</h3>
             <form method="POST" action="{{ route('admin.roles.store') }}" class="space-y-4">
@@ -83,6 +83,6 @@
                 <button class="w-full py-2.5 rounded-xl bg-brand-500 hover:bg-brand-400 text-black text-sm font-bold transition">Crear rol</button>
             </form>
         </div>
-    </div>
+    </div>@endcan
 </div>
 @endsection

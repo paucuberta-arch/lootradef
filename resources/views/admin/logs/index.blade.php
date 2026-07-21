@@ -11,6 +11,7 @@
                     <th class="text-left px-5 py-3 text-xs font-bold text-slate-500 uppercase">Usuario</th>
                     <th class="text-left px-5 py-3 text-xs font-bold text-slate-500 uppercase">Accion</th>
                     <th class="text-left px-5 py-3 text-xs font-bold text-slate-500 uppercase">Modelo</th>
+                    <th class="text-left px-5 py-3 text-xs font-bold text-slate-500 uppercase">Detalles</th>
                     <th class="text-left px-5 py-3 text-xs font-bold text-slate-500 uppercase">IP</th>
                 </tr>
             </thead>
@@ -29,10 +30,13 @@
                                 —
                             @endif
                         </td>
+                        <td data-label="Detalles" class="max-w-xs px-5 py-3 text-xs text-slate-500">
+                            {{ $log->detalles ? \Illuminate\Support\Str::limit(collect($log->detalles)->map(fn ($value, $key) => $key.': '.(is_scalar($value) ? $value : json_encode($value)))->implode(' · '), 180) : '—' }}
+                        </td>
                         <td data-label="IP" class="px-5 py-3 text-xs text-slate-600 font-mono">{{ $log->ip ?? '—' }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="px-5 py-10 text-center text-slate-600">Sin actividad registrada.</td></tr>
+                    <tr><td colspan="6" class="px-5 py-10 text-center text-slate-600">Sin actividad registrada.</td></tr>
                 @endforelse
             </tbody>
         </table>

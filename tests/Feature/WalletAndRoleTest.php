@@ -62,6 +62,14 @@ class WalletAndRoleTest extends TestCase
             'label' => 'Editar usuarios',
             'group' => 'Usuarios',
         ]));
+        foreach (['roles.manage' => 'Gestionar roles', 'wallet.manage' => 'Gestionar carteras'] as $permission => $label) {
+            $adminRole->givePermissionTo(Permission::create([
+                'name' => $permission,
+                'guard_name' => 'web',
+                'label' => $label,
+                'group' => 'Administración',
+            ]));
+        }
         $admin->assignRole($adminRole);
 
         $usuario = $this->createUsuario('target@example.com');

@@ -23,18 +23,24 @@
 
             <div>
                 <label class="text-xs text-slate-500 mb-1 block">Rol</label>
+                @can('roles.manage')
                 <select name="rol" class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-brand-500 transition">
                     @foreach($roles as $role)
                         <option value="{{ $role->name }}" {{ $usuario->roles->first()?->name === $role->name ? 'selected' : '' }}>{{ $role->label }}</option>
                     @endforeach
                 </select>
+                @else
+                    <p class="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300">{{ $usuario->role_badge }}</p>
+                @endcan
             </div>
 
+            @can('wallet.manage')
             <div>
                 <label class="text-xs text-slate-500 mb-1 block">Saldo (€)</label>
                 <input type="number" name="saldo" value="{{ old('saldo', number_format($usuario->cartera->saldo ?? 0, 2, '.', '')) }}" step="0.01" min="0"
                        class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-brand-500 transition">
             </div>
+            @endcan
         </div>
 
         <div class="flex flex-col min-[420px]:flex-row min-[420px]:items-center gap-3">

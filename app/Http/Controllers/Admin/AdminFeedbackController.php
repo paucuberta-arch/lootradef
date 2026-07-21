@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Feedback;
 use Illuminate\Http\Request;
 
@@ -45,12 +46,17 @@ class AdminFeedbackController extends Controller
         ]);
 
         $fb->update($datos);
+        ActivityLog::log('feedback_actualizado', Feedback::class, $fb->id, [
+            'estado' => $fb->estado,
+            'prioridad' => $fb->prioridad,
+        ]);
 
         return back()->with('success', 'Feedback actualizado.');
     }
 
     public function destroy(Feedback $fb)
     {
+        ActivityLog::log('feedback_eliminado', Feedback::class, $fb->id, ['autor_id' => $fb->usuario_id]);
         $fb->delete();
         return back()->with('success', 'Feedback eliminado.');
     }

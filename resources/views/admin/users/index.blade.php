@@ -4,12 +4,13 @@
 @section('admin-content')
 <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
     <div class="flex gap-2">
-        <a href="{{ route('admin.users') }}" class="px-3 py-1.5 rounded-lg text-xs font-medium {{ !request('role') ? 'bg-brand-500/10 text-brand-400 border border-brand-500/20' : 'text-slate-400 hover:text-white bg-white/5 border border-white/5' }}">Todos</a>
+        <a href="{{ route('admin.users', array_filter(['search' => request('search')])) }}" class="px-3 py-1.5 rounded-lg text-xs font-medium {{ !request('role') ? 'bg-brand-500/10 text-brand-400 border border-brand-500/20' : 'text-slate-400 hover:text-white bg-white/5 border border-white/5' }}">Todos</a>
         @foreach($roles as $r)
-            <a href="{{ route('admin.users', ['role' => $r->name]) }}" class="px-3 py-1.5 rounded-lg text-xs font-medium {{ request('role') === $r->name ? 'bg-brand-500/10 text-brand-400 border border-brand-500/20' : 'text-slate-400 hover:text-white bg-white/5 border border-white/5' }}">{{ $r->label }}</a>
+            <a href="{{ route('admin.users', array_filter(['role' => $r->name, 'search' => request('search')])) }}" class="px-3 py-1.5 rounded-lg text-xs font-medium {{ request('role') === $r->name ? 'bg-brand-500/10 text-brand-400 border border-brand-500/20' : 'text-slate-400 hover:text-white bg-white/5 border border-white/5' }}">{{ $r->label }}</a>
         @endforeach
     </div>
     <form method="GET" class="flex gap-2">
+        @if(request('role'))<input type="hidden" name="role" value="{{ request('role') }}">@endif
         <input type="text" name="search" value="{{ request('search') }}" placeholder="Buscar..."
                class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-slate-500 outline-none focus:border-brand-500 transition w-48">
         <button class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-slate-400 hover:text-white transition">Buscar</button>

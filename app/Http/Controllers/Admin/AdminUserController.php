@@ -25,7 +25,9 @@ class AdminUserController extends Controller
         }
 
         if ($role = $request->input('role')) {
-            $query->whereRoleIs($role);
+            $query->whereHas('roles', fn ($roles) => $roles
+                ->where('name', $role)
+                ->where('guard_name', 'web'));
         }
 
         $usuarios = $query->latest()->paginate(20);
@@ -47,16 +49,29 @@ class AdminUserController extends Controller
         $datos = $request->validate([
             'name' => 'required|string|max:100',
             'email' => 'required|email|unique:usuarios,email,'.$usuario->id,
-            'rol' => 'required|exists:roles,name',
+            'rol' => 'nullable|exists:roles,name',
             'saldo' => 'nullable|numeric|min:0',
         ]);
+
+        $roleChanged = isset($datos['rol']) && ! $usuario->hasRole($datos['rol']);
+        if ($roleChanged) {
+            abort_unless($request->user()->can('roles.manage'), 403, 'No tienes permiso para cambiar roles.');
+            if ($datos['rol'] === 'super_admin' || $usuario->hasRole('super_admin')) {
+                abort_unless($request->user()->hasRole('super_admin'), 403, 'Solo un superadministrador puede modificar este rol.');
+            }
+        }
+        if ($request->filled('saldo')) {
+            abort_unless($request->user()->can('wallet.manage'), 403, 'No tienes permiso para modificar saldos.');
+        }
 
         $usuario->update([
             'name' => $datos['name'],
             'email' => $datos['email'],
         ]);
 
-        $usuario->syncRoles($datos['rol']);
+        if ($roleChanged) {
+            $usuario->syncRoles($datos['rol']);
+        }
 
         if ($request->filled('saldo')) {
             $wallet = $usuario->cartera()->firstOrCreate(
@@ -68,7 +83,11 @@ class AdminUserController extends Controller
             ]);
         }
 
-        ActivityLog::log('usuario_editado', 'Usuario', $usuario->id, ['name' => $usuario->name]);
+        ActivityLog::log('usuario_editado', 'Usuario', $usuario->id, [
+            'name' => $usuario->name,
+            'role_changed' => $roleChanged,
+            'balance_changed' => $request->filled('saldo'),
+        ]);
 
         return redirect()->route('admin.users')->with('success', "Usuario {$usuario->name} actualizado.");
     }

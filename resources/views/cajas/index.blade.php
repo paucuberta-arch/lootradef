@@ -29,7 +29,7 @@
     .rarity-epico { color:#fbbf24;background:rgba(245,158,11,.12);border-color:rgba(251,191,36,.3); }
     .rarity-legendario { color:#fb7185;background:rgba(244,63,94,.12);border-color:rgba(251,113,133,.35);box-shadow:0 0 35px rgba(244,63,94,.15); }
     .case-reel{overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
-    .case-reel__track{display:flex;gap:12px;will-change:transform;transition:transform 2.25s cubic-bezier(.12,.72,.12,1)}
+    .case-reel__track{display:flex;gap:12px;will-change:transform}
     .case-reel__item{flex:0 0 112px;border:1px solid rgba(255,255,255,.12);background:#101426;border-radius:14px;padding:8px}
 </style>
 @endsection
@@ -121,7 +121,8 @@
             <template x-if="!prize">
                 <div>
                     <div class="loot-box my-8" :class="opening && 'is-opening'"><div class="loot-box__lid"></div><div class="loot-box__base"></div></div>
-                    <div x-show="opening" class="case-reel relative my-5 rounded-2xl border border-white/10 bg-black/25 p-3"><div class="absolute left-1/2 top-0 bottom-0 z-10 w-0.5 bg-amber-300 shadow-[0_0_12px_#fbbf24]"></div><div class="case-reel__track" x-ref="caseTrack"><template x-for="(item,index) in reelItems" :key="index"><div class="case-reel__item"><img :src="item.imagen" :alt="item.nombre" class="h-20 w-full rounded-lg object-cover" decoding="async"><p class="mt-2 truncate text-[10px]" x-text="item.nombre"></p></div></template></div></div>
+                    <div x-show="opening" class="case-reel relative my-5 rounded-2xl border border-white/10 bg-black/25 p-3" x-ref="caseViewport"><div class="absolute left-1/2 top-0 bottom-0 z-10 w-0.5 -translate-x-1/2 bg-amber-300 shadow-[0_0_12px_#fbbf24]"></div><div class="case-reel__track" x-ref="caseTrack"><template x-for="(item,index) in reelItems" :key="`${spinId}-${index}`"><div class="case-reel__item" :data-reel-index="index" :class="spinSettled && index === winnerIndex && 'ring-2 ring-amber-300 shadow-[0_0_24px_rgba(251,191,36,.35)]'"><img :src="item.imagen" :alt="item.nombre" class="h-20 w-full rounded-lg object-cover" decoding="async"><p class="mt-2 truncate text-[10px]" x-text="item.nombre"></p></div></template></div></div>
+                    <p x-show="spinSettled" x-transition class="-mt-2 text-xs font-bold text-amber-200">Premio señalado: <span x-text="reelItems[winnerIndex]?.nombre"></span></p>
                     <h2 class="text-2xl font-bold" x-text="selected?.nombre"></h2>
                     <p class="text-slate-500 text-sm mt-2" x-text="opening ? 'Generando y guardando tu premio...' : 'El premio se añadirá automáticamente a tu inventario.'"></p>
                     <p x-show="error" class="mt-4 text-sm text-red-400" x-text="error"></p>
@@ -151,7 +152,7 @@ function caseCenter() {
     return {
         cases: @js($cajas),
         inventory: @js($inventario->map(fn ($item) => ['id' => $item->id, 'nombre' => $item->nombre, 'imagen' => $item->imagen, 'rareza' => $item->rareza, 'valor_canje' => $item->valor_canje, 'estado' => $item->estado, 'created_at' => $item->created_at->diffForHumans()])),
-        filter: 'all', selectedKey: null, selected: null, opening: false, prize: null, error: '', redeeming: null, confirming: null, toast: '', reelItems: [],
+        filter: 'all', selectedKey: null, selected: null, opening: false, prize: null, error: '', redeeming: null, confirming: null, toast: '', reelItems: [], spinId: 0, winnerIndex: 0, spinSettled: false,
         get availableCount() { return this.inventory.filter(item => item.estado === 'disponible').length; },
         get inventoryValue() { return this.inventory.filter(item => item.estado === 'disponible').reduce((sum, item) => sum + Number(item.valor_canje), 0); },
         money(value) { return new Intl.NumberFormat('es-ES', { style:'currency', currency:'EUR' }).format(Number(value || 0)); },
@@ -160,23 +161,85 @@ function caseCenter() {
         destroy(){document.removeEventListener('keydown',this.escapeHandler);document.body.style.overflow=''},
         selectCase(key) { this.selectedKey=key; this.selected=this.cases[key]; this.prize=null; this.error=''; document.body.style.overflow='hidden'; },
         closeModal() { if (this.opening) return; this.selected=null; this.selectedKey=null; this.prize=null; this.error=''; document.body.style.overflow=''; },
+        addToInventory(item) {
+            const saved={...item,estado:item.estado || 'disponible',created_at:item.created_at || 'ahora'};
+            this.inventory=[saved,...this.inventory.filter(current=>Number(current.id)!==Number(saved.id))];
+            window.dispatchEvent(new CustomEvent('inventory-updated',{detail:{item:saved}}));
+        },
+        async spinToPrize(winner,reel,winnerIndex) {
+            const items=Array.isArray(reel) ? [...reel] : [];
+            const parsedIndex=Number(winnerIndex);
+            if (!Number.isInteger(parsedIndex) || parsedIndex < 0 || parsedIndex >= items.length) {
+                throw new Error('El servidor no devolvió una tirada válida. No se ha alterado el premio guardado.');
+            }
+            this.winnerIndex=parsedIndex;
+            items[this.winnerIndex]=winner;
+            this.spinSettled=false;
+            this.spinId+=1;
+            this.reelItems=items;
+            await this.$nextTick();
+
+            const track=this.$refs.caseTrack;
+            const viewport=this.$refs.caseViewport;
+            const target=track?.children[this.winnerIndex];
+            if (!track || !viewport || !target) return;
+
+            track.getAnimations().forEach(animation=>animation.cancel());
+            track.style.transform='translate3d(0,0,0)';
+            track.getBoundingClientRect();
+            const viewportRect=viewport.getBoundingClientRect();
+            const targetRect=target.getBoundingClientRect();
+            const shift=(viewportRect.left+viewportRect.width/2)-(targetRect.left+targetRect.width/2);
+            const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const duration=reduceMotion ? 80 : 2400;
+            const animation=track.animate(
+                [
+                    {transform:'translate3d(0,0,0)'},
+                    {transform:`translate3d(${shift}px,0,0)`},
+                ],
+                {duration,easing:'cubic-bezier(.12,.72,.12,1)',fill:'forwards'}
+            );
+            await animation.finished;
+            track.style.transform=`translate3d(${shift}px,0,0)`;
+            animation.cancel();
+            await new Promise(resolve=>requestAnimationFrame(resolve));
+
+            const settledViewport=viewport.getBoundingClientRect();
+            const settledTarget=target.getBoundingClientRect();
+            const correction=(settledViewport.left+settledViewport.width/2)-(settledTarget.left+settledTarget.width/2);
+            if (Math.abs(correction) > 0.5) {
+                track.style.transform=`translate3d(${shift+correction}px,0,0)`;
+                await new Promise(resolve=>requestAnimationFrame(resolve));
+            }
+
+            const centerX=settledViewport.left+settledViewport.width/2;
+            const centeredItem=[...track.children].reduce((nearest,item)=>{
+                const rect=item.getBoundingClientRect();
+                const distance=Math.abs((rect.left+rect.width/2)-centerX);
+                return !nearest || distance < nearest.distance ? {item,distance} : nearest;
+            },null)?.item;
+            if (Number(centeredItem?.dataset.reelIndex) !== this.winnerIndex) {
+                throw new Error('La rueda no pudo alinear el premio. El objeto sí está guardado en tu inventario.');
+            }
+
+            this.spinSettled=true;
+            await this.$nextTick();
+            await new Promise(resolve=>setTimeout(resolve,reduceMotion ? 80 : 650));
+        },
         async openSelected() {
             if (this.opening || !this.selectedKey) return;
-            this.opening=true; this.error='';this.reelItems=Array.from({length:18},()=>this.selected.premios[Math.floor(Math.random()*this.selected.premios.length)]);
-            await this.$nextTick();
-            if(this.$refs.caseTrack){this.$refs.caseTrack.style.transition='none';this.$refs.caseTrack.style.transform='translate3d(0,0,0)';this.$refs.caseTrack.getBoundingClientRect();this.$refs.caseTrack.style.transition=''}
-            const started=Date.now();
+            this.opening=true; this.error=''; this.prize=null;
             try {
                 const url=@js(route('cases.open',['caja'=>'__CASE__'])).replace('__CASE__',encodeURIComponent(this.selectedKey));
                 const response=await fetch(url, { method:'POST', headers:{'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content,'Accept':'application/json'} });
                 const data=await response.json();
                 if (!response.ok) throw new Error(data.message || 'No se pudo abrir la caja.');
-                this.reelItems[15]=data.item;await this.$nextTick();
-                if(this.$refs.caseTrack){const track=this.$refs.caseTrack,target=track.children[15],viewport=track.parentElement;if(target&&viewport){const shift=viewport.clientWidth/2-(target.offsetLeft+target.offsetWidth/2);requestAnimationFrame(()=>{track.style.transform=`translate3d(${shift}px,0,0)`})}}
-                await new Promise(resolve => setTimeout(resolve, Math.max(0, 2450-(Date.now()-started))));
-                this.prize=data.item; this.inventory.unshift(data.item);
+                this.addToInventory(data.item);
+                await this.$nextTick();
                 Alpine.store('wallet').saldo=Number(data.saldo);
                 window.dispatchEvent(new CustomEvent('saldo-updated',{detail:{saldo:Number(data.saldo)}}));
+                await this.spinToPrize(data.item,data.reel,data.winner_index);
+                this.prize=data.item;
             } catch (error) { this.error=error.message; }
             this.opening=false;
         },

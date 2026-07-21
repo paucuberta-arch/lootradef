@@ -51,9 +51,9 @@ class CrashRoundSecurityTest extends TestCase
 
         $cashout->assertOk()
             ->assertJsonPath('estado', 'cobrado')
-            ->assertJsonPath('multiplier', 1.2)
-            ->assertJsonPath('ganancia', 12)
-            ->assertJsonPath('saldo', 102);
+            ->assertJsonPath('multiplier', 1.35)
+            ->assertJsonPath('ganancia', 13.5)
+            ->assertJsonPath('saldo', 103.5);
     }
 
     public function test_finished_round_is_idempotent_and_cannot_be_paid_twice(): void
@@ -68,7 +68,7 @@ class CrashRoundSecurityTest extends TestCase
         $second = $this->actingAs($user)->postJson(route('crash.cashout'), ['round_id' => $roundId])->assertOk();
 
         $this->assertSame($first->json('ganancia'), $second->json('ganancia'));
-        $this->assertSame(102.0, (float) $user->cartera()->value('saldo'));
+        $this->assertSame(103.5, (float) $user->cartera()->value('saldo'));
         $this->assertDatabaseCount('partidas', 1);
     }
 

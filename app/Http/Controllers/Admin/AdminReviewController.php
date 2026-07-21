@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Review;
 use Illuminate\Http\Request;
 
@@ -46,12 +47,14 @@ class AdminReviewController extends Controller
         ]);
 
         $review->update(['estado' => $request->estado]);
+        ActivityLog::log('review_moderada', Review::class, $review->id, ['estado' => $review->estado]);
 
         return back()->with('success', 'Review actualizada.');
     }
 
     public function destroy(Review $review)
     {
+        ActivityLog::log('review_eliminada', Review::class, $review->id, ['autor_id' => $review->usuario_id]);
         $review->delete();
         return back()->with('success', 'Review eliminada.');
     }

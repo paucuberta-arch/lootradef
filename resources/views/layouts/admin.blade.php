@@ -43,7 +43,14 @@
                         ['route' => 'admin.feedback', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', 'label' => 'Feedback'],
                     ];
 
-                    if (auth()->user()->can('stats.view')) {
+                    $navItems = array_values(array_filter($navItems, fn ($item) => match ($item['route']) {
+                        'admin.users' => auth()->user()->can('users.view'),
+                        'admin.reviews' => auth()->user()->can('reviews.view'),
+                        'admin.feedback' => auth()->user()->can('feedback.view'),
+                        default => true,
+                    }));
+
+                    if (auth()->user()->can('stats.view') && auth()->user()->hasAnyRole(['super_admin', 'admin'])) {
                         array_splice($navItems, 1, 0, [[
                             'route' => 'admin.charts',
                             'icon' => 'M7 12l3-3 4 4 6-7M5 20V10m5 10V4m5 16v-7m5 7V8',

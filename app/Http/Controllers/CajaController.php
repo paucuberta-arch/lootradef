@@ -52,6 +52,7 @@ class CajaController extends Controller
             }
 
             $prize = $this->prizes->pick($caja, $definition, $request->user());
+            $reel = $this->prizes->buildReel($definition['premios'], $prize);
 
             $item = InventarioItem::create([
                 'usuario_id' => $request->user()->id,
@@ -61,6 +62,7 @@ class CajaController extends Controller
                 'rareza' => $prize['rareza'],
                 'precio_caja' => $definition['precio'],
                 'valor_canje' => $prize['valor'],
+                'estado' => 'disponible',
             ]);
             abort_unless($cartera->apostar($definition['precio'], 'apertura_caja', ['caja' => $caja], $item), 422, 'No tienes saldo suficiente para abrir esta caja.');
 
@@ -73,7 +75,7 @@ class CajaController extends Controller
                 'ip' => $request->ip(),
             ]);
 
-            return ['item' => $item, 'saldo' => (float) $cartera->saldo];
+            return ['item' => $item, 'saldo' => (float) $cartera->saldo, 'reel' => $reel];
         });
 
         if (! $item) {
@@ -83,6 +85,8 @@ class CajaController extends Controller
         return response()->json([
             'item' => $this->serializeItem($item['item']),
             'saldo' => $item['saldo'],
+            'reel' => array_map(fn (array $prize) => $this->serializePrize($prize), $item['reel']['items']),
+            'winner_index' => $item['reel']['winner_index'],
         ]);
     }
 
@@ -133,6 +137,16 @@ class CajaController extends Controller
             'valor_canje' => $item->valor_canje,
             'estado' => $item->estado,
             'created_at' => $item->created_at->diffForHumans(),
+        ];
+    }
+
+    private function serializePrize(array $prize): array
+    {
+        return [
+            'nombre' => $prize['nombre'],
+            'imagen' => $prize['imagen'],
+            'rareza' => $prize['rareza'],
+            'valor_canje' => (float) $prize['valor'],
         ];
     }
 }

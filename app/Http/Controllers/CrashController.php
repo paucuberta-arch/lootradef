@@ -15,7 +15,7 @@ use Illuminate\View\View;
 
 class CrashController extends Controller
 {
-    private const MULTIPLIER_PER_SECOND = 0.20;
+    private const MULTIPLIER_PER_SECOND = 0.35;
 
     public function __construct(private readonly GameBalanceService $balances) {}
 
@@ -104,7 +104,7 @@ class CrashController extends Controller
             return $round->fresh();
         });
 
-        return response()->json($this->roundData($round));
+        return response()->json($this->roundData($round, $round->estado !== 'activa'));
     }
 
     public function cashout(Request $request): JsonResponse
@@ -178,11 +178,11 @@ class CrashController extends Controller
         $this->balances->recordGame($game);
     }
 
-    private function roundData(CrashRound $round): array
+    private function roundData(CrashRound $round, bool $includeBalance = true): array
     {
         $finished = $round->estado !== 'activa';
 
-        return [
+        $data = [
             'round_id' => $round->id,
             'estado' => $round->estado,
             'multiplier' => $round->estado === 'cobrado'
@@ -190,9 +190,18 @@ class CrashController extends Controller
                 : ($round->estado === 'crashed' ? $round->crash_point : $this->currentMultiplier($round)),
             'crash_point' => $finished ? $round->crash_point : null,
             'ganancia' => $round->ganancia,
-            'saldo' => $this->balances->balance(Usuario::findOrFail($round->usuario_id), 'crash', $round->campaign_challenge_id),
             'rate_per_second' => self::MULTIPLIER_PER_SECOND,
         ];
+
+        if ($includeBalance) {
+            $data['saldo'] = $this->balances->balance(
+                Usuario::findOrFail($round->usuario_id),
+                'crash',
+                $round->campaign_challenge_id,
+            );
+        }
+
+        return $data;
     }
 
     private function generateCrashPoint(): float

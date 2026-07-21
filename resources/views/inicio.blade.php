@@ -1,275 +1,103 @@
 @extends('layouts.app')
 
-@section('title', 'Lootra Casino — Juegos de Casino Online')
+@section('title', 'Lootra — Casino, retos y entretenimiento online')
 
 @section('contenido')
-
-@php
-    $cats = [
-        ['id' => 'todos', 'label' => 'Todos', 'icon' => '&#x1F3AE;'],
-        ['id' => 'slots', 'label' => 'Slots', 'icon' => '&#x1F3B0;'],
-        ['id' => 'ruleta', 'label' => 'Ruleta', 'icon' => '&#x1F3B2;'],
-        ['id' => 'blackjack', 'label' => 'Blackjack', 'icon' => '&#x1F0CF;'],
-        ['id' => 'poker', 'label' => 'Poker', 'icon' => '&#x1F0AD;'],
-        ['id' => 'live', 'label' => 'Live Casino', 'icon' => '&#x1F4FA;'],
-        ['id' => 'crash', 'label' => 'Crash', 'icon' => '&#x1F680;'],
-        ['id' => 'arcade', 'label' => 'Originales', 'icon' => '&#x2728;'],
-        ['id' => 'cartas', 'label' => 'Cartas', 'icon' => '&#x1F0CF;'],
-        ['id' => 'numeros', 'label' => 'Números', 'icon' => '&#x1F522;'],
-    ];
-@endphp
-
-<div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10"
-     x-data="{
-         selected: new URLSearchParams(window.location.search).get('cat') || 'todos',
-         search: new URLSearchParams(window.location.search).get('q') || '',
-         sort: new URLSearchParams(window.location.search).get('sort') || 'default',
-         juegos: @js($juegos->values()),
-         init() {
-             const cat = new URLSearchParams(window.location.search).get('cat');
-             if (cat && this.juegos.some(j => j.cat === cat)) this.selected = cat;
-         },
-         syncUrl() {
-             const params = new URLSearchParams();
-             if (this.selected !== 'todos') params.set('cat', this.selected);
-             if (this.search.trim()) params.set('q', this.search.trim());
-             if (this.sort !== 'default') params.set('sort', this.sort);
-             history.replaceState({}, '', `${location.pathname}${params.size ? '?' + params : ''}#catalogo`);
-         },
-         selectCat(category) { this.selected = category; this.syncUrl(); },
-         selectSort(value) { this.sort = value; this.syncUrl(); },
-         resetFilters() { this.selected='todos'; this.search=''; this.sort='default'; this.syncUrl(); },
-         get filtered() {
-             let list = this.juegos;
-             if (this.selected !== 'todos') list = list.filter(j => j.cat === this.selected);
-             if (this.search.trim() !== '') {
-                 const q = this.search.toLowerCase();
-                 list = list.filter(j => j.name.toLowerCase().includes(q) || j.provider.toLowerCase().includes(q));
-             }
-             if (this.sort === 'az') list = [...list].sort((a,b) => a.name.localeCompare(b.name));
-             if (this.sort === 'popular') list = [...list].sort((a,b) => (b.badge === 'Popular' ? 1 : 0) - (a.badge === 'Popular' ? 1 : 0));
-             if (this.sort === 'rtp') list = [...list].sort((a,b) => parseFloat(b.rtp) - parseFloat(a.rtp));
-             return list;
-         },
-         catCount(cat) {
-             if (cat === 'todos') return this.juegos.length;
-             return this.juegos.filter(j => j.cat === cat).length;
-         }
-     }">
+<div class="home-page overflow-hidden">
     @if($rickyeditCampaignEnabled ?? false)
-        <x-campaign.rickyedit.home-promo class="mb-8 sm:mb-10" />
+    <section class="mx-auto max-w-[1400px] px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+        <x-campaign.rickyedit.home-promo />
+    </section>
     @else
-    <section class="relative mb-8 flex min-h-[360px] items-end overflow-hidden rounded-3xl border border-white/10 hero-casino sm:mb-10 sm:min-h-[420px] sm:rounded-[2rem]">
-        <img src="{{ asset('images/lootra-hero.webp') }}"
-             alt="Mesa de casino premium iluminada" class="absolute inset-0 w-full h-full object-cover" fetchpriority="high" decoding="async">
-        <div class="absolute inset-0 bg-gradient-to-r from-[#070712] via-[#09081a]/90 to-fuchsia-950/25"></div>
-        <div class="absolute inset-0 bg-gradient-to-t from-[#070712] via-transparent to-cyan-500/10"></div>
-        <div class="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-fuchsia-500/25 blur-[90px]"></div>
-        <div class="relative z-10 max-w-3xl p-6 sm:p-12 lg:p-16">
-            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-400/10 border border-cyan-300/20 text-cyan-200 text-xs font-bold uppercase tracking-[.18em] mb-5">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                Casino de nueva generación
-            </div>
-            <h1 class="font-display text-3xl min-[420px]:text-4xl sm:text-6xl lg:text-7xl font-bold tracking-[-.06em] leading-[.95] text-white mb-5">
-                Tu próxima gran <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-300 via-fuchsia-400 to-cyan-300">jugada</span> empieza aquí.
-            </h1>
-            <p class="text-slate-300 text-base sm:text-lg max-w-xl leading-relaxed mb-7">Juegos con ritmo, recompensas instantáneas y una experiencia visual creada para que cada ronda se sienta única.</p>
-            <div class="flex flex-wrap gap-3">
-                <button @click="selectCat('slots'); $nextTick(() => document.querySelector('#catalogo').scrollIntoView({behavior:'smooth'}))" class="cta-shine px-6 py-3.5 rounded-xl bg-gradient-to-r from-brand-300 via-brand-400 to-emerald-400 text-black font-extrabold shadow-xl shadow-brand-500/20 hover:scale-105 transition-transform">Explorar juegos</button>
-                @guest
-                    <a href="{{ route('registro') }}" class="px-6 py-3.5 rounded-xl bg-white/10 border border-white/15 text-white font-bold backdrop-blur-xl hover:bg-white/15 hover:border-cyan-300/30 transition">Crear cuenta</a>
-                @else
-                    <a href="{{ route('profile.show') }}" class="px-6 py-3.5 rounded-xl bg-white/10 border border-white/15 text-white font-bold backdrop-blur-xl hover:bg-white/15 hover:border-cyan-300/30 transition">Mi perfil</a>
-                @endguest
-            </div>
-        </div>
-        <div class="absolute right-8 bottom-8 hidden lg:grid grid-cols-3 gap-2 z-10">
-            @foreach([['20', 'Juegos'], ['97%', 'RTP máx.'], ['24/7', 'Acceso']] as [$value, $label])
-                <div class="min-w-24 p-3 rounded-xl bg-black/30 border border-white/10 backdrop-blur-xl text-center">
-                    <div class="font-display font-bold text-white">{{ $value }}</div>
-                    <div class="text-[10px] uppercase tracking-widest text-slate-400">{{ $label }}</div>
+    <section class="home-hero relative isolate min-h-[calc(100svh-4rem)] overflow-hidden border-b border-white/5">
+        <img src="{{ asset('images/lootra-hero.webp') }}" alt="Experiencia Lootra" class="absolute inset-0 h-full w-full object-cover object-center" fetchpriority="high" decoding="async">
+        <div class="absolute inset-0 bg-[linear-gradient(90deg,#050711_5%,rgba(5,7,17,.94)_36%,rgba(5,7,17,.48)_67%,rgba(5,7,17,.82))]"></div>
+        <div class="absolute inset-0 bg-[linear-gradient(0deg,#060812_0%,transparent_45%,rgba(6,8,18,.42)_100%)]"></div>
+        <div class="home-hero__halo absolute left-[55%] top-[22%] h-80 w-80 rounded-full bg-cyan-400/20 blur-[110px]"></div>
+
+        <div class="relative mx-auto flex min-h-[calc(100svh-4rem)] max-w-[1400px] items-center px-4 py-16 sm:px-6 lg:px-8">
+            <div class="max-w-3xl">
+                <div class="mb-6 inline-flex items-center gap-3 rounded-full border border-white/10 bg-black/25 px-3 py-2 text-[11px] font-bold uppercase tracking-[.2em] text-slate-200 backdrop-blur-xl">
+                    <span class="relative flex h-2 w-2"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-60"></span><span class="relative h-2 w-2 rounded-full bg-emerald-300"></span></span>
+                    Entretenimiento en tiempo real
                 </div>
-            @endforeach
+                <p class="mb-4 font-display text-sm font-bold uppercase tracking-[.28em] text-brand-300">Bienvenido a Lootra</p>
+                <h1 class="max-w-3xl font-display text-[clamp(3rem,8vw,7.5rem)] font-bold leading-[.84] tracking-[-.075em] text-white">
+                    Juega a tu <span class="home-hero__accent">manera.</span>
+                </h1>
+                <p class="mt-7 max-w-xl text-base leading-7 text-slate-300 sm:text-lg">Casino, originales, apuestas y retos que cambian la partida. Una plataforma rápida, clara y diseñada alrededor de cada jugada.</p>
+                <div class="mt-9 flex flex-col gap-3 min-[420px]:flex-row">
+                    <a href="{{ route('games.index') }}" class="cta-shine inline-flex min-h-13 items-center justify-center rounded-2xl bg-brand-300 px-7 py-3.5 text-sm font-extrabold text-[#101218] shadow-2xl shadow-brand-500/25 transition hover:-translate-y-1 hover:bg-brand-200">Entrar al casino <span class="ml-3">→</span></a>
+                    @guest
+                        <a href="{{ route('registro') }}" class="inline-flex min-h-13 items-center justify-center rounded-2xl border border-white/15 bg-white/5 px-7 py-3.5 text-sm font-bold text-white backdrop-blur-xl transition hover:-translate-y-1 hover:bg-white/10">Crear cuenta</a>
+                    @else
+                        <a href="{{ route('rickyedit.landing') }}" class="inline-flex min-h-13 items-center justify-center rounded-2xl border border-white/15 bg-white/5 px-7 py-3.5 text-sm font-bold text-white backdrop-blur-xl transition hover:-translate-y-1 hover:bg-white/10">Ver reto actual</a>
+                    @endguest
+                </div>
+                <dl class="mt-12 grid max-w-xl grid-cols-3 gap-3 border-t border-white/10 pt-6">
+                    <div><dt class="text-[10px] uppercase tracking-widest text-slate-500">Catálogo</dt><dd class="mt-1 font-display text-xl font-bold text-white">{{ $gameCount }}+</dd></div>
+                    <div><dt class="text-[10px] uppercase tracking-widest text-slate-500">Acceso</dt><dd class="mt-1 font-display text-xl font-bold text-white">24/7</dd></div>
+                    <div><dt class="text-[10px] uppercase tracking-widest text-slate-500">Experiencia</dt><dd class="mt-1 font-display text-xl font-bold text-white">Instant</dd></div>
+                </dl>
+            </div>
         </div>
+        <a href="#descubre" class="absolute bottom-6 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-[9px] font-bold uppercase tracking-[.3em] text-slate-500 md:flex"><span>Descubre</span><span class="home-scroll-line"></span></a>
     </section>
     @endif
 
-    <div id="catalogo" class="flex flex-col lg:flex-row gap-8 scroll-mt-24">
-
-        {{-- SIDEBAR --}}
-        <aside class="w-full lg:w-64 shrink-0">
-            <div class="lg:sticky lg:top-20 space-y-6">
-
-                {{-- Buscador movil --}}
-                <div class="relative lg:hidden">
-                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                    <input x-model.debounce.250ms="search" @input.debounce.300ms="syncUrl()" type="search" aria-label="Buscar juegos" placeholder="Buscar juegos..."
-                        class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-slate-500 outline-none focus:border-brand-500 transition">
-                </div>
-
-                {{-- Categorias --}}
-                <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-4 sm:p-5">
-                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Categorias</h3>
-                    <div class="grid grid-cols-2 gap-1 sm:grid-cols-3 lg:block lg:space-y-1">
-                        @foreach($cats as $cat)
-                            <button
-                                @click="selectCat('{{ $cat['id'] }}')"
-                                :class="selected === '{{ $cat['id'] }}'
-                                    ? 'bg-brand-500/10 border-brand-500/30 text-brand-400'
-                                    : 'text-slate-400 hover:text-white hover:bg-white/5 border-transparent'"
-                                class="w-full flex items-center justify-between gap-1 px-2 min-[420px]:px-3 py-2.5 rounded-xl text-xs min-[420px]:text-sm font-medium border transition-all"
-                            >
-                                <span class="flex items-center gap-2.5">
-                                    <span class="text-base">{!! $cat['icon'] !!}</span>
-                                    {{ $cat['label'] }}
-                                </span>
-                                <span class="text-xs font-mono" :class="selected === '{{ $cat['id'] }}' ? 'text-brand-400/70' : 'text-slate-600'" x-text="catCount('{{ $cat['id'] }}')"></span>
-                            </button>
-                        @endforeach
-                    </div>
-                </div>
-
-                {{-- Ordenar --}}
-                <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-4 sm:p-5">
-                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Ordenar por</h3>
-                    <div class="grid grid-cols-2 gap-1 lg:block lg:space-y-1">
-                        @php
-                            $sortOpts = [
-                                ['id' => 'default', 'label' => 'Predeterminado'],
-                                ['id' => 'popular', 'label' => 'Populares'],
-                                ['id' => 'az', 'label' => 'Alfabetico'],
-                                ['id' => 'rtp', 'label' => 'Mayor RTP'],
-                            ];
-                        @endphp
-                        @foreach($sortOpts as $opt)
-                            <button
-                                @click="selectSort('{{ $opt['id'] }}')"
-                                :class="sort === '{{ $opt['id'] }}'
-                                    ? 'bg-brand-500/10 border-brand-500/30 text-brand-400'
-                                    : 'text-slate-400 hover:text-white hover:bg-white/5 border-transparent'"
-                                class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium border transition-all text-left"
-                            >
-                                {{ $opt['label'] }}
-                            </button>
-                        @endforeach
-                    </div>
-                </div>
-
-                {{-- Promo --}}
-                @if($rickyeditCampaignEnabled ?? false)
-                    <x-campaign.rickyedit.home-promo variant="card" class="hidden lg:block" />
-                @else
-                <div class="rounded-2xl bg-gradient-to-br from-brand-500/20 to-brand-600/10 border border-brand-500/20 p-5">
-                    <div class="text-2xl mb-3">&#x1F389;</div>
-                    <h3 class="text-sm font-bold text-white mb-1">Bonus de bienvenida</h3>
-                    <p class="text-xs text-slate-400 leading-relaxed mb-4">Registrate y recibe un bonus exclusivo para empezar a jugar.</p>
-                    <a href="{{ route('registro') }}" class="block w-full text-center rounded-xl bg-brand-500 hover:bg-brand-400 text-black text-sm font-bold py-2.5 transition">
-                        Registrarse
-                    </a>
-                </div>
-                @endif
-
-            </div>
-        </aside>
-
-        {{-- CONTENIDO --}}
-        <div class="flex-1 min-w-0">
-
-            {{-- Buscador desktop --}}
-            <div class="relative mb-6 hidden lg:block">
-                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
-                <input x-model.debounce.250ms="search" @input.debounce.300ms="syncUrl()" type="search" aria-label="Buscar juegos" placeholder="Buscar por nombre o proveedor..."
-                    class="w-full pl-12 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition">
-            </div>
-
-            {{-- Featured 2x1 --}}
-            <div class="mb-8">
-                <div class="flex items-center justify-between mb-5">
-                    <div><span class="text-[10px] font-bold uppercase tracking-[.2em] text-fuchsia-400">Selección Lootra</span><h2 class="text-2xl font-bold text-white mt-1">Destacados</h2></div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
-                    <a href="{{ route('games.show', 'gates-of-olympus') }}" class="featured-card game-gradient-5 aspect-[16/9] sm:aspect-[16/10] flex items-end">
-                        <img src="https://images.unsplash.com/photo-1551524559-8af4e6624178?w=1200&h=675&fit=crop" alt="Gates of Olympus" class="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async">
-                        <div class="featured-overlay"></div>
-                        <div class="absolute top-4 left-4 z-10"><span class="px-3 py-1 rounded-lg bg-brand-500/90 text-black text-xs font-bold uppercase tracking-wider">Popular</span></div>
-                        <div class="relative z-10 p-5 sm:p-6 w-full">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="text-xs font-semibold text-brand-300">Pragmatic Play</span>
-                                <span class="w-1 h-1 rounded-full bg-slate-600"></span>
-                                <span class="text-xs text-slate-500">Slots</span>
-                            </div>
-                            <h3 class="text-xl sm:text-2xl font-extrabold text-white mb-3">Gates of Olympus</h3>
-                            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-                                <span class="px-3 min-[420px]:px-5 py-2.5 rounded-xl bg-brand-500 text-black text-xs min-[420px]:text-sm font-bold">Jugar ahora</span>
-                                <span class="px-3 min-[420px]:px-5 py-2.5 rounded-xl bg-white/10 text-white text-xs min-[420px]:text-sm font-semibold border border-white/10">Ver detalles</span>
-                            </div>
-                        </div>
-                    </a>
-                    <a href="{{ route('games.show', 'texas-holdem') }}" class="featured-card game-gradient-2 aspect-[16/9] sm:aspect-[16/10] flex items-end">
-                        <img src="{{ asset('images/poker-live.webp') }}" alt="Texas Hold'em Live" class="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async">
-                        <div class="featured-overlay"></div>
-                        <div class="absolute top-4 left-4 z-10"><span class="px-3 py-1 rounded-lg bg-emerald-500/90 text-black text-xs font-bold uppercase tracking-wider">Nuevo</span></div>
-                        <div class="relative z-10 p-5 sm:p-6 w-full">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="text-xs font-semibold text-emerald-300">Lootra Originals</span>
-                                <span class="w-1 h-1 rounded-full bg-slate-600"></span>
-                                <span class="text-xs text-slate-500">Poker Live</span>
-                            </div>
-                            <h3 class="text-xl sm:text-2xl font-extrabold text-white mb-3">Texas Hold'em Live</h3>
-                            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-                                <span class="px-3 min-[420px]:px-5 py-2.5 rounded-xl bg-brand-500 text-black text-xs min-[420px]:text-sm font-bold">Jugar ahora</span>
-                                <span class="px-3 min-[420px]:px-5 py-2.5 rounded-xl bg-white/10 text-white text-xs min-[420px]:text-sm font-semibold border border-white/10">Ver detalles</span>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-
-            {{-- Grid juegos --}}
-            <div>
-                <div class="flex items-center justify-between mb-5">
-                    <div><span class="text-[10px] font-bold uppercase tracking-[.2em] text-cyan-400">Catálogo</span><h2 class="text-2xl font-bold text-white mt-1">Todos los juegos</h2></div>
-                    <span class="text-sm text-slate-500 font-medium" x-text="filtered.length + ' juegos'"></span>
-                </div>
-
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-                    <template x-for="j in filtered" :key="j.slug">
-                        <a :href="j.detail_url" class="game-card aspect-[3/4]" :class="j.grad">
-                            <img :src="j.image" :alt="j.name" class="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" x-on:error="$event.currentTarget.src=@js(asset('images/game-fallback.svg'))">
-                            <div class="game-overlay"></div>
-
-                            <template x-if="j.badge">
-                                <div class="absolute top-3 left-3 z-10">
-                                    <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider" :class="j.badgeColor" x-text="j.badge"></span>
-                                </div>
-                            </template>
-
-                            <div class="game-actions z-10">
-                                <span class="block w-full text-center rounded-xl bg-brand-500 hover:bg-brand-400 text-black text-sm font-bold py-2.5 transition mb-2">Jugar</span>
-                                <span class="block w-full text-center rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold py-2 transition border border-white/10">Ver detalles</span>
-                            </div>
-
-                            <div class="absolute bottom-0 left-0 right-0 p-3 sm:p-4 z-10">
-                                <p class="text-xs text-slate-400 mb-0.5" x-text="j.provider"></p>
-                                <p class="text-sm sm:text-base font-bold text-white leading-tight" x-text="j.name"></p>
-                            </div>
-                        </a>
-                    </template>
-                </div>
-
-                <div x-show="filtered.length === 0" class="text-center py-20">
-                    <svg class="mx-auto mb-4 h-10 w-10 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="1.5" d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"/></svg>
-                    <p class="text-slate-400">No encontramos juegos con esos filtros.</p>
-                    <button @click="resetFilters()" class="mt-4 rounded-xl border border-white/10 px-4 py-2 text-sm text-cyan-300 hover:bg-white/5">Limpiar filtros</button>
-                </div>
-            </div>
-
+    <section id="descubre" class="mx-auto max-w-[1400px] px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+        <div class="mb-9 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+            <div><p class="section-kicker">Ahora en Lootra</p><h2 class="mt-3 max-w-2xl text-3xl font-bold tracking-[-.04em] text-white sm:text-5xl">Una plataforma. Distintas formas de jugar.</h2></div>
+            <a href="{{ route('games.index') }}" class="text-sm font-bold text-brand-300 hover:text-brand-200">Ver catálogo completo →</a>
         </div>
-    </div>
-</div>
 
+        <div class="experience-grid grid gap-4 lg:grid-cols-12">
+            <a href="{{ route('games.index') }}" class="experience-card group relative min-h-[390px] overflow-hidden rounded-[2rem] border border-white/10 lg:col-span-7">
+                @if($rickyeditCampaignEnabled ?? false)
+                <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(54,197,216,.2),transparent_35%),linear-gradient(135deg,#111827,#070914)]"></div>
+                @else
+                <img src="{{ asset('images/lootra-hero.webp') }}" alt="Casino Lootra" class="absolute inset-0 h-full w-full object-cover transition duration-1000 group-hover:scale-105" loading="lazy" decoding="async">
+                @endif
+                <div class="absolute inset-0 bg-gradient-to-t from-[#070914] via-[#070914]/45 to-transparent"></div>
+                <div class="absolute inset-x-0 bottom-0 p-6 sm:p-9"><span class="section-kicker">Casino</span><h3 class="mt-2 text-3xl font-bold text-white sm:text-4xl">Todo el catálogo,<br>sin distracciones.</h3><p class="mt-3 max-w-md text-sm leading-6 text-slate-300">Slots, mesa, crash y originales en una experiencia rápida y ordenada.</p><span class="mt-6 inline-flex rounded-xl bg-white px-5 py-3 text-sm font-bold text-slate-950">Explorar juegos</span></div>
+            </a>
+            @if($rickyeditCampaignEnabled ?? false)
+            <a href="{{ route('rickyedit.landing') }}" class="experience-card home-ricky-card group relative min-h-[390px] overflow-hidden rounded-[2rem] border border-fuchsia-300/15 lg:col-span-5">
+                <img src="{{ asset('images/campaigns/rickyedit/challenge-hero-v2.webp') }}" alt="Reto RickyEdit" class="absolute inset-0 h-full w-full object-cover object-center transition duration-1000 group-hover:scale-105" loading="lazy" decoding="async">
+                <div class="absolute inset-0 bg-gradient-to-t from-[#120719] via-[#120719]/35 to-fuchsia-900/10"></div>
+                <div class="absolute inset-x-0 bottom-0 p-6 sm:p-9"><span class="section-kicker text-fuchsia-300">Reto de la comunidad</span><h3 class="mt-2 text-3xl font-bold text-white">RickyEdit × Lootra</h3><p class="mt-3 text-sm text-slate-300">15 minutos. 1.000 créditos. Una clasificación.</p><span class="mt-6 inline-flex rounded-xl bg-fuchsia-300 px-5 py-3 text-sm font-bold text-fuchsia-950">Aceptar el reto</span></div>
+            </a>
+            @else
+            <a href="{{ route('games.index', ['cat' => 'arcade']) }}" class="experience-card group relative min-h-[390px] overflow-hidden rounded-[2rem] border border-violet-300/15 bg-gradient-to-br from-violet-950 to-[#111527] p-7 lg:col-span-5 sm:p-9">
+                <div class="absolute -right-20 top-12 h-64 w-64 rounded-full bg-violet-400/15 blur-[65px]"></div><div class="absolute right-12 top-16 text-8xl opacity-80 transition duration-700 group-hover:-translate-y-3 group-hover:rotate-6">✦</div>
+                <div class="absolute inset-x-0 bottom-0 p-6 sm:p-9"><span class="section-kicker text-violet-300">Lootra Originals</span><h3 class="mt-2 text-3xl font-bold text-white">Juegos que no encontrarás fuera.</h3><p class="mt-3 text-sm text-slate-300">Mecánicas rápidas creadas para Lootra.</p><span class="mt-6 inline-flex rounded-xl bg-violet-300 px-5 py-3 text-sm font-bold text-violet-950">Descubrir originales</span></div>
+            </a>
+            @endif
+            <a href="{{ route('sports.index') }}" class="experience-card home-mini-card group relative min-h-64 overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-emerald-950 to-[#0d1721] p-7 lg:col-span-5 sm:p-9"><div class="home-orbit absolute -right-20 -top-20 h-64 w-64 rounded-full border border-emerald-300/20"></div><span class="section-kicker text-emerald-300">En directo</span><h3 class="mt-4 text-3xl font-bold text-white">Apuestas deportivas</h3><p class="mt-3 max-w-sm text-sm leading-6 text-slate-400">Partidos, cuotas y resultados en un mismo lugar.</p><span class="absolute bottom-8 right-8 text-3xl text-emerald-300 transition group-hover:translate-x-2">→</span></a>
+            <a href="{{ route('cases.index') }}" class="experience-card home-mini-card group relative min-h-64 overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-amber-950/80 to-[#15120d] p-7 lg:col-span-7 sm:p-9"><div class="absolute -bottom-28 right-10 h-56 w-56 rotate-45 rounded-[3rem] border border-brand-300/15 bg-brand-300/5"></div><span class="section-kicker">Colecciona</span><h3 class="mt-4 text-3xl font-bold text-white">Cajas y recompensas</h3><p class="mt-3 max-w-sm text-sm leading-6 text-slate-400">Descubre premios, gestiona tu inventario y canjea desde tu perfil.</p><span class="absolute bottom-8 right-8 text-3xl text-brand-300 transition group-hover:translate-x-2">→</span></a>
+        </div>
+    </section>
+
+    <section class="border-y border-white/5 bg-white/[.018] py-16 sm:py-24">
+        <div class="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+            <div class="mb-8 flex items-end justify-between gap-4"><div><p class="section-kicker">Lootra Originals y favoritos</p><h2 class="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">Empieza por aquí</h2></div><a href="{{ route('games.index') }}" class="hidden text-sm text-slate-400 hover:text-white sm:block">Todos los juegos →</a></div>
+            <div class="home-game-rail grid grid-flow-col auto-cols-[72%] gap-4 overflow-x-auto pb-5 sm:auto-cols-[38%] lg:grid-flow-row lg:grid-cols-4 lg:overflow-visible">
+                @foreach($featuredGames->take(4) as $game)
+                    <a href="{{ $game['detail_url'] }}" class="game-card group aspect-[4/5] snap-start {{ $game['grad'] }}">
+                        <img src="{{ $game['image'] }}" alt="{{ $game['name'] }}" class="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" onerror="this.src='{{ asset('images/game-fallback.svg') }}'">
+                        <div class="game-overlay"></div>
+                        <div class="absolute inset-x-0 bottom-0 z-10 p-5"><p class="text-xs text-slate-400">{{ $game['provider'] }}</p><h3 class="mt-1 text-lg font-bold text-white">{{ $game['name'] }}</h3><span class="mt-4 inline-flex text-xs font-bold text-brand-300">Jugar ahora →</span></div>
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    <section class="mx-auto max-w-[1400px] px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+        <div class="home-cta relative overflow-hidden rounded-[2rem] border border-white/10 px-6 py-14 text-center sm:px-12 sm:py-20">
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(242,205,117,.25),transparent_52%)]"></div>
+            <div class="relative"><p class="section-kicker">Tu próxima partida</p><h2 class="mx-auto mt-4 max-w-3xl text-4xl font-bold tracking-[-.05em] text-white sm:text-6xl">Entra. Elige. Juega.</h2><p class="mx-auto mt-5 max-w-xl text-slate-400">Sin ruido, sin esperas y con todo Lootra a un clic.</p><a href="{{ route('games.index') }}" class="mt-8 inline-flex rounded-2xl bg-white px-7 py-4 text-sm font-extrabold text-slate-950 transition hover:-translate-y-1">Descubrir el casino</a></div>
+        </div>
+    </section>
+</div>
 @endsection

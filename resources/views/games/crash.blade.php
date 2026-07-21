@@ -119,7 +119,7 @@
                             <template x-if="fase === 'subiendo'">
                                 <button @click="cashout()" :disabled="actionInFlight"
                                         class="w-full sm:w-auto px-8 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-bold transition shadow-lg shadow-emerald-500/20">
-                                    Cobrar <span x-text="multiplier.toFixed(2) + 'x'"></span>
+                                    <span x-text="actionInFlight ? 'Cobrando…' : 'Cobrar ' + multiplier.toFixed(2) + 'x'"></span>
                                 </button>
                             </template>
                         </div>
@@ -177,6 +177,7 @@ function crashGame() {
         historial: @js($partidas->pluck('detalles.crash_point')->filter()->take(15)->values()->all()),
         animationFrame: null,
         statusInFlight: false,
+        statusController: null,
         actionInFlight: false,
         autoCashoutTriggered: false,
         countdown: 3,
@@ -193,6 +194,7 @@ function crashGame() {
 
         destroy() {
             cancelAnimationFrame(this.animationFrame);
+            this.statusController?.abort();
             document.removeEventListener('visibilitychange', this.visibilityHandler);
         },
 
@@ -209,7 +211,7 @@ function crashGame() {
             try {
                 this.countdown = 3;
                 while (this.countdown > 1) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await new Promise(resolve => setTimeout(resolve, 250));
                     this.countdown--;
                 }
                 const res = await fetch('{{ route("games.crash.play") }}', {
@@ -286,7 +288,11 @@ function crashGame() {
 
         async cashout() {
             if (this.fase !== 'subiendo' || this.actionInFlight || !this.roundId) return;
-            cancelAnimationFrame(this.animationFrame);
+            // Give the payout request priority over the read-only heartbeat. Keep
+            // the visual clock moving until the authoritative response arrives.
+            this.statusController?.abort();
+            this.statusController = null;
+            this.statusInFlight = false;
             this.actionInFlight = true;
             try {
                 const res = await fetch('{{ route("games.crash.cashout") }}', {
@@ -304,7 +310,7 @@ function crashGame() {
                 this.applyRound(data);
             } catch (e) {
                 this.error = e.message;
-                if (this.fase === 'subiendo') this.animateCrash(this.multiplier);
+                if (this.fase === 'subiendo' && !this.animationFrame) this.animateCrash(this.multiplier);
             } finally {
                 this.actionInFlight = false;
             }
@@ -313,9 +319,12 @@ function crashGame() {
         async refreshRound() {
             if (this.statusInFlight || this.fase !== 'subiendo' || !this.roundId) return;
             this.statusInFlight = true;
+            const controller = new AbortController();
+            this.statusController = controller;
             try {
                 const res = await fetch('{{ route("games.crash.status") }}', {
                     method: 'POST',
+                    signal: controller.signal,
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -327,11 +336,14 @@ function crashGame() {
                 if (res.ok) this.applyRound(data, false);
             } catch (e) {
                 // El reloj visual puede continuar durante un fallo de red temporal.
-            } finally { this.statusInFlight = false; }
+            } finally {
+                if (this.statusController === controller) this.statusController = null;
+                this.statusInFlight = false;
+            }
         },
 
         applyRound(data, syncActive = true) {
-            this.updateBalance(data.saldo);
+            if (data.saldo !== undefined) this.updateBalance(data.saldo);
             if (data.estado === 'activa') {
                 if (syncActive) this.multiplier = Math.max(this.multiplier, Number(data.multiplier));
                 return;

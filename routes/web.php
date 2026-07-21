@@ -18,6 +18,7 @@ use App\Http\Controllers\CrashController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\PokerDealerController;
 use App\Http\Controllers\ReviewController;
@@ -26,11 +27,12 @@ use App\Http\Controllers\RuletaController;
 use App\Http\Controllers\SlotsController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', HomeController::class)->name('inicio');
+Route::get('/', [HomeController::class, 'index'])->name('inicio');
 Route::get('/rickyedit', [RickyEditCampaignController::class, 'landing'])->name('rickyedit.landing');
 Route::get('/rickyedit/ranking', [RickyEditCampaignController::class, 'ranking'])->name('rickyedit.ranking');
+Route::get('/newsletter/baja/{usuario}', [NewsletterController::class, 'unsubscribe'])->middleware('signed')->name('newsletter.unsubscribe');
 Route::post('/rickyedit/event', [RickyEditCampaignController::class, 'event'])->middleware('throttle:30,1')->name('rickyedit.event');
-Route::get('/games', HomeController::class)->name('games.index');
+Route::get('/games', [HomeController::class, 'casino'])->name('games.index');
 Route::get('/juego/{slug}', [GameController::class, 'show'])->name('juego.show');
 
 Route::get('/apuestas', [ApuestasController::class, 'index'])->name('apuestas');

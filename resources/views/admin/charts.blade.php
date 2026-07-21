@@ -20,9 +20,12 @@
 @endsection
 
 @push('admin-scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    if (!window.Chart) {
+        document.querySelectorAll('canvas').forEach(canvas => canvas.replaceWith(Object.assign(document.createElement('p'), {className: 'py-12 text-center text-sm text-red-300', textContent: 'No se pudieron cargar los gráficos.'})));
+        return;
+    }
     Chart.defaults.color='#94a3b8'; Chart.defaults.borderColor='rgba(255,255,255,.06)'; Chart.defaults.font.family='Inter';
     const series=@json($series); const palette=['#22d3ee','#a78bfa','#f472b6','#34d399','#fbbf24','#fb7185'];
     const tooltip={backgroundColor:'#111827',padding:12,cornerRadius:10};
