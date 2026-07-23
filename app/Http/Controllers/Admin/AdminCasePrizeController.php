@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class AdminCasePrizeController extends Controller
@@ -55,6 +56,21 @@ class AdminCasePrizeController extends Controller
                 $sum = $caseRules->sum(fn (CasePrizeRule $rule) => (float) $request->input("rules.{$rule->id}.probability", -1));
                 if (abs($sum - 100) > 0.0001) {
                     $validator->errors()->add('rules', "Los porcentajes de {$setting->case_key} deben sumar 100% (ahora suman ".number_format($sum, 4, ',', '.').'%).');
+                }
+
+                $definition = config("cajas.{$setting->case_key}");
+                $prizeValues = collect($definition['premios'] ?? [])->keyBy(fn (array $prize) => Str::slug($prize['nombre']));
+                $expectedValue = $caseRules->sum(function (CasePrizeRule $rule) use ($request, $prizeValues) {
+                    $probability = (float) $request->input("rules.{$rule->id}.probability", 0) / 100;
+                    $value = (float) ($prizeValues->get($rule->prize_key)['valor'] ?? 0);
+
+                    return $probability * $value;
+                });
+                if ($definition && $expectedValue >= (float) $definition['precio']) {
+                    $validator->errors()->add(
+                        'rules',
+                        "El valor esperado de {$setting->case_key} debe ser inferior al precio de la caja."
+                    );
                 }
 
                 $cap = $request->input("settings.{$setting->id}.good_daily_cap");

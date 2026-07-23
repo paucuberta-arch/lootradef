@@ -10,6 +10,7 @@ use Database\Seeders\RickyEditCampaignSeeder;
 use Database\Seeders\RolesPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -70,7 +71,13 @@ class RickyEditCampaignTest extends TestCase
             'password' => 'password123', 'password_confirmation' => 'password123',
         ]);
 
-        $response->assertRedirect(route('rickyedit.intro'));
+        $response->assertRedirect(route('verification.notice'));
+        $registered = Usuario::where('email', 'campaign@example.test')->firstOrFail();
+        $verificationUrl = URL::temporarySignedRoute('verification.verify', now()->addMinutes(60), [
+            'id' => $registered->id,
+            'hash' => sha1($registered->email),
+        ]);
+        $this->actingAs($registered)->get($verificationUrl)->assertRedirect(route('rickyedit.intro'));
         $this->assertDatabaseHas('campaign_attributions', [
             'user_id' => Usuario::where('email', 'campaign@example.test')->value('id'),
             'utm_source' => 'youtube', 'utm_medium' => 'creator', 'utm_content' => 'video',
@@ -193,11 +200,27 @@ class RickyEditCampaignTest extends TestCase
         $this->get(route('rickyedit.ranking'))->assertOk()->assertDontSee('Simulado#');
     }
 
+    public function test_campaign_seeder_refuses_to_create_demo_accounts_in_production(): void
+    {
+        $original = $this->app->environment();
+        $this->app->detectEnvironment(fn () => 'production');
+
+        try {
+            app(RickyEditCampaignSeeder::class)->run();
+            $this->fail('El seeder de campaña no rechazó el entorno de producción.');
+        } catch (\RuntimeException) {
+            $this->assertDatabaseMissing('usuarios', ['email' => 'ricky.sim001@demo.lootra.test']);
+        } finally {
+            $this->app->detectEnvironment(fn () => $original);
+        }
+    }
+
     private function user(float $balance = 1000): Usuario
     {
         $user = Usuario::create([
             'name' => 'Test Player '.Str::random(5),
             'email' => Str::uuid().'@example.test',
+            'email_verified_at' => now(),
             'password' => Hash::make('password'),
         ]);
         $user->cartera()->create(['saldo' => $balance]);

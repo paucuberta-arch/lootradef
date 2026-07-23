@@ -5,11 +5,13 @@ namespace App\Console\Commands;
 use App\Mail\RickyEditChallengeNewsletter;
 use App\Models\CampaignMailDelivery;
 use App\Models\Usuario;
+use App\Rules\SafeEmail;
 use App\Services\CampaignManager;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Validator;
 use Throwable;
 
 class SendRickyEditNewsletter extends Command
@@ -25,7 +27,9 @@ class SendRickyEditNewsletter extends Command
 
     public function handle(CampaignManager $campaigns): int
     {
-        if (! Schema::hasTable('campaign_mail_deliveries') || ! Schema::hasColumn('usuarios', 'marketing_emails_opted_out_at')) {
+        if (! Schema::hasTable('campaign_mail_deliveries')
+            || ! Schema::hasColumn('usuarios', 'marketing_emails_opted_out_at')
+            || ! Schema::hasColumn('usuarios', 'marketing_emails_opted_in_at')) {
             $this->components->error('Falta aplicar la migración de newsletters.');
 
             return self::FAILURE;
@@ -35,6 +39,15 @@ class SendRickyEditNewsletter extends Command
         $eligible = (clone $query)->count();
 
         if (filled($this->option('to'))) {
+            $previewEmail = (string) $this->option('to');
+            $validator = Validator::make(['email' => $previewEmail], [
+                'email' => ['required', new SafeEmail, 'email:rfc', 'max:255'],
+            ]);
+            if ($validator->fails()) {
+                $this->components->error('La dirección indicada en --to no es válida.');
+
+                return self::INVALID;
+            }
             $sample = (clone $query)->first() ?? Usuario::query()->where('is_demo', false)->first();
             if (! $sample) {
                 $this->components->error('No hay ningún usuario disponible para personalizar la previsualización.');
@@ -42,7 +55,7 @@ class SendRickyEditNewsletter extends Command
                 return self::FAILURE;
             }
 
-            Mail::to((string) $this->option('to'))->send(new RickyEditChallengeNewsletter($sample, preview: true));
+            Mail::to($previewEmail)->send(new RickyEditChallengeNewsletter($sample, preview: true));
             $this->components->info('Previsualización enviada a '.$this->option('to').'. No se ha marcado ningún usuario como contactado.');
 
             return self::SUCCESS;
@@ -96,7 +109,7 @@ class SendRickyEditNewsletter extends Command
                 } catch (Throwable $exception) {
                     $delivery->update([
                         'status' => 'failed',
-                        'failure' => mb_substr($exception->getMessage(), 0, 2000),
+                        'failure' => 'Fallo de transporte: '.$exception::class,
                     ]);
                     $failed++;
                     report($exception);
@@ -116,6 +129,7 @@ class SendRickyEditNewsletter extends Command
         return Usuario::query()
             ->where('is_demo', false)
             ->where('data_origin', 'real')
+            ->whereNotNull('marketing_emails_opted_in_at')
             ->whereNull('marketing_emails_opted_out_at')
             ->whereDoesntHave('campaignChallenges', fn (Builder $query) => $query->where('campaign_key', CampaignManager::KEY))
             ->whereDoesntHave('roles', fn (Builder $query) => $query->whereIn('name', ['super_admin', 'admin', 'moderator']))

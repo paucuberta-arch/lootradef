@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Console\Commands\SendRickyEditNewsletter;
 use App\Mail\RickyEditChallengeNewsletter;
 use App\Models\CampaignChallenge;
-use App\Models\CampaignMailDelivery;
 use App\Models\Usuario;
 use App\Services\CampaignManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -127,6 +126,7 @@ class RickyEditNewsletterTest extends TestCase
             'password' => bcrypt('password123'),
             'is_demo' => false,
             'data_origin' => 'real',
+            'marketing_emails_opted_in_at' => now(),
             ...$attributes,
         ]);
     }

@@ -10,24 +10,30 @@ use App\Services\CampaignManager;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use RuntimeException;
 
 class RickyEditCampaignSeeder extends Seeder
 {
     public function run(): void
     {
+        if (! app()->environment(['local', 'testing'])) {
+            throw new RuntimeException('RickyEditCampaignSeeder solo puede ejecutarse en local o testing.');
+        }
+
         mt_srand(17072026);
         DB::transaction(function () {
             CampaignEvent::where('data_origin', 'simulated')->where('campaign_key', CampaignManager::KEY)->delete();
             CampaignChallenge::where('data_origin', 'simulated')->where('campaign_key', CampaignManager::KEY)->delete();
             CampaignAttribution::where('data_origin', 'simulated')->where('campaign_key', CampaignManager::KEY)->delete();
-            Usuario::where('data_origin', 'simulated')->where('email', 'like', 'ricky.sim%@demo.lootra.test')->delete();
+            Usuario::withTrashed()->where('data_origin', 'simulated')->where('email', 'like', 'ricky.sim%@demo.lootra.test')->forceDelete();
 
             $users = collect();
             for ($i = 1; $i <= 180; $i++) {
                 $user = Usuario::create([
                     'name' => 'Jugador Simulado '.$i,
                     'email' => sprintf('ricky.sim%03d@demo.lootra.test', $i),
-                    'password' => Hash::make('not-a-real-account'),
+                    'password' => Hash::make(Str::random(64)),
                     'is_demo' => true, 'data_origin' => 'simulated',
                 ]);
                 $user->cartera()->create(['saldo' => 0]);

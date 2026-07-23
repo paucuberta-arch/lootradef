@@ -40,8 +40,8 @@ class CasePrizeAdministrationTest extends TestCase
         $admin->assignRole('admin');
         $payload = $this->configurationPayload();
         $starter = CaseRewardSetting::where('case_key', 'starter')->with('prizeRules')->firstOrFail();
-        $first = $starter->prizeRules->first();
-        $second = $starter->prizeRules->skip(1)->first();
+        $first = $starter->prizeRules->firstWhere('name', 'Sticker Pack Neon');
+        $second = $starter->prizeRules->firstWhere('name', 'Llavero Lootra');
         $payload['rules'][$first->id]['probability'] = 99;
         $payload['rules'][$second->id]['probability'] = 0;
 
@@ -61,6 +61,61 @@ class CasePrizeAdministrationTest extends TestCase
         $this->assertDatabaseHas('activity_logs', ['accion' => 'probabilidades_cajas_actualizadas']);
     }
 
+    public function test_default_case_probabilities_have_a_negative_expected_wallet_return(): void
+    {
+        foreach (config('cajas') as $caseKey => $definition) {
+            $totalWeight = array_sum(array_column($definition['premios'], 'peso'));
+            $expectedValue = collect($definition['premios'])->sum(
+                fn (array $prize) => ($prize['peso'] / $totalWeight) * $prize['valor']
+            );
+
+            $this->assertLessThan($definition['precio'], $expectedValue, "Retorno inseguro para la caja {$caseKey}");
+        }
+    }
+
+    public function test_admin_cannot_save_a_case_table_with_non_negative_expected_return(): void
+    {
+        $admin = $this->user();
+        $admin->assignRole('admin');
+        $payload = $this->configurationPayload();
+        $gaming = CaseRewardSetting::where('case_key', 'gaming')->with('prizeRules')->firstOrFail();
+
+        foreach ($gaming->prizeRules as $rule) {
+            $payload['rules'][$rule->id]['probability'] = $rule->name === 'Consola Next Gen' ? 100 : 0;
+            $payload['rules'][$rule->id]['is_good'] = 0;
+        }
+
+        $this->actingAs($admin)->put(route('admin.case-prizes.update'), $payload)
+            ->assertSessionHasErrors('rules');
+    }
+
+    public function test_security_migration_rebalances_only_legacy_default_probabilities(): void
+    {
+        $starter = CaseRewardSetting::where('case_key', 'starter')->with('prizeRules')->firstOrFail();
+        $legacy = [
+            'Sticker Pack Neon' => 30,
+            'Llavero Lootra' => 26,
+            'Tarjeta digital €3' => 22,
+            'Auriculares compactos' => 14,
+            'Altavoz Mini' => 7,
+            'Smartwatch Fit' => 1,
+        ];
+        foreach ($starter->prizeRules as $rule) {
+            $rule->update(['probability' => $legacy[$rule->name]]);
+        }
+
+        $migration = require database_path('migrations/2026_07_22_120000_rebalance_default_case_prize_probabilities.php');
+        $migration->up();
+
+        $probabilities = $starter->prizeRules()->pluck('probability', 'name')->map(fn ($value) => (float) $value);
+        $this->assertSame(38.0, $probabilities['Sticker Pack Neon']);
+        $this->assertSame(27.0, $probabilities['Llavero Lootra']);
+        $this->assertSame(18.0, $probabilities['Tarjeta digital €3']);
+        $this->assertSame(11.0, $probabilities['Auriculares compactos']);
+        $this->assertSame(5.5, $probabilities['Altavoz Mini']);
+        $this->assertSame(0.5, $probabilities['Smartwatch Fit']);
+    }
+
     public function test_daily_cap_prevents_a_second_good_prize(): void
     {
         $setting = CaseRewardSetting::where('case_key', 'starter')->with('prizeRules')->firstOrFail();
@@ -68,10 +123,11 @@ class CasePrizeAdministrationTest extends TestCase
         $setting->prizeRules()->update(['probability' => 0, 'is_good' => false]);
         $setting->prizeRules()->where('name', 'Smartwatch Fit')->update(['probability' => 100, 'is_good' => true]);
         $player = $this->user(100);
+        $player->update(['is_demo' => true, 'data_origin' => 'test']);
 
-        $first = $this->actingAs($player)->postJson(route('cajas.open', 'starter'))->assertOk();
+        $first = $this->actingAs($player)->postJson(route('cajas.open', 'starter'), ['request_token' => (string) Str::uuid()])->assertOk();
         $this->assertSame(1, CaseRewardDailyStat::where('case_reward_setting_id', $setting->id)->value('good_awarded'));
-        $second = $this->actingAs($player)->postJson(route('cajas.open', 'starter'))->assertOk();
+        $second = $this->actingAs($player)->postJson(route('cajas.open', 'starter'), ['request_token' => (string) Str::uuid()])->assertOk();
 
         $this->assertSame('legendario', $first->json('item.rareza'));
         $this->assertNotSame('legendario', $second->json('item.rareza'));

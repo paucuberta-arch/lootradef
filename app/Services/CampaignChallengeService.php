@@ -81,10 +81,21 @@ class CampaignChallengeService
             $locked = CampaignChallenge::whereKey($challenge->id)->lockForUpdate()->firstOrFail();
             $locked = $this->assertPlayable($locked);
             $amount = $this->amount($amount);
-            if ($idempotencyKey && CampaignChallengeMovement::where('idempotency_key', $idempotencyKey)->exists()) {
-                $challenge->refresh();
+            if ($idempotencyKey) {
+                $existing = CampaignChallengeMovement::where('idempotency_key', $idempotencyKey)->first();
+                if ($existing) {
+                    abort_unless(
+                        $existing->campaign_challenge_id === $locked->id
+                        && $existing->direction === 'debit'
+                        && $existing->type === $type
+                        && (float) $existing->amount === $amount,
+                        409,
+                        'La clave de idempotencia ya fue usada para otra operación.'
+                    );
+                    $challenge->refresh();
 
-                return true;
+                    return true;
+                }
             }
             if ($locked->current_balance < $amount) {
                 return false;

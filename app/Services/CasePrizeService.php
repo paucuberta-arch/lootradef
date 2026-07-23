@@ -88,6 +88,17 @@ class CasePrizeService
         }
 
         abort_if($candidates->isEmpty(), 409, 'No hay premios disponibles para esta caja en este momento.');
+        if (! $this->isDemoEligible($user)) {
+            $totalWeight = $candidates->sum('adjusted_weight');
+            $expectedValue = $candidates->sum(
+                fn (array $candidate) => ($candidate['adjusted_weight'] / $totalWeight) * (float) $candidate['prize']['valor']
+            );
+            abort_if(
+                $expectedValue >= (float) $definition['precio'],
+                409,
+                'La configuración de premios de esta caja requiere revisión antes de admitir aperturas reales.'
+            );
+        }
         $selected = $this->weightedPick($candidates);
 
         if ($selected['isGood']) {

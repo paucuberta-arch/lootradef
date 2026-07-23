@@ -6,6 +6,7 @@ use App\Models\CampaignAttribution;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\RateLimiter;
 
 class CampaignManager
 {
@@ -52,6 +53,10 @@ class CampaignManager
 
     public function captureAttribution(Request $request): ?CampaignAttribution
     {
+        if (! $this->enabled()) {
+            return null;
+        }
+
         $utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'];
         $hasUtm = collect($utmKeys)->contains(fn (string $key) => $request->filled($key));
         $isCampaignPath = $request->is('rickyedit') || $request->is('rickyedit/*');
@@ -61,14 +66,29 @@ class CampaignManager
             return null;
         }
 
+        if (! $hasUtm && ! $hasCreator && $id = $request->session()->get('rickyedit_attribution_id')) {
+            return CampaignAttribution::whereKey($id)->where('campaign_key', self::KEY)->first();
+        }
+
+        $attributionLimitKey = 'campaign-attribution:'.hash('sha256', (string) $request->ip());
+        abort_if(
+            RateLimiter::tooManyAttempts($attributionLimitKey, 60),
+            429,
+            'Demasiadas visitas nuevas a la campaña. Inténtalo de nuevo en un minuto.'
+        );
+        RateLimiter::hit($attributionLimitKey, 60);
+
         $existing = $request->session()->get('rickyedit_attribution', []);
-        $incoming = Arr::only($request->query(), $utmKeys);
+        $incoming = collect(Arr::only($request->query(), $utmKeys))
+            ->map(fn ($value) => $this->cleanScalar($value, 255))
+            ->filter(fn (?string $value) => filled($value))
+            ->all();
         $data = [
             ...$existing,
-            ...array_filter($incoming, fn ($value) => is_scalar($value) && filled($value)),
-            'referrer' => $existing['referrer'] ?? mb_substr((string) $request->headers->get('referer'), 0, 2000),
+            ...$incoming,
+            'referrer' => $existing['referrer'] ?? $this->cleanScalar($request->headers->get('referer'), 2000),
             'creator_code' => $existing['creator_code']
-                ?? mb_substr((string) ($request->query('creator_code', $request->query('creator', $this->config()['creator_code'] ?? 'rickyedit'))), 0, 100),
+                ?? $this->cleanScalar($request->query('creator_code', $request->query('creator', $this->config()['creator_code'] ?? 'rickyedit')), 100),
             'campaign_key' => self::KEY,
             'first_touch_at' => $existing['first_touch_at'] ?? now()->toIso8601String(),
         ];
@@ -109,5 +129,14 @@ class CampaignManager
     public function sessionHash(Request $request): string
     {
         return hash('sha256', $request->session()->getId());
+    }
+
+    private function cleanScalar(mixed $value, int $length): ?string
+    {
+        if (! is_scalar($value)) {
+            return null;
+        }
+
+        return mb_substr(preg_replace('/[\x00-\x1F\x7F]/', '', (string) $value) ?? '', 0, $length);
     }
 }

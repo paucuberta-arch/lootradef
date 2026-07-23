@@ -21,7 +21,9 @@ class CaptureCampaignAttribution
         $attribution = $this->campaigns->captureAttribution($request);
 
         if ($request->user() && $attribution) {
-            $attribution->update(['user_id' => $request->user()->id]);
+            if ($attribution->user_id !== $request->user()->id) {
+                $attribution->update(['user_id' => $request->user()->id]);
+            }
             $this->recordRetention($request, $attribution);
         }
 
