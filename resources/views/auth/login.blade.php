@@ -58,6 +58,10 @@
                         Recordarme
                     </label>
 
+                    <div class="text-right">
+                        <a href="{{ route('password.request') }}" class="text-sm text-brand-400 hover:text-brand-300">¿Has olvidado tu contraseña?</a>
+                    </div>
+
                     <x-ui.button type="submit" class="w-full" x-bind:disabled="submitting"><span x-text="submitting ? 'Entrando…' : 'Entrar'">Entrar</span></x-ui.button>
                 </form>
 

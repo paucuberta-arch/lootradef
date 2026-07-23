@@ -123,7 +123,7 @@
                                 class="w-full flex items-center justify-between gap-1 px-2 min-[420px]:px-3 py-2.5 rounded-xl text-xs min-[420px]:text-sm font-medium border transition-all"
                             >
                                 <span class="flex items-center gap-2.5">
-                                    <img src="{{ asset(sprintf('images/lootra_visual_pack/09_icons/icon_ui_%02d_256.png', $cat['icon'])) }}" alt="" class="h-7 w-7 shrink-0 object-contain" loading="lazy" aria-hidden="true">
+                                    <img src="{{ asset(sprintf('images/lootra_visual_pack/09_icons/icon_ui_%02d_256.webp', $cat['icon'])) }}" alt="" class="h-7 w-7 shrink-0 object-contain" width="28" height="28" loading="lazy" decoding="async" aria-hidden="true">
                                     {{ $cat['label'] }}
                                 </span>
                                 <span class="text-xs font-mono" :class="selected === '{{ $cat['id'] }}' ? 'text-brand-400/70' : 'text-slate-600'" x-text="catCount('{{ $cat['id'] }}')"></span>

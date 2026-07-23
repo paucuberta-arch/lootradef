@@ -2,6 +2,7 @@
 
 @section('contenido')
     <div class="game-page min-h-[calc(100vh-4rem)]">
+        <x-ui.game-toolbar />
         @yield('game-content')
     </div>
 @endsection

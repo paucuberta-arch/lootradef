@@ -17,6 +17,119 @@ const initialBalance = Number(body?.dataset.walletBalance ?? 0);
 
 Alpine.store('wallet', { saldo: Number.isFinite(initialBalance) ? initialBalance : 0 });
 
+const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+const soundStorageKey = 'lootra:sound-enabled';
+const initialSoundEnabled = (() => {
+    try {
+        return window.localStorage.getItem(soundStorageKey) !== '0';
+    } catch {
+        return true;
+    }
+})();
+
+const audioContext = {
+    context: null,
+    get enabled() {
+        return Alpine.store('lootra')?.soundEnabled === true;
+    },
+    ensure() {
+        if (!this.enabled) return null;
+        const AudioContextClass = globalThis.AudioContext || globalThis.webkitAudioContext;
+        if (!AudioContextClass) return null;
+        this.context ||= new AudioContextClass();
+        if (this.context.state === 'suspended') this.context.resume().catch(() => {});
+        return this.context;
+    },
+    toggle() {
+        const next = !this.enabled;
+        Alpine.store('lootra').soundEnabled = next;
+        try {
+            window.localStorage.setItem(soundStorageKey, next ? '1' : '0');
+        } catch {
+            // Preferences are optional when storage is unavailable.
+        }
+        return next;
+    },
+    tone(frequency, duration = 0.08, options = {}) {
+        const context = this.ensure();
+        if (!context) return;
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        const start = context.currentTime + (options.delay || 0);
+        const end = start + duration;
+        oscillator.type = options.type || 'sine';
+        oscillator.frequency.setValueAtTime(frequency, start);
+        if (options.to) oscillator.frequency.exponentialRampToValueAtTime(options.to, end);
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(options.gain || 0.035, start + Math.min(0.018, duration / 3));
+        gain.gain.exponentialRampToValueAtTime(0.0001, end);
+        oscillator.connect(gain).connect(context.destination);
+        oscillator.start(start);
+        oscillator.stop(end + 0.01);
+    },
+    play(event = 'click') {
+        if (!this.enabled || reducedMotionQuery.matches && event === 'ambient') return;
+        const patterns = {
+            click: [[260, 0.055, 0]],
+            select: [[420, 0.06, 0]],
+            spin: [[150, 0.12, 0, {type: 'triangle', to: 240}], [210, 0.1, 0.08, {type: 'triangle', to: 330}]],
+            'reel-stop': [[280, 0.065, 0, {type: 'square', gain: 0.025}]],
+            card: [[520, 0.055, 0, {type: 'triangle', gain: 0.028}]],
+            land: [[380, 0.08, 0, {type: 'triangle', to: 220}], [220, 0.1, 0.06, {type: 'sine', gain: 0.03}]],
+            win: [[523, 0.1, 0], [659, 0.12, 0.09], [784, 0.18, 0.2]],
+            jackpot: [[392, 0.12, 0], [523, 0.12, 0.1], [659, 0.12, 0.2], [1046, 0.3, 0.32]],
+            lose: [[180, 0.16, 0, {type: 'sawtooth', to: 110, gain: 0.025}]],
+            cashout: [[440, 0.08, 0], [660, 0.16, 0.08]],
+            crash: [[260, 0.1, 0, {type: 'sawtooth', to: 70, gain: 0.03}]],
+            error: [[120, 0.12, 0, {type: 'square', gain: 0.022}]],
+        };
+        for (const [frequency, duration, delay, options] of patterns[event] || patterns.click) {
+            this.tone(frequency, duration, {...options, delay});
+        }
+    },
+};
+
+Alpine.store('lootra', {
+    soundEnabled: initialSoundEnabled,
+    reducedMotion: reducedMotionQuery.matches,
+});
+
+window.lootraAudio = audioContext;
+
+Alpine.data('gameToolbar', () => ({
+    fullscreen: false,
+    reducedMotion: reducedMotionQuery.matches,
+    fullscreenHandler: null,
+    motionHandler: null,
+    init() {
+        this.fullscreenHandler = () => { this.fullscreen = Boolean(document.fullscreenElement); };
+        this.motionHandler = event => {
+            this.reducedMotion = event.matches;
+            Alpine.store('lootra').reducedMotion = event.matches;
+        };
+        document.addEventListener('fullscreenchange', this.fullscreenHandler);
+        reducedMotionQuery.addEventListener?.('change', this.motionHandler);
+    },
+    destroy() {
+        document.removeEventListener('fullscreenchange', this.fullscreenHandler);
+        reducedMotionQuery.removeEventListener?.('change', this.motionHandler);
+    },
+    toggleSound() {
+        const enabled = window.lootraAudio.toggle();
+        if (enabled) window.lootraAudio.play('click');
+    },
+    async toggleFullscreen() {
+        if (document.fullscreenElement) return this.exitFullscreen();
+        const target = this.$root.closest('.game-page');
+        if (!target?.requestFullscreen) return;
+        try { await target.requestFullscreen(); } catch { /* Fullscreen is optional on some mobile browsers. */ }
+    },
+    async exitFullscreen() {
+        if (!document.fullscreenElement || !document.exitFullscreen) return;
+        try { await document.exitFullscreen(); } catch { /* Ignore browser-specific fullscreen errors. */ }
+    },
+}));
+
 Alpine.data('rickyChallenge', (initial) => ({
     seconds: Number(initial.seconds || 0),
     balance: Number(initial.balance || 0),

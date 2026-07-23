@@ -87,7 +87,9 @@
                             <p class="text-xs font-medium text-brand-400 uppercase tracking-wider">Saldo</p>
                             <p class="text-white font-semibold mt-0.5">€<span x-text="$store.wallet.saldo.toFixed(2)">{{ number_format($usuario->saldo, 2) }}</span></p>
                         </div>
-                        @if(!$campaignChallenge || $campaignChallenge->status !== 'active')<button @click="depositOpen=true" class="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition text-sm font-bold">Añadir saldo demo</button>@else<span class="text-xs text-cyan-300">La cartera normal permanece separada durante el reto</span>@endif
+                        @if(config('features.demo_deposits.enabled') && $usuario->is_demo)
+                            @if(!$campaignChallenge || $campaignChallenge->status !== 'active')<button @click="depositOpen=true" class="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition text-sm font-bold">Añadir saldo demo</button>@else<span class="text-xs text-cyan-300">La cartera normal permanece separada durante el reto</span>@endif
+                        @endif
                     </div>
                         </div>
 
@@ -150,20 +152,22 @@
 
         </div>
 
+        @if(config('features.demo_deposits.enabled') && $usuario->is_demo)
         <x-ui.modal name="depositOpen" title="Añadir saldo demo" max-width="max-w-md">
                 <p class="text-xs font-black uppercase tracking-wider text-amber-300">Entorno de demostración</p>
                 <p class="mt-2 text-sm text-slate-400">Este movimiento no representa un pago real y quedará registrado en tu cartera.</p>
-                <x-ui.money-input x-model.number="amount" min="1" max="50000" class="mt-5" label="Importe demo" />
+                <x-ui.money-input x-model.number="amount" min="1" max="1000" class="mt-5" label="Importe demo" />
                 <div class="mt-3 grid grid-cols-4 gap-2"><template x-for="value in [10,25,50,100]"><button @click="amount=value" class="rounded-lg bg-white/5 py-2 text-xs hover:bg-white/10" x-text="value+'€'"></button></template></div>
                 <p x-show="error" class="mt-3 text-sm text-red-300" x-text="error"></p>
                 <p x-show="success" class="mt-3 text-sm text-emerald-300" x-text="success"></p>
                 <div class="mt-5 flex gap-2"><button @click="depositOpen=false" :disabled="busy" class="flex-1 rounded-xl border border-white/10 py-3 text-sm text-slate-400">Cancelar</button><button @click="deposit" :disabled="busy||amount<1" class="flex-1 rounded-xl bg-emerald-500 py-3 font-bold text-slate-950 disabled:opacity-50" x-text="busy?'Procesando…':'Confirmar demo'"></button></div>
         </x-ui.modal>
+        @endif
     </div>
 
 @push('scripts')
 <script>
-function profileWallet(){return{depositOpen:false,amount:50,busy:false,error:'',success:'',lastMovement:null,money(value){return new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(Number(value)||0)},async deposit(){if(this.busy)return;this.busy=true;this.error='';this.success='';try{const response=await fetch(@js(route('wallet.demo-deposit')),{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content},body:JSON.stringify({amount:this.amount})});const data=await response.json();if(!response.ok)throw new Error(data.message||data.error||'No se pudo completar el depósito demo.');this.$store.wallet.saldo=Number(data.saldo);this.lastMovement=data.movement;this.success='Saldo demo añadido correctamente.';window.dispatchEvent(new CustomEvent('saldo-updated',{detail:{saldo:Number(data.saldo)}}));setTimeout(()=>{this.depositOpen=false;this.success=''},900)}catch(error){this.error=error.message}finally{this.busy=false}}}}
+function profileWallet(){return{depositOpen:false,amount:50,busy:false,error:'',success:'',lastMovement:null,requestToken:window.lootraRequestToken(),money(value){return new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(Number(value)||0)},async deposit(){if(this.busy)return;this.busy=true;this.error='';this.success='';try{const response=await fetch(@js(route('wallet.demo-deposit')),{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content},body:JSON.stringify({amount:this.amount,request_token:this.requestToken})});const data=await response.json();if(!response.ok)throw new Error(data.message||data.error||'No se pudo completar el depósito demo.');this.requestToken=window.lootraRequestToken();this.$store.wallet.saldo=Number(data.saldo);this.lastMovement=data.movement;this.success='Saldo demo añadido correctamente.';window.dispatchEvent(new CustomEvent('saldo-updated',{detail:{saldo:Number(data.saldo)}}));setTimeout(()=>{this.depositOpen=false;this.success=''},900)}catch(error){this.error=error.message}finally{this.busy=false}}}}
 </script>
 @endpush
 @endsection

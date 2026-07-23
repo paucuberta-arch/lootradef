@@ -6,10 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('admin-title', 'Admin') — Lootra Admin</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"></noscript>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @yield('admin-styles')
 </head>
@@ -60,7 +56,10 @@
                     }
                     if (auth()->user()->can('roles.view')) $navItems[] = ['route' => 'admin.roles', 'icon' => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', 'label' => 'Roles'];
                     if (auth()->user()->can('logs.view')) $navItems[] = ['route' => 'admin.logs', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', 'label' => 'Activity Log'];
-                    if (auth()->user()->can('case-prizes.manage')) $navItems[] = ['route' => 'admin.case-prizes.index', 'icon' => 'M20 12v8H4v-8m16 0H4m16 0-2-4H6l-2 4m8-4v12m-3-9 3 3 3-3', 'label' => 'Premios de cajas'];
+                    if (auth()->user()->can('case-prizes.manage')) {
+                        $navItems[] = ['route' => 'admin.case-prizes.index', 'icon' => 'M20 12v8H4v-8m16 0H4m16 0-2-4H6l-2 4m8-4v12m-3-9 3 3 3-3', 'label' => 'Premios de cajas'];
+                        $navItems[] = ['route' => 'admin.case-history.index', 'icon' => 'M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Historial de cajas'];
+                    }
                     if (auth()->user()->can('campaigns.stats.view')) $navItems[] = ['route' => 'admin.campaigns.rickyedit', 'icon' => 'M11.049 2.927c.3-.921 1.603-.921 1.902 0l2.122 6.53a1 1 0 00.95.69h6.866c.969 0 1.371 1.24.588 1.81l-5.555 4.036a1 1 0 00-.364 1.118l2.122 6.53c.3.921-.755 1.688-1.539 1.118l-5.555-4.036a1 1 0 00-1.176 0l-5.555 4.036c-.783.57-1.838-.197-1.539-1.118l2.122-6.53a1 1 0 00-.364-1.118L.52 11.956c-.783-.57-.38-1.81.588-1.81h6.866a1 1 0 00.951-.69l2.122-6.529z', 'label' => 'Campaña RickyEdit'];
                 @endphp
 
@@ -130,6 +129,8 @@
             </main>
         </div>
     </div>
+
+    @include('partials.analytics-consent')
 
     <div x-show="confirmForm" x-cloak class="fixed inset-0 z-[100] grid place-items-center p-4" role="dialog" aria-modal="true" aria-labelledby="admin-confirm-title">
         <button class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="closeConfirm()" aria-label="Cancelar"></button>

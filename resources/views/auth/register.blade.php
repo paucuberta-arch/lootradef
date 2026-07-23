@@ -62,7 +62,7 @@
 
                     <div>
                         <label for="password" class="block text-sm font-medium text-slate-300 mb-2">Contraseña</label>
-                        <div class="relative"><input id="password" x-model="password" :type="showPassword ? 'text' : 'password'" name="password" required autocomplete="new-password" placeholder="Mínimo 8 caracteres" class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 pr-20 text-white outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30"><button type="button" @click="showPassword=!showPassword" class="absolute inset-y-0 right-0 min-w-16 px-3 text-xs font-bold text-slate-400 hover:text-white" x-text="showPassword ? 'Ocultar' : 'Mostrar'"></button></div>
+                        <div class="relative"><input id="password" x-model="password" :type="showPassword ? 'text' : 'password'" name="password" required autocomplete="new-password" placeholder="Mínimo 10 caracteres, con letras y números" class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 pr-20 text-white outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30"><button type="button" @click="showPassword=!showPassword" class="absolute inset-y-0 right-0 min-w-16 px-3 text-xs font-bold text-slate-400 hover:text-white" x-text="showPassword ? 'Ocultar' : 'Mostrar'"></button></div>
                         <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-white/5"><span class="block h-full rounded-full transition-all" :class="password.length >= 12 ? 'bg-emerald-400' : password.length >= 8 ? 'bg-amber-400' : 'bg-red-400'" :style="`width:${Math.min(100,password.length/12*100)}%`"></span></div>
                         @error('password')<p class="mt-2 text-sm text-red-300">{{ $message }}</p>@enderror
                     </div>
@@ -71,6 +71,11 @@
                         <label for="password_confirmation" class="block text-sm font-medium text-slate-300 mb-2">Repite la contraseña</label>
                         <div class="relative"><input id="password_confirmation" :type="showConfirmation ? 'text' : 'password'" name="password_confirmation" required autocomplete="new-password" placeholder="Confirma tu contraseña" class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 pr-20 text-white outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30"><button type="button" @click="showConfirmation=!showConfirmation" class="absolute inset-y-0 right-0 min-w-16 px-3 text-xs font-bold text-slate-400 hover:text-white" x-text="showConfirmation ? 'Ocultar' : 'Mostrar'"></button></div>
                     </div>
+
+                    <label class="flex items-start gap-3 text-sm text-slate-400">
+                        <input type="checkbox" name="marketing_consent" value="1" @checked(old('marketing_consent')) class="mt-1 rounded border-white/20 bg-white/5 text-brand-500">
+                        <span>Quiero recibir por correo novedades y campañas. Es opcional y puedo darme de baja en cualquier momento.</span>
+                    </label>
 
                     <x-ui.button type="submit" class="w-full" x-bind:disabled="submitting"><span x-text="submitting ? 'Creando cuenta…' : 'Crear cuenta'">Crear cuenta</span></x-ui.button>
                 </form>

@@ -4,7 +4,7 @@
 @section('styles')
 <style>
     @keyframes card-deal{from{opacity:0;transform:translate3d(72px,-38px,0) rotate(10deg) scale(.82)}to{opacity:1;transform:none}}
-    .dealer-table{background:radial-gradient(ellipse at 50% 42%,#176347,#06291e 68%);border:14px solid #4a220c;border-bottom-width:24px;box-shadow:inset 0 0 90px #0009,0 35px 80px #000b}
+    .dealer-table{background:linear-gradient(180deg,rgba(3,13,22,.2),rgba(2,12,16,.82)),url('/images/poker-live.webp') center/cover no-repeat,#06291e;border:14px solid #4a220c;border-bottom-width:24px;box-shadow:inset 0 0 90px #0009,0 35px 80px #000b}
     .holdem-card{width:clamp(56px,8vw,82px);aspect-ratio:.7;border-radius:10px;background:linear-gradient(145deg,#fff,#e2e8f0);color:#111827;position:relative;box-shadow:0 12px 25px #0008;border:1px solid white;animation:card-deal .32s cubic-bezier(.16,1,.3,1) both;backface-visibility:hidden}
     .holdem-card.red{color:#dc2626}.holdem-card.back{background:repeating-linear-gradient(45deg,#172554 0 6px,#7c3aed 6px 12px);border:4px solid white}
     .holdem-card b{position:absolute;left:7px;top:5px;font-size:16px}.holdem-card i{position:absolute;inset:0;display:grid;place-items:center;font-style:normal;font-size:30px}
@@ -33,7 +33,7 @@
                     <div class="text-center"><div class="mb-3 flex items-center justify-center gap-2"><b class="text-sm text-emerald-200">Tu mano</b><span x-show="hand?.player_hand" class="rounded-full bg-black/25 px-2 py-1 text-xs text-cyan-200" x-text="hand.player_hand"></span></div><div class="flex min-h-[118px] justify-center gap-2"><template x-for="(card,i) in (hand?.player||[])" :key="cardKey(card, 'player', i)"><div class="holdem-card" :class="cardColor(card)" :style="`animation-delay:${i*.08}s`"><b x-text="rank(card.rank)"></b><i x-text="suit(card.suit)"></i></div></template><template x-if="!hand"><div class="flex gap-2"><div class="holdem-card back opacity-40"></div><div class="holdem-card back opacity-40"></div></div></template></div></div>
                 </div>
             </section>
-            <div x-show="finished" class="mt-5 rounded-2xl border p-5 text-center" :class="hand?.result==='ganada'?'border-emerald-400/30 bg-emerald-400/10':hand?.result==='empate'?'border-amber-400/30 bg-amber-400/10':'border-red-400/20 bg-red-400/5'" aria-live="polite"><h2 class="text-2xl font-black capitalize" x-text="hand?.result"></h2><p x-show="hand?.dealer_hand" class="mt-1 text-sm text-slate-400"><span x-text="hand?.player_hand"></span> contra <span x-text="hand?.dealer_hand"></span></p><p x-show="hand?.result==='retirada'" class="mt-1 text-sm text-slate-400">Has conservado el saldo que todavía no estaba en la mesa.</p><b x-show="hand?.winnings>0" class="mt-2 block text-emerald-300" x-text="'Recibes '+money(hand.winnings)"></b></div>
+            <div x-show="finished" class="mt-5 rounded-2xl border p-5 text-center" :class="hand?.result==='ganada'?'border-emerald-400/30 bg-emerald-400/10':hand?.result==='empate'?'border-amber-400/30 bg-amber-400/10':'border-red-400/20 bg-red-400/5'" aria-live="polite"><h2 class="text-2xl font-black capitalize" x-text="hand?.result"></h2><p x-show="hand?.dealer_hand" class="mt-1 text-sm text-slate-400"><span x-text="hand?.player_hand"></span> contra <span x-text="hand?.dealer_hand"></span></p><p x-show="hand?.result==='retirada'" class="mt-1 text-sm text-slate-400">Has conservado el saldo que todavía no estaba en la mesa.</p><b x-show="hand?.winnings>0" class="mt-2 block text-emerald-300" x-text="'Premio bruto '+money(hand.winnings)"></b><small class="mt-1 block text-xs font-bold" :class="netResult>0?'text-emerald-200':netResult===0?'text-amber-200':'text-slate-400'" x-text="netMessage"></small></div>
         </main>
 
         <aside class="space-y-5">
@@ -66,6 +66,13 @@ function dealerPoker() {
         notice: active ? 'Hemos recuperado la mano que tenías en curso.' : '',
         reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
         get finished() { return ['finalizada', 'retirada'].includes(this.hand?.phase); },
+        get netResult() { return Number(((Number(this.hand?.winnings) || 0) - (Number(this.hand?.wagered) || 0)).toFixed(2)); },
+        get netMessage() {
+            if (!this.hand) return '';
+            if (this.netResult > 0) return `Ganancia neta +${this.money(this.netResult)}`;
+            if (this.netResult === 0) return 'Apuesta devuelta íntegramente';
+            return `Resultado neto -${this.money(Math.abs(this.netResult))}`;
+        },
         get canStart() {
             const amount = Number(this.ante);
             return Number.isFinite(amount) && amount >= 1 && amount <= 1000 && amount <= this.saldo;
@@ -119,6 +126,7 @@ function dealerPoker() {
         async request(url, body) {
             if (this.busy) return;
             this.busy = true;
+            window.lootraAudio?.play('card');
             this.error = '';
             this.notice = '';
             const previous = this.hand?.community || [];
@@ -157,12 +165,16 @@ function dealerPoker() {
                 if (isShowdown) {
                     await this.pause(this.reducedMotion ? 0 : 260);
                     this.hand = data;
+                    const winnings = Number(data.winnings ?? 0);
+                    const wagered = Number(data.wagered ?? 0);
+                    window.lootraAudio?.play(winnings > wagered ? 'win' : (winnings === wagered ? 'land' : 'lose'));
                 }
                 this.streetBet = data.ante;
                 this.updateBalance(data.balance);
             } catch (error) {
                 const shouldSync = error.status === 409 || error.status === undefined;
                 if (!shouldSync || !await this.syncHand()) this.error = error.message;
+                window.lootraAudio?.play('error');
             } finally {
                 this.busy = false;
             }

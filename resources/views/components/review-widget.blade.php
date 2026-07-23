@@ -87,11 +87,11 @@ function reviewWidget() {
                         'Accept': 'application/json',
                     },
                     body: JSON.stringify({
-                        juego_slug: '{{ $slug ?? "" }}',
+                        juego_slug: @js($slug ?? ''),
                         titulo: this.titulo,
                         contenido: this.contenido,
                         puntuacion: this.puntuacion,
-                        tipo: '{{ $reviewType ?? "juego" }}',
+                        tipo: @js($reviewType ?? 'juego'),
                     }),
                 });
                 const data = await res.json();

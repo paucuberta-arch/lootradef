@@ -150,14 +150,15 @@ function caseCenter() {
     return {
         cases: @js($cajas),
         inventory: @js($inventario->map(fn ($item) => ['id' => $item->id, 'nombre' => $item->nombre, 'imagen' => $item->imagen, 'rareza' => $item->rareza, 'valor_canje' => $item->valor_canje, 'estado' => $item->estado, 'created_at' => $item->created_at->diffForHumans()])),
-        filter: 'all', selectedKey: null, selected: null, opening: false, prize: null, committedPrize: null, error: '', redeeming: null, confirming: null, toast: '', reelItems: [], spinId: 0, winnerIndex: 0, spinSettled: false,
+        filter: 'all', selectedKey: null, selected: null, requestToken: '', opening: false, prize: null, committedPrize: null, error: '', redeeming: null, confirming: null, toast: '', reelItems: [], spinId: 0, winnerIndex: 0, spinSettled: false,
         get availableCount() { return this.inventory.filter(item => item.estado === 'disponible').length; },
         get inventoryValue() { return this.inventory.filter(item => item.estado === 'disponible').reduce((sum, item) => sum + Number(item.valor_canje), 0); },
         money(value) { return new Intl.NumberFormat('es-ES', { style:'currency', currency:'EUR' }).format(Number(value || 0)); },
         rarityName(value) { return ({comun:'Común', poco_comun:'Poco común', raro:'Raro', epico:'Épico', legendario:'Legendario'})[value] || value; },
         init(){this.escapeHandler=e=>{if(e.key==='Escape'&&!this.opening){this.confirming=null;this.closeModal()}};document.addEventListener('keydown',this.escapeHandler)},
         destroy(){document.removeEventListener('keydown',this.escapeHandler);document.body.style.overflow=''},
-        selectCase(key) { this.selectedKey=key; this.selected=this.cases[key]; this.prize=null; this.committedPrize=null; this.reelItems=[]; this.spinSettled=false; this.error=''; document.body.style.overflow='hidden'; },
+        newRequestToken() { const webCrypto=globalThis.crypto; if(typeof webCrypto?.randomUUID==='function')return webCrypto.randomUUID(); const bytes=new Uint8Array(16); webCrypto.getRandomValues(bytes); bytes[6]=(bytes[6]&15)|64; bytes[8]=(bytes[8]&63)|128; return Array.from(bytes,(b,i)=>([4,6,8,10].includes(i)?'-':'')+b.toString(16).padStart(2,'0')).join(''); },
+        selectCase(key) { this.selectedKey=key; this.selected=this.cases[key]; this.requestToken=this.newRequestToken(); this.prize=null; this.committedPrize=null; this.reelItems=[]; this.spinSettled=false; this.error=''; document.body.style.overflow='hidden'; },
         closeModal() { if (this.opening) return; this.selected=null; this.selectedKey=null; this.prize=null; this.committedPrize=null; this.reelItems=[]; this.spinSettled=false; this.error=''; document.body.style.overflow=''; },
         addToInventory(item) {
             const saved={...item,estado:item.estado || 'disponible',created_at:item.created_at || 'ahora'};
@@ -252,7 +253,7 @@ function caseCenter() {
             this.opening=true; this.error=''; this.prize=null;
             try {
                 const url=@js(route('cases.open',['caja'=>'__CASE__'])).replace('__CASE__',encodeURIComponent(this.selectedKey));
-                const response=await fetch(url, { method:'POST', headers:{'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content,'Accept':'application/json'} });
+                const response=await fetch(url, { method:'POST', headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content,'Accept':'application/json'}, body:JSON.stringify({request_token:this.requestToken}) });
                 const data=await response.json();
                 if (!response.ok) throw new Error(data.message || 'No se pudo abrir la caja.');
                 const reelWinner=data.reel?.[Number(data.winner_index)];

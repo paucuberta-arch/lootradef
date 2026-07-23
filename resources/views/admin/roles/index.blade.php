@@ -14,7 +14,7 @@
                         <span class="text-xs text-slate-500">{{ $role->users_count }} usuarios</span>
                     </div>
                     @if(auth()->user()->can('roles.manage') && $role->name !== 'super_admin')
-                        <form method="POST" action="{{ route('admin.roles.destroy', $role) }}" @submit.prevent="requestDelete($el, 'Se eliminará el rol {{ addslashes($role->label) }}.')">
+                        <form method="POST" action="{{ route('admin.roles.destroy', $role) }}" @submit.prevent="requestDelete($el, @js('Se eliminará el rol '.$role->label.'.'))">
                             @csrf @method('DELETE')
                             <button class="text-xs text-red-400 hover:text-red-300">Eliminar</button>
                         </form>

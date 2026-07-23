@@ -4,6 +4,9 @@
 @section('styles')
 <style>
     .crash-line { transition: all 0.1s linear; }
+    .crash-stage{background:linear-gradient(180deg,rgba(4,8,22,.44),rgba(4,6,16,.92)),url('/images/lootra_visual_pack/04_backgrounds/bg_cosmic_planet_1920x1080.webp') center/cover no-repeat,#050816;box-shadow:inset 0 0 120px #000b,0 34px 90px #000b}
+    .crash-stage::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.2;background-image:linear-gradient(rgba(103,232,249,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(103,232,249,.08) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,#000,transparent 84%)}
+    .crash-stage::after{content:"LOOTRA FLIGHT DECK  ·  SERVER CLOCK";position:absolute;right:1.2rem;top:1rem;color:rgba(165,243,252,.45);font-size:.55rem;font-weight:900;letter-spacing:.16em;pointer-events:none}
     @keyframes pulse-glow { 0%, 100% { transform:scale(1); border-color:rgba(245,158,11,.18); } 50% { transform:scale(1.018); border-color:rgba(245,158,11,.55); } }
     .pulse-glow { animation: pulse-glow 1.5s ease-in-out infinite; border:1px solid rgba(245,158,11,.18); }
     @keyframes crash-shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
@@ -36,9 +39,14 @@
                 </div>
             </div>
 
-            <div class="game-stage rounded-[1.75rem] bg-white/[0.03] border border-white/5 overflow-hidden mb-6">
+            <div class="crash-stage game-stage rounded-[1.75rem] border border-cyan-300/10 overflow-hidden mb-6">
                 <div class="relative h-56 sm:h-80 flex items-center justify-center"
                      :class="fase === 'crashed' ? 'crash-shake' : ''">
+
+                    <div class="absolute left-4 top-4 z-20 rounded-full border border-cyan-200/15 bg-slate-950/55 px-3 py-1 text-[10px] font-black uppercase tracking-[.16em] text-cyan-200/75 backdrop-blur-sm">
+                        <span class="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_10px_#67e8f9]" aria-hidden="true"></span>
+                        Flight telemetry
+                    </div>
 
                     <div class="absolute inset-0 p-4">
                         <svg class="w-full h-full" viewBox="0 0 100 60" preserveAspectRatio="none">
@@ -56,7 +64,7 @@
                         </svg>
                     </div>
 
-                    <div class="relative z-10 text-center">
+                    <div class="relative z-10 text-center" aria-live="polite">
                         <template x-if="fase === 'esperando'">
                             <div>
                                 <div class="text-4xl sm:text-6xl font-black text-slate-600">1.00x</div>
@@ -76,13 +84,15 @@
                             <div>
                                 <div class="text-4xl sm:text-6xl font-black text-red-500" x-text="crashAt.toFixed(2) + 'x'"></div>
                                 <p class="text-sm text-red-400 mt-2">Explotado!</p>
+                                <p class="mt-1 text-xs font-bold text-red-200/80" x-text="netMessage"></p>
                             </div>
                         </template>
                         <template x-if="fase === 'cobrado'">
                             <div>
                                 <div class="text-4xl sm:text-6xl font-black text-emerald-400" x-text="cashoutAt.toFixed(2) + 'x'"></div>
                                 <p class="text-sm text-emerald-400 mt-2">Cobrado!</p>
-                                <p class="text-lg text-emerald-300 font-bold mt-1" x-text="'+€' + ganancia.toFixed(2)"></p>
+                                <p class="text-lg text-emerald-300 font-bold mt-1" x-text="'Cobro bruto €' + ganancia.toFixed(2)"></p>
+                                <p class="mt-1 text-xs font-bold text-emerald-100/80" x-text="netMessage"></p>
                             </div>
                         </template>
                     </div>
@@ -166,6 +176,7 @@ function crashGame() {
     return {
         saldo: {{ $gameBalance }},
         apuesta: 1,
+        roundBet: activeRound?.apuesta ? Number(activeRound.apuesta) : 0,
         autoCashout: 2,
         fase: activeRound ? 'subiendo' : 'esperando',
         multiplier: Number(activeRound?.multiplier || 1),
@@ -183,6 +194,12 @@ function crashGame() {
         countdown: 3,
         roundId: activeRound?.round_id || null,
         ratePerSecond: Number(activeRound?.rate_per_second || 0.2),
+        get netResult() { return Number((Number(this.ganancia) - Number(this.roundBet)).toFixed(2)); },
+        get netMessage() {
+            if (this.netResult > 0) return `Resultado neto +€${this.netResult.toFixed(2)}`;
+            if (this.netResult === 0) return 'Apuesta devuelta íntegramente';
+            return `Resultado neto -€${Math.abs(this.netResult).toFixed(2)}`;
+        },
 
         init() {
             this.visibilityHandler = () => {
@@ -208,6 +225,8 @@ function crashGame() {
 
             this.actionInFlight = true;
             this.fase = 'preparando';
+            this.roundBet = Number(this.apuesta);
+            window.lootraAudio?.play('click');
             try {
                 this.countdown = 3;
                 while (this.countdown > 1) {
@@ -235,10 +254,12 @@ function crashGame() {
                 this.graphPoints = '0,58';
                 this.fase = 'subiendo';
                 this.autoCashoutTriggered = false;
+                window.lootraAudio?.play('spin');
 
                 this.animateCrash(this.multiplier);
             } catch (e) {
                 this.error = e.message;
+                window.lootraAudio?.play('error');
                 this.fase = 'esperando';
             } finally {
                 this.actionInFlight = false;
@@ -288,6 +309,7 @@ function crashGame() {
 
         async cashout() {
             if (this.fase !== 'subiendo' || this.actionInFlight || !this.roundId) return;
+            window.lootraAudio?.play('cashout');
             // Give the payout request priority over the read-only heartbeat. Keep
             // the visual clock moving until the authoritative response arrives.
             this.statusController?.abort();
@@ -310,6 +332,7 @@ function crashGame() {
                 this.applyRound(data);
             } catch (e) {
                 this.error = e.message;
+                window.lootraAudio?.play('error');
                 if (this.fase === 'subiendo' && !this.animationFrame) this.animateCrash(this.multiplier);
             } finally {
                 this.actionInFlight = false;
@@ -344,6 +367,7 @@ function crashGame() {
 
         applyRound(data, syncActive = true) {
             if (data.saldo !== undefined) this.updateBalance(data.saldo);
+            if (data.apuesta !== undefined) this.roundBet = Number(data.apuesta);
             if (data.estado === 'activa') {
                 if (syncActive) this.multiplier = Math.max(this.multiplier, Number(data.multiplier));
                 return;
@@ -355,6 +379,7 @@ function crashGame() {
             this.crashAt = Number(data.crash_point);
             this.cashoutAt = data.estado === 'cobrado' ? Number(data.multiplier) : 0;
             this.fase = data.estado;
+            window.lootraAudio?.play(data.estado === 'cobrado' ? 'win' : 'crash');
             this.historial.unshift(Number(data.crash_point));
             if (this.historial.length > 15) this.historial.pop();
         },

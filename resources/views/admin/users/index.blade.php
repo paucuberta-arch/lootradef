@@ -58,9 +58,9 @@
                             <a href="{{ route('admin.users.edit', $u) }}" class="text-xs text-brand-400 hover:text-brand-300 transition mr-3">Editar</a>
                             @endcan
                             @can('users.delete')
-                            <form method="POST" action="{{ route('admin.users.destroy', $u) }}" class="inline" @submit.prevent="requestDelete($el, 'Se eliminará la cuenta de {{ addslashes($u->name) }} y sus datos asociados.')">
+                            <form method="POST" action="{{ route('admin.users.destroy', $u) }}" class="inline" @submit.prevent="requestDelete($el, @js('Se desactivará la cuenta de '.$u->name.' y se conservarán sus datos para auditoría.'))">
                                 @csrf @method('DELETE')
-                                <button class="text-xs text-red-400 hover:text-red-300 transition">Eliminar</button>
+                                <button class="text-xs text-red-400 hover:text-red-300 transition">Desactivar</button>
                             </form>
                             @endcan
                         </td>

@@ -129,6 +129,7 @@ function quantumPlinko() {
         animationFrame: null,
         idleFrame: null,
         lastIdlePaint: 0,
+        visibilityHandler: null,
         ball: null,
         trail: [],
         particles: [],
@@ -152,6 +153,7 @@ function quantumPlinko() {
         destroy() {
             cancelAnimationFrame(this.animationFrame);
             cancelAnimationFrame(this.idleFrame);
+            document.removeEventListener('visibilitychange', this.visibilityHandler);
         },
         initCanvas() {
             this.canvas = this.$refs.plinkoCanvas;
@@ -161,6 +163,8 @@ function quantumPlinko() {
             this.canvas.height = height * this.pixelRatio;
             this.context = this.canvas.getContext('2d', {alpha: false});
             this.context.setTransform(this.pixelRatio, 0, 0, this.pixelRatio, 0, 0);
+            this.visibilityHandler = () => { this.lastIdlePaint = performance.now(); };
+            document.addEventListener('visibilitychange', this.visibilityHandler);
             this.stars = Array.from({length: 46}, (_, index) => ({
                 x: 25 + ((index * 83) % 670),
                 y: 28 + ((index * 137) % 570),
@@ -169,7 +173,7 @@ function quantumPlinko() {
             }));
             this.drawScene(performance.now());
             const idle = time => {
-                if (!this.playing && time - this.lastIdlePaint > 42) {
+                if (!document.hidden && !this.playing && time - this.lastIdlePaint > 70) {
                     this.drawScene(time);
                     this.lastIdlePaint = time;
                 }
@@ -197,6 +201,7 @@ function quantumPlinko() {
         async play() {
             if (this.playing || !this.canPlay) return;
             this.playing = true;
+            window.lootraAudio?.play('spin');
             this.result = null;
             this.error = '';
             this.landedSlot = null;
@@ -220,9 +225,11 @@ function quantumPlinko() {
                 this.roundToken = null;
                 this.result = data;
                 this.updateBalance(data.saldo);
+                window.lootraAudio?.play(Number(data.ganancia) > 0 ? (Number(data.ganancia) >= Number(data.apuesta) * 10 ? 'jackpot' : 'win') : 'lose');
                 this.statusText = `La esfera ha caído en la casilla ${data.multiplier}x.`;
             } catch (error) {
                 this.error = error.message;
+                window.lootraAudio?.play('error');
                 this.statusText = 'El lanzamiento no se ha podido completar.';
                 this.ball = null;
             } finally {

@@ -11,11 +11,12 @@
         background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.25), rgba(3,7,18,.94));
         box-shadow: inset 0 0 30px rgba(0,0,0,.85), inset 0 2px 2px rgba(255,255,255,.35), 0 12px 30px rgba(0,0,0,.45);
     }
+    .reel-container::before{content:"";position:absolute;z-index:2;inset:0;background:linear-gradient(105deg,rgba(255,255,255,.26),transparent 20% 70%,rgba(0,0,0,.2));pointer-events:none}
+    .reel-container::after{content:"";position:absolute;z-index:2;left:0;right:0;top:50%;height:25%;transform:translateY(-50%);border-top:1px solid rgba(255,255,255,.28);border-bottom:1px solid rgba(0,0,0,.45);background:linear-gradient(180deg,transparent,rgba(255,255,255,.055),transparent);pointer-events:none}
     .reel-strip { position:absolute; inset:7%; display:grid; place-items:center; transition:filter .2s ease; }
     .reel-strip.spinning { animation:reel-scroll .16s linear infinite alternate; filter:blur(2px) saturate(1.2) brightness(1.15); will-change:transform; }
     .reel-strip.stopping { animation:reel-lock .58s cubic-bezier(.16,1,.3,1); }
-    @keyframes win-flash { 0%,100% { box-shadow: 0 0 0 rgba(245,158,11,0); } 50% { box-shadow: 0 0 25px rgba(245,158,11,0.5); } }
-    .win-flash { animation: win-flash 0.5s ease-in-out 3; border-color: rgba(245,158,11,0.5) !important; }
+    .win-flash { border-color: rgba(245,158,11,0.5) !important; }
     @keyframes win-bounce { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
     .win-bounce { animation: win-bounce 0.4s ease-in-out 3; }
     @keyframes coin-rain {
@@ -26,11 +27,13 @@
         animation: coin-rain 1.2s ease-in forwards;
         position: absolute;
         pointer-events: none;
-        width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff7a8,#f59e0b 48%,#92400e);box-shadow:0 0 12px #fbbf24;
+        width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff7a8,#f59e0b 48%,#92400e);box-shadow:0 0 6px #fbbf24;will-change:transform,opacity;
     }
     .slot-cabinet { background:linear-gradient(145deg,rgba(29,11,55,.94),rgba(5,8,25,.98));box-shadow:inset 0 0 55px rgba(217,70,239,.18),0 35px 90px rgba(0,0,0,.65); }
     .slot-cabinet::before { content:""; position:absolute; inset:0; background:var(--game-art) center/cover; opacity:.22; mix-blend-mode:screen;filter:saturate(1.2); }
     .slot-cabinet::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 25%,rgba(255,255,255,.13),transparent 38%);pointer-events:none}
+    .slot-marquee{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin:-.1rem 0 .8rem;border-bottom:1px solid rgba(255,255,255,.11);padding:0 .15rem .65rem;color:rgba(247,214,145,.8);font-size:.58rem;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
+    .slot-marquee span:first-child{display:flex;align-items:center;gap:.45rem}.slot-marquee i{display:block;width:.4rem;height:.4rem;border-radius:50%;background:#f0ab42;box-shadow:0 0 11px #f0ab42}
     .slot-symbol-art{display:block;width:100%;aspect-ratio:1;border-radius:14px;background-repeat:no-repeat;background-color:rgba(2,6,23,.2);filter:drop-shadow(0 10px 8px rgba(0,0,0,.48));transform:translateZ(0)}
     .slot-symbol-frame{display:grid;aspect-ratio:1;place-items:center;overflow:hidden;border:1px solid rgba(255,255,255,.08);background:radial-gradient(circle,rgba(255,255,255,.08),rgba(2,6,23,.28));}
     .reel-shine { position:absolute; inset:0; background:linear-gradient(110deg,transparent 25%,rgba(255,255,255,.45) 48%,transparent 70%); transform:translateX(-100%); pointer-events:none; z-index:3; }
@@ -67,6 +70,7 @@
                     <div class="slot-cabinet rounded-[1.6rem] border-2 border-fuchsia-400/20 p-3 min-[420px]:p-5 mb-6 relative overflow-hidden"
                          style="--game-art:url('{{ $gameHero }}')"
                          :class="ganancia > 0 && !spinning ? 'win-flash' : ''">
+                        <div class="slot-marquee"><span><i aria-hidden="true"></i> Lootra · 3 reels</span><span x-text="spinning ? 'Spin in progress' : (lastResult ? 'Round complete' : 'Ready')"></span></div>
                         <div class="grid grid-cols-3 gap-3">
                             <template x-for="(reel, i) in reels" :key="i">
                                 <div class="reel-container aspect-square rounded-xl border border-white/40 flex items-center justify-center"
@@ -97,12 +101,13 @@
                     <div x-show="lastResult" class="text-center mb-4">
                         <template x-if="ganancia > 0">
                             <div class="text-emerald-400 font-bold text-lg win-bounce">
-                                ¡Ganaste <span x-text="'€' + ganancia.toFixed(2)"></span>!
+                                Premio bruto <span x-text="'€' + ganancia.toFixed(2)"></span>
                             </div>
                         </template>
                         <template x-if="ganancia === 0 && lastResult">
                             <div class="text-red-400 font-bold text-lg">Sin suerte esta vez</div>
                         </template>
+                        <p class="mt-1 text-xs font-bold" :class="netResult > 0 ? 'text-emerald-200' : (netResult === 0 ? 'text-amber-200' : 'text-slate-400')" x-text="netMessage"></p>
                     </div>
                     <p x-show="error" class="text-red-400 text-sm text-center mb-4" x-text="error"></p>
 
@@ -174,7 +179,7 @@
                         <div class="flex items-center justify-between text-xs">
                             <span class="flex gap-1"><template x-for="symbol in h.reels"><span class="slot-symbol-frame h-7 w-7 rounded-md"><i class="slot-symbol-art" :style="symbolStyle(symbol)"></i></span></template></span>
                             <span :class="h.ganancia > 0 ? 'text-emerald-400' : 'text-red-400'"
-                                  x-text="h.ganancia > 0 ? '+€' + h.ganancia.toFixed(2) : '-€' + h.apuesta.toFixed(2)"></span>
+                                  x-text="Number(h.ganancia) > 0 ? '+€' + Number(h.ganancia).toFixed(2) : '-€' + Number(h.apuesta).toFixed(2)"></span>
                         </div>
                     </template>
                 </div>
@@ -189,6 +194,7 @@ function slotsGame() {
     return {
         saldo: {{ $saldo }},
         apuesta: 1,
+        roundBet: 0,
         reels: [],
         reelSpinning: [false, false, false],
         reelStopping: [false, false, false],
@@ -203,7 +209,14 @@ function slotsGame() {
         symbols: @js($symbols),
         atlas: @js($symbolAtlas),
         spinTimer: null,
+        visibilityHandler: null,
         reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+        get netResult() { return Number((Number(this.ganancia) - Number(this.roundBet)).toFixed(2)); },
+        get netMessage() {
+            if (this.netResult > 0) return `Ganancia neta +€${this.netResult.toFixed(2)}`;
+            if (this.netResult === 0) return 'Apuesta devuelta íntegramente';
+            return `Resultado neto -€${Math.abs(this.netResult).toFixed(2)}`;
+        },
 
         symbolStyle(symbol) {
             const index = Math.max(0, this.symbols.indexOf(symbol));
@@ -218,10 +231,24 @@ function slotsGame() {
                 this.symbols[Math.floor(Math.random() * this.symbols.length)],
                 this.symbols[Math.floor(Math.random() * this.symbols.length)],
             ];
+            this.visibilityHandler = () => {
+                if (document.hidden) {
+                    clearInterval(this.spinTimer);
+                    this.spinTimer = null;
+                } else if (this.spinning && !this.spinTimer) {
+                    this.spinTimer = setInterval(() => {
+                        this.reels = this.reels.map((symbol, index) => this.reelSpinning[index]
+                            ? this.symbols[Math.floor(Math.random() * this.symbols.length)]
+                            : symbol);
+                    }, 110);
+                }
+            };
+            document.addEventListener('visibilitychange', this.visibilityHandler);
         },
 
         destroy() {
             clearInterval(this.spinTimer);
+            document.removeEventListener('visibilitychange', this.visibilityHandler);
         },
 
         requestToken() {
@@ -242,6 +269,8 @@ function slotsGame() {
         async spin() {
             if (this.spinning || this.apuesta > this.saldo) return;
             this.spinning = true;
+            window.lootraAudio?.play('spin');
+            this.roundBet = Number(this.apuesta);
             this.ganancia = 0;
             this.lastResult = false;
             this.error = '';
@@ -277,6 +306,7 @@ function slotsGame() {
                     await new Promise(r => setTimeout(r, delays[i] - (i > 0 ? delays[i-1] : 0)));
                     this.reelSpinning[i] = false;
                     this.reelStopping[i] = true;
+                    window.lootraAudio?.play('reel-stop');
 
                     // Animate to final position
                     await new Promise(r => setTimeout(r, 50));
@@ -286,19 +316,21 @@ function slotsGame() {
                     this.reelStopping[i] = false;
                 }
 
-                this.ganancia = data.ganancia;
+                this.ganancia = Number(data.ganancia);
                 this.lastResult = true;
-                this.saldo = data.saldo;
-                Alpine.store('wallet').saldo = data.saldo;
-                window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: data.saldo } }));
-                this.historial.unshift({ reels: data.reels, ganancia: data.ganancia, apuesta: this.apuesta });
+                this.saldo = Number(data.saldo);
+                Alpine.store('wallet').saldo = this.saldo;
+                window.dispatchEvent(new CustomEvent('saldo-updated', { detail: { saldo: this.saldo } }));
+                this.historial.unshift({ reels: data.reels, ganancia: Number(data.ganancia), apuesta: Number(this.apuesta) });
+                window.lootraAudio?.play(this.ganancia > 0 ? (this.ganancia >= this.apuesta * 10 ? 'jackpot' : 'win') : 'lose');
 
                 // Show coins on win
-                if (data.ganancia > 0) {
+                if (this.ganancia > 0) {
                     this.spawnCoins();
                 }
             } catch (e) {
                 this.error = e.message || 'No se pudo conectar con el servidor.';
+                window.lootraAudio?.play('error');
                 this.reelSpinning = [false, false, false];
             } finally {
                 clearInterval(this.spinTimer);
@@ -310,7 +342,7 @@ function slotsGame() {
 
         spawnCoins() {
             this.coinParticles = [];
-            for (let i = 0; i < 15; i++) {
+            for (let i = 0; i < 2; i++) {
                 this.coinParticles.push({
                     id: i,
                     x: 10 + Math.random() * 80,

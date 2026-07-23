@@ -19,6 +19,8 @@
     .playing-card.is-hidden::after{content:"L";display:grid;position:absolute;inset:7px;place-items:center;border:1px solid #d9bd71;border-radius:6px;background:repeating-linear-gradient(45deg,#081a20 0 5px,#18343e 5px 10px);color:#ddc27e;font:900 1.4rem serif}
     .card-corner{position:absolute;left:7px;top:6px;display:flex;flex-direction:column;align-items:center;line-height:.88}.card-center{font-size:2rem;filter:drop-shadow(0 2px 1px #0002)}
     .result-plaque{position:absolute;z-index:30;left:50%;top:50%;transform:translate(-50%,-50%);animation:win-aura 1.5s ease-in-out infinite;border:1px solid rgba(255,255,255,.2);box-shadow:0 18px 60px #000c!important;backdrop-filter:blur(16px)}
+    .table-folio{position:absolute;z-index:12;right:1.25rem;top:1.25rem;display:flex;align-items:center;gap:.5rem;border:1px solid rgba(242,205,117,.2);border-radius:999px;background:rgba(2,8,6,.58);padding:.38rem .65rem;color:rgba(244,222,164,.72);font-size:.55rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase;backdrop-filter:blur(8px)}
+    .table-folio i{display:block;width:.4rem;height:.4rem;border-radius:50%;background:var(--table-accent);box-shadow:0 0 10px var(--table-accent)}
     .blackjack-controls{background:linear-gradient(145deg,rgba(17,23,25,.96),rgba(5,8,10,.98));box-shadow:0 22px 55px #0007,inset 0 1px #fff1}
     .action-button{position:relative;overflow:hidden;border:1px solid rgba(244,215,151,.28);box-shadow:0 10px 25px #0007,inset 0 1px #fff2;text-transform:uppercase;letter-spacing:.08em}
     .action-button::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 20%,rgba(255,255,255,.2),transparent 70%);transform:translateX(-130%);transition:transform .55s ease}.action-button:hover::after{transform:translateX(130%)}
@@ -57,7 +59,8 @@
             </div>
 
             {{-- Mesa --}}
-            <div class="casino-table {{ $variant === 'vip' ? 'table-vip' : 'table-classic' }} game-stage rounded-[2rem] p-3 sm:p-8 mb-6 relative overflow-hidden min-h-[540px] sm:min-h-[650px]" :class="{'is-dealing':busy}">
+            <div class="casino-table {{ $variant === 'vip' ? 'table-vip' : 'table-classic' }} game-stage rounded-[2rem] p-3 sm:p-8 mb-6 relative overflow-hidden min-h-[540px] sm:min-h-[650px]" :class="{'is-dealing':busy}" role="region" aria-label="Mesa de blackjack">
+                <div class="table-folio"><i aria-hidden="true"></i><span x-text="busy ? 'Repartiendo' : (fase === 'jugando' ? 'Tu turno' : 'Mesa lista')"></span></div>
                 <div class="relative z-10">
 
                     {{-- Dealer --}}
@@ -114,7 +117,8 @@
                             <span x-show="estado === 'push'">Empate · apuesta devuelta</span>
                             <span x-show="estado === 'bust'">¡Te pasaste!</span>
                             <span x-show="estado === 'lose'">Dealer gana</span>
-                            <span x-show="ganancia > 0 && estado !== 'push'" x-text="' · premio €' + ganancia.toFixed(2)"></span>
+                            <span x-show="ganancia > 0 && estado !== 'push'" x-text="' · premio bruto €' + ganancia.toFixed(2)"></span>
+                            <span x-show="estado !== 'push'" class="block mt-1 text-xs font-semibold opacity-80" x-text="'Resultado neto ' + signedMoney(netResultValue)"></span>
                         </div>
                     </div>
                 </div>
@@ -205,6 +209,7 @@ function blackjackGame() {
         handId: active?.id ?? null,
         saldo: {{ $gameBalance }},
         apuesta: active?.apuesta ?? {{ $variant === 'vip' ? 10 : 5 }},
+        roundBet: active?.apuesta ?? 0,
         minBet: {{ $variant === 'vip' ? 5 : 1 }},
         maxBet: {{ $variant === 'vip' ? 5000 : 2000 }},
         manoJugador: active?.mano_jugador ?? [],
@@ -237,6 +242,7 @@ function blackjackGame() {
             if (amount === 0) return '±€0.00';
             return `${amount > 0 ? '+' : '-'}€${Math.abs(amount).toFixed(2)}`;
         },
+        get netResultValue() { return Number((Number(this.ganancia) - Number(this.roundBet)).toFixed(2)); },
         decorateCards(cards, group) {
             const sequence = ++this.cardSequence;
             return (cards || []).map((card, index) => ({ ...card, _key: `${group}-${sequence}-${index}`, _dealIndex: index }));
@@ -280,6 +286,7 @@ function blackjackGame() {
         async deal() {
             if (this.busy || this.fase !== '' || !this.canDeal) return;
             this.busy = true;
+            window.lootraAudio?.play('card');
             this.estado = '';
             this.ganancia = 0;
             this.error = '';
@@ -314,6 +321,7 @@ function blackjackGame() {
         async hit() {
             if (this.busy || this.fase !== 'jugando') return;
             this.busy = true;
+            window.lootraAudio?.play('card');
             this.error = '';
             this.notice = '';
             try {
@@ -379,7 +387,9 @@ function blackjackGame() {
             this.puntosDealer = Number(data.puntos_dealer);
             this.estado = data.estado;
             this.ganancia = Number(data.ganancia || 0);
+            this.roundBet = Number(data.apuesta ?? this.roundBet);
             this.fase = 'terminado';
+            window.lootraAudio?.play(this.ganancia > 0 ? (this.estado === 'blackjack' ? 'jackpot' : 'win') : (this.estado === 'push' ? 'land' : 'lose'));
             this.updateBalance(data.saldo);
             if (!this.recordedHands.includes(this.handId)) {
                 this.recordedHands.push(this.handId);

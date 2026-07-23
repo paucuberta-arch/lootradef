@@ -3,7 +3,7 @@
     $googleAnalyticsDebug = (bool) config('services.google_analytics.debug', false);
 @endphp
 
-@if($googleAnalyticsId !== '')
+@if($googleAnalyticsId !== '' && request()->cookie('lootra_analytics_consent') === 'granted')
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id={{ rawurlencode($googleAnalyticsId) }}"></script>
 <script>

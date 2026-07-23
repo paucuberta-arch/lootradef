@@ -114,7 +114,23 @@ class FrontendAssetBuildTest extends TestCase
         $this->assertStringNotContainsString('realista/optimized/casino-chips.webp', $blackjack);
     }
 
-    public function test_google_tag_is_loaded_immediately_after_every_web_layout_head(): void
+    public function test_games_share_accessible_toolbar_and_use_their_actual_result_fields(): void
+    {
+        $layout = file_get_contents(resource_path('views/layouts/game.blade.php'));
+        $toolbar = file_get_contents(resource_path('views/components/ui/game-toolbar.blade.php'));
+        $dealerPoker = file_get_contents(resource_path('views/games/poker-dealer.blade.php'));
+
+        $this->assertStringContainsString('<x-ui.game-toolbar />', $layout);
+        $this->assertStringContainsString('role="toolbar"', $toolbar);
+        $this->assertStringContainsString('aria-pressed', $toolbar);
+        $this->assertStringContainsString('prefers-reduced-motion', file_get_contents(resource_path('js/app.js')));
+        $this->assertStringContainsString('data.winnings', $dealerPoker);
+        $this->assertStringContainsString('data.wagered', $dealerPoker);
+        $this->assertStringContainsString('get netMessage()', $dealerPoker);
+        $this->assertStringNotContainsString('data.ganancia) > Number(data.wagered)', $dealerPoker);
+    }
+
+    public function test_google_tag_is_loaded_only_after_explicit_analytics_consent(): void
     {
         foreach (['app', 'admin', 'auth'] as $layout) {
             $source = file_get_contents(resource_path("views/layouts/{$layout}.blade.php"));
@@ -126,6 +142,8 @@ class FrontendAssetBuildTest extends TestCase
         config()->set('services.google_analytics.debug', true);
         session()->flash('ga_reto_iniciado', true);
 
+        $this->assertSame('', trim(view('partials.google-tag')->render()));
+        request()->cookies->set('lootra_analytics_consent', 'granted');
         $tag = view('partials.google-tag')->render();
 
         $this->assertStringContainsString(
@@ -137,8 +155,8 @@ class FrontendAssetBuildTest extends TestCase
         $this->assertStringContainsString("gtag('event', 'reto_iniciado', eventParameters)", $tag);
         $this->assertStringContainsString("reto_id: 'reto_1'", $tag);
         $this->assertStringContainsString("reto_nombre: 'RickyEditXLootra'", $tag);
-        $this->assertStringContainsString("const analyticsDebugEnabled = true", $tag);
-        $this->assertStringContainsString("localStorage.getItem(sentKey)", $tag);
+        $this->assertStringContainsString('const analyticsDebugEnabled = true', $tag);
+        $this->assertStringContainsString('localStorage.getItem(sentKey)', $tag);
         $this->assertStringContainsString("localStorage.setItem(pendingKey, 'true')", $tag);
         $this->assertStringContainsString('event_callback: markChallengeStartAsSent', $tag);
         $this->assertStringContainsString('send_to: measurementId', $tag);
