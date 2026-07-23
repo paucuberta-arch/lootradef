@@ -26,7 +26,7 @@ class CajaController extends Controller
             : collect();
 
         return view('cajas.index', [
-            'cajas' => config('cajas'),
+            'cajas' => $this->prizes->publicDefinitions(),
             'inventario' => $inventario,
         ]);
     }

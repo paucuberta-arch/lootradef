@@ -16,6 +16,10 @@ use Illuminate\View\View;
 
 class PokerDealerController extends Controller
 {
+    private const WIN_PAYOUT_MULTIPLIER = 1.92;
+
+    private const TIE_PAYOUT_MULTIPLIER = 0.96;
+
     public function __construct(
         private readonly GameBalanceService $balances,
         private readonly SecureRandom $random,
@@ -166,7 +170,9 @@ class PokerDealerController extends Controller
         $player = $this->score([...$hand->mano_jugador, ...$hand->comunitarias]);
         $dealer = $this->score([...$hand->mano_dealer, ...$hand->comunitarias]);
         $result = $player['score'] > $dealer['score'] ? 'ganada' : ($player['score'] === $dealer['score'] ? 'empate' : 'perdida');
-        $payout = $result === 'ganada' ? round($hand->apostado * 2, 2) : ($result === 'empate' ? $hand->apostado : 0);
+        $payout = $result === 'ganada'
+            ? round($hand->apostado * self::WIN_PAYOUT_MULTIPLIER, 2)
+            : ($result === 'empate' ? round($hand->apostado * self::TIE_PAYOUT_MULTIPLIER, 2) : 0);
         $this->finish($hand, $result, $payout, 'finalizada');
     }
 

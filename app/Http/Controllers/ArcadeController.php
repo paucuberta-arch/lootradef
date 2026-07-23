@@ -16,6 +16,24 @@ class ArcadeController extends Controller
 {
     private const HI_LO_RETURN_TO_PLAYER = 0.96;
 
+    private const DICE_WIN_MULTIPLIER = 2.1333;
+
+    private const POKER_WIN_MULTIPLIER = 1.92;
+
+    private const POKER_TIE_MULTIPLIER = 0.96;
+
+    private const KENO_MULTIPLIERS = [0, 0, 1.5, 31.4, 60, 500];
+
+    private const BACCARAT_WIN_MULTIPLIER = 2.1333;
+
+    private const BACCARAT_TIE_MULTIPLIER = 9.6;
+
+    private const NEBULA_TABLES = [
+        'violet' => [0, .5, .8, 1, 1, 1.2, 1.5, 1.68],
+        'cyan' => [0, 0, 0, .5, 1, 1.2, 2, 4.9, 0, 0],
+        'gold' => [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 5.2, 10],
+    ];
+
     public function __construct(
         private readonly GameBalanceService $balances,
         private readonly SecureRandom $random,
@@ -118,7 +136,7 @@ class ArcadeController extends Controller
         $roll = random_int(1, 100);
         $won = $choice === 'high' ? $roll > 55 : $roll < 46;
 
-        return ['multiplier' => $won ? 2.05 : 0, 'roll' => $roll, 'choice' => $choice];
+        return ['multiplier' => $won ? self::DICE_WIN_MULTIPLIER : 0, 'roll' => $roll, 'choice' => $choice];
     }
 
     private function hiLo(string $choice): array
@@ -151,7 +169,7 @@ class ArcadeController extends Controller
         $draw = collect($this->random->shuffle(range(1, 30)))->take(10)->sort()->values()->all();
         $hits = count(array_intersect($chosen, $draw));
 
-        return ['multiplier' => [0, 0, .5, 2, 8, 25][$hits], 'chosen' => $chosen, 'draw' => $draw, 'hits' => $hits];
+        return ['multiplier' => self::KENO_MULTIPLIERS[$hits], 'chosen' => $chosen, 'draw' => $draw, 'hits' => $hits];
     }
 
     private function coin(string $choice): array
@@ -167,17 +185,19 @@ class ArcadeController extends Controller
         $banker = (random_int(1, 10) + random_int(1, 10)) % 10;
         $winner = $player === $banker ? 'tie' : ($player > $banker ? 'player' : 'banker');
 
-        return ['multiplier' => $choice === $winner ? ($winner === 'tie' ? 8 : ($winner === 'banker' ? 1.95 : 2)) : 0, 'player' => $player, 'banker' => $banker, 'winner' => $winner];
+        return [
+            'multiplier' => $choice === $winner
+                ? ($winner === 'tie' ? self::BACCARAT_TIE_MULTIPLIER : self::BACCARAT_WIN_MULTIPLIER)
+                : 0,
+            'player' => $player,
+            'banker' => $banker,
+            'winner' => $winner,
+        ];
     }
 
     private function nebula(string $choice): array
     {
-        $tables = [
-            'violet' => [0, .5, .8, 1, 1, 1.2, 1.5, 2],
-            'cyan' => [0, 0, 0, .5, 1, 1.5, 2, 5, 0, 0],
-            'gold' => [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 10],
-        ];
-        $table = $tables[$choice] ?? $tables['violet'];
+        $table = self::NEBULA_TABLES[$choice] ?? self::NEBULA_TABLES['violet'];
         $multiplier = $this->random->pick($table);
 
         return ['multiplier' => $multiplier, 'crystal' => $choice];
@@ -222,9 +242,14 @@ class ArcadeController extends Controller
         $community = array_splice($deck, 0, 5);
         $playerScore = $this->pokerScore([...$player, ...$community]);
         $dealerScore = $this->pokerScore([...$dealer, ...$community]);
-        $multiplier = $playerScore['score'] > $dealerScore['score'] ? 2 : ($playerScore['score'] === $dealerScore['score'] ? 1 : 0);
+        $outcome = $playerScore['score'] > $dealerScore['score']
+            ? 'win'
+            : ($playerScore['score'] === $dealerScore['score'] ? 'tie' : 'lose');
+        $multiplier = $outcome === 'win'
+            ? self::POKER_WIN_MULTIPLIER
+            : ($outcome === 'tie' ? self::POKER_TIE_MULTIPLIER : 0);
 
-        return compact('multiplier', 'player', 'dealer', 'community') + ['player_hand' => $playerScore['name'], 'dealer_hand' => $dealerScore['name']];
+        return compact('multiplier', 'player', 'dealer', 'community', 'outcome') + ['player_hand' => $playerScore['name'], 'dealer_hand' => $dealerScore['name']];
     }
 
     private function validateChoice(string $mode, string $choice, array $numbers): void

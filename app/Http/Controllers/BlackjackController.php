@@ -16,6 +16,8 @@ use Illuminate\View\View;
 
 class BlackjackController extends Controller
 {
+    private const BLACKJACK_PAYOUT_MULTIPLIER = 2.4;
+
     public function __construct(
         private readonly GameBalanceService $balances,
         private readonly SecureRandom $random,
@@ -42,6 +44,8 @@ class BlackjackController extends Controller
             'standRoute' => $variant === 'vip' ? route('games.blackjack.vip.stand') : route('games.blackjack.classic.stand'),
             'statusRoute' => $variant === 'vip' ? route('games.blackjack.vip.status') : route('games.blackjack.classic.status'),
             'activeHand' => $active ? $this->handData($active) : null,
+            'blackjackPayout' => self::BLACKJACK_PAYOUT_MULTIPLIER,
+            'blackjackRtp' => $variant === 'classic' ? '≈99.4%' : '≈98.8%',
             'gameBalance' => $this->balances->balance(Auth::user(), 'blackjack_'.$variant, $campaignId),
         ]);
     }
@@ -94,7 +98,7 @@ class BlackjackController extends Controller
             $dealerBlackjack = $this->calcularPuntos($dealer) === 21;
             if ($playerBlackjack || $dealerBlackjack) {
                 $state = $playerBlackjack && $dealerBlackjack ? 'push' : ($playerBlackjack ? 'blackjack' : 'lose');
-                $payout = $state === 'push' ? $bet : ($state === 'blackjack' ? round($bet * 2.5, 2) : 0);
+                $payout = $state === 'push' ? $bet : ($state === 'blackjack' ? round($bet * self::BLACKJACK_PAYOUT_MULTIPLIER, 2) : 0);
                 $this->finish($hand, $state, $payout);
             }
 

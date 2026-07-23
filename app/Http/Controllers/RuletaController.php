@@ -41,6 +41,7 @@ class RuletaController extends Controller
             'gameName' => $variant === 'lightning' ? 'Lightning Roulette' : 'Ruleta Europea',
             'playRoute' => $variant === 'lightning' ? route('games.roulette.lightning.play') : route('games.roulette.european.play'),
             'rouletteConfig' => config('roulette'),
+            'rtp' => config("roulette.rtp.{$variant}"),
             'gameBalance' => $this->balances->balance(Auth::user(), 'ruleta_'.$variant),
         ]);
     }

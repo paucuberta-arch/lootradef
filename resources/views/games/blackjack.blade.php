@@ -175,14 +175,14 @@
                 <div class="space-y-3 text-sm">
                     <div class="flex justify-between"><span class="text-slate-500">Min apuesta</span><span class="text-white font-semibold">€{{ $variant === 'vip' ? '5' : '1' }}</span></div>
                     <div class="flex justify-between"><span class="text-slate-500">Max apuesta</span><span class="text-white font-semibold">€{{ $variant === 'vip' ? '5,000' : '2,000' }}</span></div>
-                    <div class="flex justify-between"><span class="text-slate-500">Blackjack</span><span class="text-brand-400 font-bold">x2.5</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Blackjack</span><span class="text-brand-400 font-bold">x{{ number_format($blackjackPayout, 1) }}</span></div>
                     <div class="flex justify-between"><span class="text-slate-500">Barajas</span><span class="text-white font-semibold">{{ $variant === 'classic' ? '6' : '1' }}</span></div>
-                    <div class="flex justify-between"><span class="text-slate-500">RTP</span><span class="text-emerald-400 font-semibold">{{ $variant === 'classic' ? '99.91%' : '99.28%' }}</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">RTP estimado</span><span class="text-emerald-400 font-semibold">{{ $blackjackRtp }}</span></div>
                 </div>
             </div>
             <div class="rounded-2xl bg-gradient-to-br from-brand-500/20 to-brand-600/10 border border-brand-500/20 p-5">
                 <h3 class="text-sm font-bold text-white mb-2">¿Cómo funciona?</h3>
-                <p class="text-xs text-slate-400 leading-relaxed">Acércate a 21 puntos sin pasarte. Pide carta o plántate. Blackjack natural (A + 10) paga x2.5. El dealer se planta en 17.</p>
+                <p class="text-xs text-slate-400 leading-relaxed">Acércate a 21 puntos sin pasarte. Pide carta o plántate. Blackjack natural (A + 10) paga x{{ number_format($blackjackPayout, 1) }}. El dealer se planta en 17. El RTP estimado depende de tus decisiones.</p>
             </div>
             <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
                 <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-3">Historial</h3>

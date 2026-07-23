@@ -57,6 +57,35 @@ class CasePrizeService
         });
     }
 
+    /**
+     * Return the same prize definitions used by the picker, including the
+     * currently active public probability for every prize.
+     */
+    public function publicDefinitions(): array
+    {
+        $this->syncDefinitions();
+        $settings = CaseRewardSetting::with('prizeRules')->get()->keyBy('case_key');
+
+        return collect(config('cajas', []))->map(function (array $definition, string $caseKey) use ($settings) {
+            $rules = $settings->get($caseKey)?->prizeRules?->keyBy('prize_key') ?? collect();
+            $totalWeight = max(1, array_sum(array_column($definition['premios'], 'peso')));
+            $prizes = collect($definition['premios'])->map(function (array $prize) use ($rules, $totalWeight) {
+                $fallbackProbability = ((float) $prize['peso'] / $totalWeight) * 100;
+                $rule = $rules->get($this->prizeKey($prize));
+
+                return [...$prize, 'probabilidad' => round((float) ($rule?->probability ?? $fallbackProbability), 4)];
+            })->values()->all();
+
+            $expectedValue = collect($prizes)->sum(fn (array $prize) => ((float) $prize['probabilidad'] / 100) * (float) $prize['valor']);
+
+            return [
+                ...$definition,
+                'premios' => $prizes,
+                'rtp' => round(($expectedValue / max(.01, (float) $definition['precio'])) * 100, 2),
+            ];
+        })->all();
+    }
+
     public function pick(string $caseKey, array $definition, Usuario $user): array
     {
         $setting = CaseRewardSetting::where('case_key', $caseKey)->lockForUpdate()->first();
