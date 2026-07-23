@@ -9,6 +9,8 @@ use App\Models\Usuario;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use RuntimeException;
 use Spatie\Permission\Models\Role;
 
 class DemoDataSeeder extends Seeder
@@ -19,6 +21,10 @@ class DemoDataSeeder extends Seeder
 
     public function run(): void
     {
+        if (! app()->environment(['local', 'testing'])) {
+            throw new RuntimeException('Los datos demo sólo pueden generarse en entornos local o testing.');
+        }
+
         mt_srand(15072026);
 
         if (! Role::where('name', 'super_admin')->exists()) {
@@ -30,7 +36,13 @@ class DemoDataSeeder extends Seeder
 
             $admin = Usuario::updateOrCreate(
                 ['email' => 'admin@lootra.test'],
-                ['name' => 'Lootra Admin', 'password' => Hash::make('Lootra2026!')]
+                [
+                    'name' => 'Lootra Admin',
+                    'password' => Hash::make(Str::random(64)),
+                    'email_verified_at' => now(),
+                    'is_demo' => true,
+                    'data_origin' => 'simulated',
+                ]
             );
             $admin->cartera()->updateOrCreate([], ['saldo' => 25000]);
             $admin->syncRoles('super_admin');
@@ -44,14 +56,13 @@ class DemoDataSeeder extends Seeder
         });
 
         $this->command?->info('Datos demo creados: 80 usuarios, 2.400 partidas y actividad de 90 días.');
-        $this->command?->warn('Acceso administrador: admin@lootra.test / Lootra2026!');
     }
 
     private function removePreviousDemoData(): void
     {
         ActivityLog::where('accion', 'like', 'demo_%')->delete();
         Feedback::where('asunto', 'like', '[DEMO]%')->delete();
-        Usuario::where('email', 'like', '%@demo.lootra.test')->delete();
+        Usuario::withTrashed()->where('email', 'like', '%@demo.lootra.test')->forceDelete();
     }
 
     private function createUsers()
@@ -65,7 +76,10 @@ class DemoDataSeeder extends Seeder
             $usuario = Usuario::create([
                 'name' => $names[array_rand($names)].' '.$surnames[array_rand($surnames)],
                 'email' => sprintf('jugador%03d@demo.lootra.test', $i),
-                'password' => Hash::make('password'),
+                'password' => Hash::make(Str::random(64)),
+                'email_verified_at' => now(),
+                'is_demo' => true,
+                'data_origin' => 'simulated',
             ]);
             $usuario->timestamps = false;
             $usuario->forceFill(['created_at' => $createdAt, 'updated_at' => $createdAt])->saveQuietly();

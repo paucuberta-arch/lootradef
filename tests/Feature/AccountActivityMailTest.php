@@ -9,6 +9,7 @@ use App\Models\PartidoDeportivo;
 use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -26,9 +27,9 @@ class AccountActivityMailTest extends TestCase
             'email' => 'new@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
-        ])->assertRedirect(route('profile.show'));
+        ])->assertRedirect(route('verification.notice'));
 
-        Mail::assertSent(AccountActivityMail::class, fn ($mail) => $mail->event === 'registered'
+        Mail::assertQueued(AccountActivityMail::class, fn ($mail) => $mail->event === 'registered'
             && $mail->hasTo('new@example.com'));
     }
 
@@ -36,14 +37,19 @@ class AccountActivityMailTest extends TestCase
     {
         Mail::fake();
         $user = $this->player();
+        $user->update(['is_demo' => true, 'data_origin' => 'test']);
+        config(['features.demo_deposits.enabled' => true]);
 
         $this->post(route('login.store'), ['email' => $user->email, 'password' => 'password123'])
             ->assertRedirect(route('profile.show'));
-        $this->actingAs($user)->postJson(route('perfil.deposit'), ['amount' => 25])->assertOk();
+        $this->actingAs($user)->postJson(route('perfil.deposit'), [
+            'amount' => 25,
+            'request_token' => (string) Str::uuid(),
+        ])->assertOk();
 
-        Mail::assertSent(AccountActivityMail::class, 2);
-        Mail::assertSent(AccountActivityMail::class, fn ($mail) => $mail->event === 'login');
-        Mail::assertSent(AccountActivityMail::class, fn ($mail) => $mail->event === 'deposit'
+        Mail::assertQueued(AccountActivityMail::class, 2);
+        Mail::assertQueued(AccountActivityMail::class, fn ($mail) => $mail->event === 'login');
+        Mail::assertQueued(AccountActivityMail::class, fn ($mail) => $mail->event === 'deposit'
             && $mail->details['amount'] === 25.0
             && $mail->details['balance'] === 125.0);
     }
@@ -66,8 +72,8 @@ class AccountActivityMailTest extends TestCase
         $this->artisan('sports:sync')->assertSuccessful();
         $this->artisan('sports:sync')->assertSuccessful();
 
-        Mail::assertSent(AccountActivityMail::class, 1);
-        Mail::assertSent(AccountActivityMail::class, fn ($mail) => $mail->event === 'sports_bet_settled'
+        Mail::assertQueued(AccountActivityMail::class, 1);
+        Mail::assertQueued(AccountActivityMail::class, fn ($mail) => $mail->event === 'sports_bet_settled'
             && $mail->details['status'] === 'ganada'
             && $mail->details['winnings'] === 20.0);
     }
@@ -77,6 +83,7 @@ class AccountActivityMailTest extends TestCase
         $user = Usuario::create([
             'name' => 'Mail Tester',
             'email' => 'mail@example.com',
+            'email_verified_at' => now(),
             'password' => bcrypt('password123'),
         ]);
         Cartera::create(['usuario_id' => $user->id, 'saldo' => 100]);

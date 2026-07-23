@@ -32,7 +32,7 @@ return [
     ],
 
     'google_analytics' => [
-        'measurement_id' => env('GOOGLE_ANALYTICS_MEASUREMENT_ID', 'G-ZG7EW2QE96'),
+        'measurement_id' => env('GOOGLE_ANALYTICS_MEASUREMENT_ID'),
         'debug' => env('GOOGLE_ANALYTICS_DEBUG', false),
     ],
 

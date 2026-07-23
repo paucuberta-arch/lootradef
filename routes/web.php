@@ -1,25 +1,31 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminCampaignController;
+use App\Http\Controllers\Admin\AdminCaseHistoryController;
 use App\Http\Controllers\Admin\AdminCasePrizeController;
 use App\Http\Controllers\Admin\AdminChartsController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminFeedbackController;
 use App\Http\Controllers\Admin\AdminLogController;
+use App\Http\Controllers\Admin\AdminMfaController;
 use App\Http\Controllers\Admin\AdminReviewController;
 use App\Http\Controllers\Admin\AdminRoleController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\AnalyticsConsentController;
 use App\Http\Controllers\ApuestasController;
 use App\Http\Controllers\ArcadeController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlackjackController;
 use App\Http\Controllers\CajaController;
 use App\Http\Controllers\CrashController;
+use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\InfoController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PerfilController;
+use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PokerDealerController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\RickyEditCampaignController;
@@ -28,6 +34,8 @@ use App\Http\Controllers\SlotsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('inicio');
+Route::post('/privacidad/consentimiento-analitica', [AnalyticsConsentController::class, 'store'])
+    ->middleware('throttle:10,1')->name('privacy.analytics-consent');
 Route::get('/rickyedit', [RickyEditCampaignController::class, 'landing'])->name('rickyedit.landing');
 Route::get('/rickyedit/ranking', [RickyEditCampaignController::class, 'ranking'])->name('rickyedit.ranking');
 Route::get('/newsletter/baja/{usuario}', [NewsletterController::class, 'unsubscribe'])->middleware('signed')->name('newsletter.unsubscribe');
@@ -43,86 +51,29 @@ Route::get('/sports/live', [ApuestasController::class, 'feed'])->name('sports.fe
 Route::get('/cajas', [CajaController::class, 'index'])->name('cajas');
 Route::get('/cases', [CajaController::class, 'index'])->name('cases.index');
 
-Route::get('/info/{page}', function ($page) {
-    $pages = [
-        'ayuda' => [
-            'title' => 'Centro de Ayuda',
-            'content' => '<h2 class="text-xl font-bold text-white mb-3">Preguntas Frecuentes</h2>
-                <p><strong class="text-white">Como me registro?</strong><br>Haz clic en "Registrarse" y completa el formulario con tus datos. Receiras un email de confirmacion.</p>
-                <p><strong class="text-white">Como realizo un deposito?</strong><br>Ve a tu perfil y utiliza el sistema de cartera. Puedes anadir fondos de forma segura.</p>
-                <p><strong class="text-white">Los juegos son justos?</strong><br>Si, utilizamos algoritmos probadamente justos para todos nuestros juegos.</p>
-                <p><strong class="text-white">Como contacto con soporte?</strong><br>Utiliza nuestra pagina de <a href="'.url('/feedback').'" class="text-brand-400 hover:text-brand-300">feedback</a> para enviar tus consultas.</p>',
-        ],
-        'contacto' => [
-            'title' => 'Contacto',
-            'content' => '<p>Puedes contactar con nosotros a traves de nuestro sistema de <a href="'.url('/feedback').'" class="text-brand-400 hover:text-brand-300">feedback</a>.</p>
-                <p>Nuestro equipo de soporte respondere en un plazo de 24-48 horas.</p>
-                <p><strong class="text-white">Email:</strong> soporte@lootracasino.com</p>',
-        ],
-        'terminos' => [
-            'title' => 'Terminos y Condiciones',
-            'content' => '<h2 class="text-xl font-bold text-white mb-3">1. Acceptacion de los Terminos</h2>
-                <p>Al acceder y utilizar Lootra Casino, aceptas estos terminos y condiciones en su totalidad.</p>
-                <h2 class="text-xl font-bold text-white mb-3 mt-6">2. Elegibilidad</h2>
-                <p>Debes ser mayor de 18 anos para utilizar nuestros servicios. El juego es solo para entretenimiento.</p>
-                <h2 class="text-xl font-bold text-white mb-3 mt-6">3. Cuentas de Usuario</h2>
-                <p>Cada usuario puede tener una sola cuenta. Las cuentas duplicadas seran cerradas.</p>
-                <h2 class="text-xl font-bold text-white mb-3 mt-6">4. Juego Responsable</h2>
-                <p>Fomentamos el juego responsable. Si sientes que tienes un problema, utiliza nuestras herramientas de autoexclusion.</p>',
-        ],
-        'privacidad' => [
-            'title' => 'Politica de Privacidad',
-            'content' => '<h2 class="text-xl font-bold text-white mb-3">Recopilacion de Datos</h2>
-                <p>Recopilamos informacion basica de registro (nombre, email) para proporcionar nuestros servicios.</p>
-                <h2 class="text-xl font-bold text-white mb-3 mt-6">Uso de Datos</h2>
-                <p>Utilizamos tus datos exclusivamente para el funcionamiento de la plataforma y mejora de servicios.</p>
-                <h2 class="text-xl font-bold text-white mb-3 mt-6">Proteccion</h2>
-                <p>Tus datos son protegidos con encriptacion y nunca se comparten con terceros sin tu consentimiento.</p>',
-        ],
-        'responsable' => [
-            'title' => 'Juego Responsable',
-            'content' => '<p>En Lootra Casino creemos que el juego debe ser una forma de entretenimiento, no una fuente de problemas.</p>
-                <h2 class="text-xl font-bold text-white mb-3 mt-6">Senales de Alerta</h2>
-                <ul class="list-disc pl-5 space-y-2">
-                    <li>Juegas mas tiempo del planeado</li>
-                    <li>Apuestas mas dinero del que puedes permitirte</li>
-                    <li>El juego afecta a tu vida personal o laboral</li>
-                </ul>
-                <h2 class="text-xl font-bold text-white mb-3 mt-6">Herramientas</h2>
-                <p>Utiliza nuestra funcion de autoexclusion si necesitas un descanso del juego.</p>',
-        ],
-        'verificacion' => [
-            'title' => 'Verificacion de Edad',
-            'content' => '<p>Lootra Casino se compromete a preventir el acceso de menores de edad a sus servicios.</p>
-                <p>Todos los usuarios deben ser mayores de 18 anos. Utilizamos procesos de verificacion para garantizar el cumplimiento.</p>',
-        ],
-        'autoexclusion' => [
-            'title' => 'Autoexclusion',
-            'content' => '<p>Si sientes que necesitas un descanso del juego, puedes activar la autoexclusion desde tu perfil.</p>
-                <p>La autoexclusion puede ser temporal (30, 60 o 90 dias) o permanente.</p>
-                <p>Durante el periodo de autoexclusion, no podras acceder a tus juegos ni realizar apuestas.</p>',
-        ],
-    ];
+Route::get('/info/{page}', [InfoController::class, 'show'])->name('info');
 
-    if (! isset($pages[$page])) {
-        abort(404);
-    }
+Route::get('/registrarse', [AuthController::class, 'mostrarRegistro'])->middleware('guest')->name('registro');
+Route::post('/registrarse', [AuthController::class, 'registrar'])->middleware(['guest', 'throttle:registration'])->name('registro.store');
 
-    return view('info.index', [
-        'pageTitle' => $pages[$page]['title'],
-        'content' => $pages[$page]['content'],
-    ]);
-})->name('info');
+Route::get('/iniciar-sesion', [AuthController::class, 'mostrarLogin'])->middleware('guest')->name('login');
+Route::post('/iniciar-sesion', [AuthController::class, 'iniciarSesion'])->middleware(['guest', 'throttle:login'])->name('login.store');
+Route::get('/recuperar-contrasena', [PasswordResetController::class, 'requestForm'])->middleware('guest')->name('password.request');
+Route::post('/recuperar-contrasena', [PasswordResetController::class, 'sendLink'])->middleware(['guest', 'throttle:password.email'])->name('password.email');
+Route::get('/restablecer-contrasena/{token}', [PasswordResetController::class, 'resetForm'])->middleware('guest')->name('password.reset');
+Route::post('/restablecer-contrasena', [PasswordResetController::class, 'reset'])->middleware(['guest', 'throttle:password.reset'])->name('password.update');
 
-Route::get('/registrarse', [AuthController::class, 'mostrarRegistro'])->name('registro');
-Route::post('/registrarse', [AuthController::class, 'registrar'])->name('registro.store');
+Route::middleware(['auth', 'auth.session', 'throttle:authenticated-actions'])->group(function () {
+    Route::get('/email/verificar', [EmailVerificationController::class, 'notice'])->name('verification.notice');
+    Route::get('/email/verificar/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+        ->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
+    Route::post('/email/verificacion-notificacion', [EmailVerificationController::class, 'send'])
+        ->middleware('throttle:3,1')->name('verification.send');
+});
 
-Route::get('/iniciar-sesion', [AuthController::class, 'mostrarLogin'])->name('login');
-Route::post('/iniciar-sesion', [AuthController::class, 'iniciarSesion'])->name('login.store');
-
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'auth.session', 'verified.real', 'throttle:authenticated-actions'])->group(function () {
     Route::get('/rickyedit/reto', [RickyEditCampaignController::class, 'intro'])->name('rickyedit.intro');
-    Route::post('/rickyedit/reto/iniciar', [RickyEditCampaignController::class, 'start'])->middleware('throttle:5,1')->name('rickyedit.start');
+    Route::post('/rickyedit/reto/iniciar', [RickyEditCampaignController::class, 'start'])->middleware(['verified', 'throttle:5,1'])->name('rickyedit.start');
     Route::post('/rickyedit/reto/finalizar', [RickyEditCampaignController::class, 'finish'])->middleware('throttle:5,1')->name('rickyedit.finish');
     Route::get('/rickyedit/reto/estado', [RickyEditCampaignController::class, 'status'])->middleware('throttle:60,1')->name('rickyedit.status');
     Route::prefix('games')->name('games.')->group(function () {
@@ -163,7 +114,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/wallet', [PerfilController::class, 'index'])->name('wallet.show');
     Route::get('/wallet/history', [PerfilController::class, 'index'])->name('wallet.history');
     Route::get('/wallet/balance', [PerfilController::class, 'saldo'])->name('wallet.balance');
-    Route::post('/wallet/demo-deposit', [PerfilController::class, 'deposit'])->name('wallet.demo-deposit');
+    Route::post('/wallet/demo-deposit', [PerfilController::class, 'deposit'])->middleware('throttle:demo-deposit')->name('wallet.demo-deposit');
 
     Route::get('/jugar/poker/dealer', [PokerDealerController::class, 'index'])->name('poker.dealer');
     Route::post('/jugar/poker/dealer/iniciar', [PokerDealerController::class, 'start'])->name('poker.dealer.start');
@@ -176,7 +127,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/inventario/{item}/canjear', [CajaController::class, 'redeem'])->name('inventario.redeem');
     Route::get('/perfil', [PerfilController::class, 'index'])->name('perfil');
     Route::get('/perfil/saldo', [PerfilController::class, 'saldo'])->name('perfil.saldo');
-    Route::post('/perfil/depositar', [PerfilController::class, 'deposit'])->name('perfil.deposit');
+    Route::post('/perfil/depositar', [PerfilController::class, 'deposit'])->middleware('throttle:demo-deposit')->name('perfil.deposit');
     Route::post('/cerrar-sesion', [AuthController::class, 'cerrarSesion'])->name('logout');
 
     Route::get('/jugar/crash', [CrashController::class, 'index'])->name('crash');
@@ -204,15 +155,22 @@ Route::middleware('auth')->group(function () {
     Route::post('/jugar/blackjack/clasico/plantarse', [BlackjackController::class, 'stand'])->defaults('variant', 'classic')->name('blackjack.classic.stand');
     Route::get('/jugar/blackjack/clasico/estado', [BlackjackController::class, 'status'])->defaults('variant', 'classic')->name('blackjack.classic.status');
 
-    Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+    Route::post('/reviews', [ReviewController::class, 'store'])->middleware('throttle:community-write')->name('reviews.store');
 });
 
 Route::get('/games/{slug}', [GameController::class, 'show'])->name('games.show');
 
-Route::get('/feedback', [FeedbackController::class, 'create'])->name('feedback.create');
-Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
+Route::prefix('admin/security/mfa')->name('admin.mfa.')->middleware(['auth', 'auth.session', 'role:super_admin|admin|moderator', 'throttle:6,1'])->group(function () {
+    Route::get('/', [AdminMfaController::class, 'setup'])->name('setup');
+    Route::post('/', [AdminMfaController::class, 'enable'])->name('enable');
+    Route::get('/challenge', [AdminMfaController::class, 'challenge'])->name('challenge');
+    Route::post('/challenge', [AdminMfaController::class, 'verify'])->name('verify');
+});
 
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin|admin|moderator'])->group(function () {
+Route::get('/feedback', [FeedbackController::class, 'create'])->name('feedback.create');
+Route::post('/feedback', [FeedbackController::class, 'store'])->middleware('throttle:feedback')->name('feedback.store');
+
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'auth.session', 'role:super_admin|admin|moderator', 'admin.mfa'])->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/usuarios', [AdminUserController::class, 'index'])->middleware('permission:users.view')->name('users');
@@ -229,9 +187,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin|ad
     Route::delete('/feedback/{fb}', [AdminFeedbackController::class, 'destroy'])->middleware('permission:feedback.close')->name('feedback.destroy');
 });
 
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin|admin'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'auth.session', 'role:super_admin|admin', 'admin.mfa'])->group(function () {
     Route::get('/campanas/rickyedit', [AdminCampaignController::class, 'index'])->middleware('permission:campaigns.stats.view')->name('campaigns.rickyedit');
     Route::get('/premios-cajas', [AdminCasePrizeController::class, 'index'])->middleware('permission:case-prizes.manage')->name('case-prizes.index');
+    Route::get('/historial-cajas', [AdminCaseHistoryController::class, 'index'])->middleware('permission:case-prizes.manage')->name('case-history.index');
     Route::put('/premios-cajas', [AdminCasePrizeController::class, 'update'])->middleware(['permission:case-prizes.manage', 'throttle:10,1'])->name('case-prizes.update');
     Route::post('/premios-cajas/multiplicadores', [AdminCasePrizeController::class, 'storeBoost'])->middleware(['permission:case-prizes.manage', 'throttle:10,1'])->name('case-prizes.boosts.store');
     Route::delete('/premios-cajas/multiplicadores/{boost}', [AdminCasePrizeController::class, 'destroyBoost'])->middleware(['permission:case-prizes.manage', 'throttle:10,1'])->name('case-prizes.boosts.destroy');

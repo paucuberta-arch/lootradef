@@ -3,13 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Usuario;
+use App\Rules\SafeEmail;
 use App\Services\AccountMailService;
 use App\Services\CampaignAnalytics;
 use App\Services\CampaignManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
 class AuthController extends Controller
@@ -40,6 +44,8 @@ class AuthController extends Controller
 
     public function registrar(Request $request): RedirectResponse
     {
+        $request->merge(['email' => Str::lower(trim((string) $request->input('email')))]);
+
         $datos = $request->validate([
             'name' => [
                 'required',
@@ -48,40 +54,46 @@ class AuthController extends Controller
             ],
             'email' => [
                 'required',
-                'email',
+                new SafeEmail,
+                'email:rfc',
                 'max:255',
                 'unique:usuarios,email',
             ],
             'password' => [
                 'required',
                 'string',
-                'min:8',
+                Password::min(10)->letters()->numbers(),
                 'confirmed',
             ],
+            'marketing_consent' => ['sometimes', 'accepted'],
         ], [
             'name.required' => 'Debes introducir un nombre.',
             'email.required' => 'Debes introducir un correo electrónico.',
             'email.email' => 'El correo electrónico no es válido.',
-            'email.unique' => 'Ya existe una cuenta con ese correo.',
+            'email.unique' => 'No se pudo crear la cuenta con esos datos.',
             'password.required' => 'Debes introducir una contraseña.',
-            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.min' => 'La contraseña debe tener al menos 10 caracteres.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
         ]);
 
-        $usuario = Usuario::create([
-            'name' => $datos['name'],
-            'email' => $datos['email'],
-            'password' => Hash::make($datos['password']),
-        ]);
+        $usuario = DB::transaction(function () use ($datos, $request): Usuario {
+            $usuario = Usuario::create([
+                'name' => $datos['name'],
+                'email' => $datos['email'],
+                'password' => Hash::make($datos['password']),
+                'marketing_emails_opted_in_at' => $request->boolean('marketing_consent') ? now() : null,
+            ]);
+            $usuario->cartera()->create(['saldo' => 0]);
+            $usuario->assignRole('user');
 
-        $wallet = $usuario->cartera()->create(['saldo' => 0]);
-        $wallet->ganar(1000, 'bono_registro');
-        $usuario->assignRole('user');
+            return $usuario;
+        });
 
         Auth::login($usuario);
 
         $request->session()->regenerate();
         $this->accountMail->registered($usuario);
+        $usuario->sendEmailVerificationNotification();
 
         if ($this->campaigns->isAttributed($request)) {
             $attribution = $this->campaigns->attribution($request);
@@ -90,12 +102,12 @@ class AuthController extends Controller
                 'registration_completed', 'user-'.$usuario->id, [], $usuario, null, $attribution, $request
             );
 
-            return redirect()->route('rickyedit.intro')->with('success', 'Tu cuenta se ha creado correctamente.');
+            $request->session()->put('after_verification_route', 'rickyedit.intro');
         }
 
         return redirect()
-            ->route('profile.show')
-            ->with('success', 'Tu cuenta se ha creado correctamente.');
+            ->route('verification.notice')
+            ->with('success', 'Tu cuenta se ha creado. Verifica tu correo para activar el bono.');
     }
 
     public function mostrarLogin(): View|RedirectResponse
@@ -109,10 +121,13 @@ class AuthController extends Controller
 
     public function iniciarSesion(Request $request): RedirectResponse
     {
+        $request->merge(['email' => Str::lower(trim((string) $request->input('email')))]);
+
         $credenciales = $request->validate([
             'email' => [
                 'required',
-                'email',
+                new SafeEmail,
+                'email:rfc',
             ],
             'password' => [
                 'required',

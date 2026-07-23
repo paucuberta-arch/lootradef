@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Usuario;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 class PlatformActivitySeeder extends Seeder
 {
@@ -16,6 +17,10 @@ class PlatformActivitySeeder extends Seeder
 
     public function run(): void
     {
+        if (! app()->environment(['local', 'testing'])) {
+            throw new RuntimeException('La actividad simulada sólo puede generarse en entornos local o testing.');
+        }
+
         mt_srand(26072026);
 
         $users = Usuario::where('email', 'like', '%@demo.lootra.test')->get();

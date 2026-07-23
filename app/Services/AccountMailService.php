@@ -5,8 +5,10 @@ namespace App\Services;
 use App\Mail\AccountActivityMail;
 use App\Models\ApuestaDeportiva;
 use App\Models\Usuario;
+use App\Rules\SafeEmail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 use Throwable;
 
 class AccountMailService
@@ -41,7 +43,10 @@ class AccountMailService
     private function send(Usuario $user, string $event, array $details): void
     {
         try {
-            Mail::to($user->email)->send(new AccountActivityMail($event, [
+            Validator::make(['email' => $user->email], [
+                'email' => ['required', new SafeEmail, 'email:rfc', 'max:255'],
+            ])->validate();
+            Mail::to($user->email)->queue(new AccountActivityMail($event, [
                 'name' => $user->name,
                 ...$details,
             ]));
@@ -49,7 +54,7 @@ class AccountMailService
             Log::warning('No se pudo enviar un correo de actividad de cuenta.', [
                 'usuario_id' => $user->id,
                 'evento' => $event,
-                'error' => $exception->getMessage(),
+                'exception_class' => $exception::class,
             ]);
         }
     }

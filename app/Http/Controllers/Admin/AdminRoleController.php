@@ -20,9 +20,9 @@ class AdminRoleController extends Controller
     public function store(Request $request)
     {
         $datos = $request->validate([
-            'name' => 'required|string|unique:roles,name',
+            'name' => ['required', 'string', 'max:50', 'regex:/^[a-z][a-z0-9_-]*$/', 'unique:roles,name'],
             'label' => 'required|string|max:50',
-            'color' => 'required|string',
+            'color' => 'required|string|max:20',
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['string', 'exists:permissions,name'],
         ]);
@@ -46,7 +46,7 @@ class AdminRoleController extends Controller
     {
         $datos = $request->validate([
             'label' => 'required|string|max:50',
-            'color' => 'required|string',
+            'color' => 'required|string|max:20',
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['string', 'exists:permissions,name'],
         ]);

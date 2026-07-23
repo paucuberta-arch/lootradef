@@ -3,9 +3,12 @@
 /public/build
 /public/hot
 /public/storage
+/test-results
+/playwright-report
 /storage/*.key
 /vendor
 .env
+.env.testing
 .env.backup
 .env.production
 .phpunit.result.cache

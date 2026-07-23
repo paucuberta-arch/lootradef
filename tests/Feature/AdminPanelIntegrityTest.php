@@ -60,6 +60,47 @@ class AdminPanelIntegrityTest extends TestCase
         $this->assertTrue($player->fresh()->hasRole('user'));
     }
 
+    public function test_regular_admin_cannot_view_or_modify_a_super_admin_account(): void
+    {
+        $admin = $this->user('admin-hierarchy@example.com', 'admin');
+        $superAdmin = $this->user('super-hierarchy@example.com', 'super_admin');
+
+        $this->actingAs($admin)->get(route('admin.users.edit', $superAdmin))->assertForbidden();
+        $this->actingAs($admin)->put(route('admin.users.update', $superAdmin), [
+            'name' => 'Nombre manipulado',
+            'email' => 'changed-super@example.com',
+            'rol' => 'super_admin',
+        ])->assertForbidden();
+
+        $superAdmin->refresh();
+        $this->assertSame('Super_admin', $superAdmin->name);
+        $this->assertSame('super-hierarchy@example.com', $superAdmin->email);
+    }
+
+    public function test_admin_cannot_delete_a_super_admin_even_with_direct_delete_permission(): void
+    {
+        $admin = $this->user('admin-delete@example.com', 'admin');
+        $admin->givePermissionTo('users.delete');
+        $superAdmin = $this->user('super-delete@example.com', 'super_admin');
+
+        $this->actingAs($admin)->delete(route('admin.users.destroy', $superAdmin))->assertForbidden();
+
+        $this->assertDatabaseHas('usuarios', ['id' => $superAdmin->id]);
+    }
+
+    public function test_last_super_admin_cannot_demote_their_own_account(): void
+    {
+        $superAdmin = $this->user('last-super@example.com', 'super_admin');
+
+        $this->actingAs($superAdmin)->put(route('admin.users.update', $superAdmin), [
+            'name' => $superAdmin->name,
+            'email' => $superAdmin->email,
+            'rol' => 'admin',
+        ])->assertConflict();
+
+        $this->assertTrue($superAdmin->fresh()->hasRole('super_admin'));
+    }
+
     public function test_users_can_be_filtered_by_role_and_combined_with_search(): void
     {
         $admin = $this->user('filter-admin@example.com', 'admin');

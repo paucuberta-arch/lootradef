@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\AccountMailService;
 use App\Services\CampaignChallengeService;
 use App\Services\CampaignLeaderboardService;
+use App\Services\WalletService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -15,11 +16,12 @@ class PerfilController extends Controller
         private readonly AccountMailService $accountMail,
         private readonly CampaignChallengeService $campaignChallenges,
         private readonly CampaignLeaderboardService $campaignLeaderboard,
+        private readonly WalletService $wallets,
     ) {}
 
     public function index(Request $request): View
     {
-        $user = $request->user()->load('cartera');
+        $user = $request->user()->loadMissing('cartera');
         $campaignChallenge = $this->campaignChallenges->findForUser($user);
 
         return view('perfil.index', [
@@ -39,20 +41,34 @@ class PerfilController extends Controller
 
     public function deposit(Request $request)
     {
+        abort_unless(config('features.demo_deposits.enabled'), 404);
+
         $request->validate([
-            'amount' => 'required|numeric|min:1|max:50000',
+            'amount' => ['required', 'numeric', 'min:1', 'max:1000'],
+            'request_token' => ['required', 'uuid'],
         ]);
 
         $user = $request->user();
-        $amount = round($request->amount, 2);
+        abort_unless($user->is_demo, 403, 'Los depósitos demo sólo están disponibles para cuentas demo.');
+        $amount = round((float) $request->input('amount'), 2);
 
         if (! $user->cartera) {
             return response()->json(['error' => 'No tienes una cartera activa.'], 422);
         }
 
-        $user->cartera->ganar($amount, 'deposito_demo', ['origen' => 'perfil']);
-        $movement = $user->movimientosCartera()->latest()->first();
-        $this->accountMail->deposit($user, $amount);
+        $movement = $this->wallets->credit(
+            $user->cartera,
+            $amount,
+            'deposito_demo',
+            ['origen' => 'perfil'],
+            null,
+            hash('sha256', 'demo-deposit|'.$user->id.'|'.$request->string('request_token')),
+            (float) config('features.demo_deposits.max_balance'),
+        );
+        if ($movement->wasRecentlyCreated) {
+            $this->accountMail->deposit($user, $amount);
+        }
+        $user->cartera->refresh();
 
         return response()->json([
             'ok' => true,
