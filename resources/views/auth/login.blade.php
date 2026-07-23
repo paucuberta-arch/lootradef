@@ -21,9 +21,6 @@
             <div class="p-5 sm:p-10 lg:p-12">
 
             <div class="text-center mb-8">
-                <a href="{{ route('inicio') }}" class="inline-flex items-center gap-2 mb-6">
-                    <div class="brand-orbit w-12 h-12 rounded-xl bg-gradient-to-br from-brand-400 to-cyan-300 flex items-center justify-center text-black text-xl font-black shadow-lg shadow-brand-500/20">L</div>
-                </a>
                 <h1 class="text-2xl sm:text-3xl font-bold text-white">Bienvenido de nuevo</h1>
                 <p class="text-slate-500 mt-2">Inicia sesion para jugar</p>
             </div>

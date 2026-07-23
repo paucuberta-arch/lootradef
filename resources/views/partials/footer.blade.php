@@ -7,8 +7,7 @@
         <div class="grid gap-10 lg:grid-cols-12 lg:gap-8">
             <div class="lg:col-span-5">
                 <a href="{{ route('inicio') }}" class="group inline-flex items-center gap-3" aria-label="Lootra Casino, inicio">
-                    <div class="brand-gem grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-brand-300 via-brand-400 to-emerald-400 text-sm font-black text-black shadow-lg shadow-brand-500/20"><span>L</span></div>
-                    <span class="font-display text-xl font-extrabold tracking-tight text-white">Lootra<span class="text-brand-300">Casino</span></span>
+                    <img src="{{ asset('images/logo/lootra-wordmark-transparent.png') }}" alt="Lootra Casino" class="h-12 w-auto max-w-[13rem] object-contain object-left drop-shadow-[0_0_18px_rgba(242,205,117,.14)]" width="2172" height="724" loading="lazy" decoding="async">
                 </a>
                 <p class="mt-5 max-w-md text-sm leading-7 text-slate-400">Un universo de casino, originales y experiencias en directo. Cada mundo tiene su ritmo; todos comparten la misma cuenta.</p>
 

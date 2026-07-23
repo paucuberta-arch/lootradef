@@ -11,8 +11,7 @@
     <div class="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between">
             <a href="{{ route('inicio') }}" class="group flex shrink-0 items-center gap-2.5" aria-label="Lootra Casino, inicio">
-                <div class="brand-gem grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-brand-300 via-brand-400 to-emerald-400 text-sm font-black text-black shadow-lg shadow-brand-500/20"><span>L</span></div>
-                <span class="hidden font-display text-lg font-extrabold tracking-tight sm:block">Lootra<span class="text-brand-300">Casino</span></span>
+                <img src="{{ asset('images/logo/lootra-wordmark-transparent.png') }}" alt="Lootra Casino" class="h-10 w-auto max-w-[11rem] object-contain object-left drop-shadow-[0_0_16px_rgba(242,205,117,.18)]" width="2172" height="724" fetchpriority="high" decoding="async">
             </a>
 
             <div class="hidden items-center gap-1 lg:flex">

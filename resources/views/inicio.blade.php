@@ -27,6 +27,7 @@
 
         <div class="relative mx-auto flex min-h-[calc(100svh-4rem)] max-w-[1400px] items-center px-4 py-16 sm:px-6 lg:px-8">
             <div class="max-w-3xl">
+                <img src="{{ asset('images/logo/lootra-mark-transparent.png') }}" alt="" class="mb-5 h-16 w-16 object-contain drop-shadow-[0_0_28px_rgba(242,205,117,.28)] sm:h-20 sm:w-20" width="1254" height="1254" fetchpriority="high" decoding="async" aria-hidden="true">
                 <div class="mb-6 inline-flex items-center gap-3 rounded-full border border-white/10 bg-black/25 px-3 py-2 text-[11px] font-bold uppercase tracking-[.2em] text-slate-200 backdrop-blur-xl">
                     <span class="relative flex h-2 w-2"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-60"></span><span class="relative h-2 w-2 rounded-full bg-emerald-300"></span></span>
                     Entretenimiento en tiempo real

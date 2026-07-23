@@ -23,7 +23,9 @@
 
             {{-- Logo --}}
             <div class="h-16 flex items-center gap-3 px-5 border-b border-white/5">
-                <a href="{{ route('inicio') }}" class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-300 to-brand-500 flex items-center justify-center text-black font-black text-xs">L</a>
+                <a href="{{ route('inicio') }}" aria-label="Lootra Casino, inicio" class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/[.03]">
+                    <img src="{{ asset('images/logo/lootra-mark-transparent.png') }}" alt="" class="h-8 w-8 object-contain" width="1254" height="1254" decoding="async">
+                </a>
                 <div>
                     <span class="text-sm font-extrabold text-white">Lootra</span>
                     <span class="text-xs font-bold text-brand-400 ml-1">Admin</span>
