@@ -101,7 +101,7 @@
                     <div x-show="lastResult" class="text-center mb-4">
                         <template x-if="ganancia > 0">
                             <div class="text-emerald-400 font-bold text-lg win-bounce">
-                                Premio bruto <span x-text="'€' + ganancia.toFixed(2)"></span>
+                                Premio bruto <span x-text="'€' + ganancia.toFixed(2)"></span><span class="ml-1 text-sm text-emerald-200/70" x-show="payoutMultiplier > 0" x-text="'· x' + payoutMultiplier.toFixed(2)"></span>
                             </div>
                         </template>
                         <template x-if="ganancia === 0 && lastResult">
@@ -163,6 +163,7 @@
                     <div class="flex justify-between"><span class="text-slate-500">Max apuesta</span><span class="text-white font-semibold">€500</span></div>
                     <div class="flex justify-between"><span class="text-slate-500">Max win</span><span class="text-brand-400 font-bold">x50</span></div>
                     <div class="flex justify-between"><span class="text-slate-500">Carretes</span><span class="text-white font-semibold">3x3</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">RTP teórico</span><span class="text-emerald-400 font-semibold">{{ $rtp }}%</span></div>
                     <div class="flex justify-between"><span class="text-slate-500">Proveedor</span><span class="text-white font-semibold">{{ $gameProvider }}</span></div>
                 </div>
             </div>
@@ -200,6 +201,7 @@ function slotsGame() {
         reelStopping: [false, false, false],
         spinning: false,
         ganancia: 0,
+        payoutMultiplier: 0,
         lastResult: false,
         error: '',
         showCoins: false,
@@ -272,6 +274,7 @@ function slotsGame() {
             window.lootraAudio?.play('spin');
             this.roundBet = Number(this.apuesta);
             this.ganancia = 0;
+            this.payoutMultiplier = 0;
             this.lastResult = false;
             this.error = '';
             this.showCoins = false;
@@ -317,6 +320,7 @@ function slotsGame() {
                 }
 
                 this.ganancia = Number(data.ganancia);
+                this.payoutMultiplier = Number(data.multiplicador || 0);
                 this.lastResult = true;
                 this.saldo = Number(data.saldo);
                 Alpine.store('wallet').saldo = this.saldo;

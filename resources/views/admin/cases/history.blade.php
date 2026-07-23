@@ -92,6 +92,6 @@
         </div>
     </section>
 
-    <div>{{ $items->links() }}</div>
+    <div>{{ $items->withQueryString()->links() }}</div>
 </div>
 @endsection

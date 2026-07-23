@@ -29,18 +29,15 @@ class SlotVariantsTest extends TestCase
                     foreach ($theme['weights'] as $third => $thirdWeight) {
                         $reels = [$first, $second, $third];
                         $probability = ($firstWeight * $secondWeight * $thirdWeight) / ($totalWeight ** 3);
-                        $lightningCount = count(array_filter($reels, fn ($symbol) => $symbol === '⚡'));
-                        $rawPayout = $slug === 'gates-of-olympus' && $lightningCount > 0
-                            ? $lightningCount * 3.5
-                            : $calculate->invoke($controller, $reels, 1.0, $slug);
+                        $rawPayout = $calculate->invoke($controller, $reels, 1.0, $slug);
                         $rawReturn += $probability * $rawPayout;
                     }
                 }
             }
 
             $this->assertEqualsWithDelta($theme['raw_return'], $rawReturn, 0.000001, "Retorno bruto desactualizado para {$slug}");
-            $normalizedReturn = $rawReturn * ($theme['target_return'] / $theme['raw_return']);
-            $this->assertLessThan(1, $normalizedReturn, "RTP inseguro para {$slug}");
+            $this->assertLessThan(1, $rawReturn, "RTP inseguro para {$slug}");
+            $this->assertEqualsWithDelta($theme['target_return'], $rawReturn, 0.000001, "RTP mostrado desactualizado para {$slug}");
         }
     }
 

@@ -8,6 +8,6 @@
         @forelse($leaders as $entry)<tr class="border-t border-white/5"><td class="px-4 py-3 font-black text-slate-500">#{{ $leaders->firstItem()+$loop->index }}</td><td class="px-4 py-3"><div class="flex items-center gap-3"><x-ui.user-avatar :user="$entry->user" size="custom" shape="soft" class="h-9 w-9 ring-fuchsia-300/30" /><b>{{ $entry->public_alias }}</b></div></td><td class="px-4 py-3 text-right font-black text-fuchsia-300">{{ number_format($entry->score) }}</td><td class="px-4 py-3 text-right">{{ number_format($entry->final_balance,2,',','.') }}</td><td class="px-4 py-3 text-right text-slate-400">{{ $entry->games_played }}</td></tr>@empty<tr><td colspan="5" class="p-10 text-center text-slate-500">Todavía no hay resultados reales.</td></tr>@endforelse
         </tbody></table></div>
     </div>
-    <div class="mt-5">{{ $leaders->links() }}</div>
+    <div class="mt-5">{{ $leaders->withQueryString()->links() }}</div>
 </div>
 @endsection

@@ -12,7 +12,7 @@
     @keyframes crash-shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
     .crash-shake { animation: crash-shake 0.3s ease-in-out 3; }
     @keyframes rocket-flame { 50% { transform:scaleY(1.45); opacity:.72; } }
-    .rocket-craft { width:30px; height:62px; border-radius:55% 55% 35% 35%; background:linear-gradient(90deg,#2563eb,#f8fafc 48%,#67e8f9); border:2px solid rgba(255,255,255,.75); box-shadow:0 0 24px rgba(34,211,238,.65); transition:bottom .1s linear; }
+    .rocket-craft { width:30px; height:62px; border-radius:55% 55% 35% 35%; background:linear-gradient(90deg,#2563eb,#f8fafc 48%,#67e8f9); border:2px solid rgba(255,255,255,.75); box-shadow:0 0 24px rgba(34,211,238,.65); transition:left .18s linear,bottom .18s linear; }
     .rocket-craft::before { content:""; position:absolute; width:15px; height:25px; left:6px; bottom:-23px; border-radius:0 0 60% 60%; background:linear-gradient(180deg,#fbbf24,#fb7185 55%,transparent); filter:drop-shadow(0 7px 8px #ef4444); transform-origin:top; animation:rocket-flame .16s infinite; }
     .rocket-craft::after { content:""; position:absolute; left:-8px; bottom:4px; width:42px; height:20px; background:linear-gradient(90deg,#7c3aed 0 22%,transparent 23% 77%,#7c3aed 78%); clip-path:polygon(0 100%,20% 0,80% 0,100% 100%,72% 68%,28% 68%); }
     .rocket-window { position:absolute; z-index:1; width:11px; height:11px; border-radius:50%; left:8px; top:17px; background:#0f172a; border:2px solid #a5f3fc; }
@@ -78,7 +78,7 @@
                             </div>
                         </template>
                         <template x-if="fase === 'preparando'">
-                            <div><div class="text-5xl sm:text-6xl font-black text-cyan-300" x-text="countdown"></div><p class="mt-2 text-sm text-slate-400">Preparando lanzamiento…</p></div>
+                            <div><div class="text-5xl sm:text-6xl font-black text-cyan-300" x-text="countdown || 'GO'"></div><p class="mt-2 text-sm text-slate-400">Preparando lanzamiento…</p></div>
                         </template>
                         <template x-if="fase === 'crashed'">
                             <div>
@@ -99,7 +99,7 @@
 
                     <template x-if="fase === 'subiendo'">
                         <div class="absolute z-10 rocket-craft"
-                             :style="'left:calc(12% - 15px);bottom:' + Math.min(78, (multiplier - 1) * 10 + 8) + '%'">
+                             :style="'left:calc(' + rocketX + '% - 15px);bottom:' + rocketBottom + '%'">
                             <span class="rocket-window"></span>
                         </div>
                     </template>
@@ -114,9 +114,10 @@
                                    class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-brand-500 transition disabled:opacity-50">
                         </div>
                         <div class="flex-1 w-full">
-                            <label class="text-xs text-slate-500 mb-1 block">Auto-cobrar en (x)</label>
+                            <div class="mb-1 flex items-center justify-between gap-2"><label class="text-xs text-slate-500" for="crash-auto-cashout">Auto-cobrar en (x)</label><button type="button" @click="autoCashoutEnabled = !autoCashoutEnabled" class="text-[10px] font-black uppercase tracking-wider" :class="autoCashoutEnabled ? 'text-emerald-300' : 'text-slate-600'" x-text="autoCashoutEnabled ? 'Activo' : 'Manual'"></button></div>
                             <input type="number" x-model.number="autoCashout" min="1.01" max="100" step="0.01"
-                                   :disabled="fase === 'subiendo' || fase === 'preparando'"
+                                   id="crash-auto-cashout"
+                                   :disabled="!autoCashoutEnabled || fase === 'subiendo' || fase === 'preparando'"
                                    class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-brand-500 transition disabled:opacity-50">
                         </div>
                         <div class="w-full sm:w-auto mt-2 sm:mt-6">
@@ -178,6 +179,7 @@ function crashGame() {
         apuesta: 1,
         roundBet: activeRound?.apuesta ? Number(activeRound.apuesta) : 0,
         autoCashout: 2,
+        autoCashoutEnabled: true,
         fase: activeRound ? 'subiendo' : 'esperando',
         multiplier: Number(activeRound?.multiplier || 1),
         crashAt: 0,
@@ -185,6 +187,9 @@ function crashGame() {
         ganancia: 0,
         error: '',
         graphPoints: '0,58',
+        graphHistory: [58],
+        rocketX: 12,
+        rocketBottom: 8,
         historial: @js($partidas->pluck('detalles.crash_point')->filter()->take(15)->values()->all()),
         animationFrame: null,
         statusInFlight: false,
@@ -194,6 +199,8 @@ function crashGame() {
         countdown: 3,
         roundId: activeRound?.round_id || null,
         ratePerSecond: Number(activeRound?.rate_per_second || 0.2),
+        serverClockOffsetMs: 0,
+        roundStartedAtMs: Number(activeRound?.started_at_ms || 0),
         get netResult() { return Number((Number(this.ganancia) - Number(this.roundBet)).toFixed(2)); },
         get netMessage() {
             if (this.netResult > 0) return `Resultado neto +€${this.netResult.toFixed(2)}`;
@@ -206,7 +213,10 @@ function crashGame() {
                 if (!document.hidden && this.fase === 'subiendo') this.refreshRound();
             };
             document.addEventListener('visibilitychange', this.visibilityHandler);
-            if (this.roundId) this.animateCrash(this.multiplier);
+            if (this.roundId) {
+                this.syncRoundClock(activeRound);
+                this.animateCrash();
+            }
         },
 
         destroy() {
@@ -229,8 +239,8 @@ function crashGame() {
             window.lootraAudio?.play('click');
             try {
                 this.countdown = 3;
-                while (this.countdown > 1) {
-                    await new Promise(resolve => setTimeout(resolve, 250));
+                while (this.countdown > 0) {
+                    await new Promise(resolve => setTimeout(resolve, 450));
                     this.countdown--;
                 }
                 const res = await fetch('{{ route("games.crash.play") }}', {
@@ -247,16 +257,21 @@ function crashGame() {
                 if (!res.ok) throw new Error(data.message || data.error || 'No se pudo iniciar la ronda.');
 
                 this.updateBalance(data.saldo);
+                this.roundBet = Number(data.apuesta || this.roundBet);
                 this.roundId = data.round_id;
                 this.ratePerSecond = Number(data.rate_per_second);
                 this.multiplier = Number(data.multiplier);
                 this.ganancia = 0;
                 this.graphPoints = '0,58';
+                this.graphHistory = [58];
+                this.rocketX = 12;
+                this.rocketBottom = 8;
+                this.syncRoundClock(data);
                 this.fase = 'subiendo';
                 this.autoCashoutTriggered = false;
                 window.lootraAudio?.play('spin');
 
-                this.animateCrash(this.multiplier);
+                this.animateCrash();
             } catch (e) {
                 this.error = e.message;
                 window.lootraAudio?.play('error');
@@ -264,6 +279,23 @@ function crashGame() {
             } finally {
                 this.actionInFlight = false;
             }
+        },
+
+        syncRoundClock(data) {
+            if (!data) return;
+            if (data.server_now_ms !== undefined) {
+                this.serverClockOffsetMs = Number(data.server_now_ms) - Date.now();
+            }
+            if (data.started_at_ms !== undefined) {
+                this.roundStartedAtMs = Number(data.started_at_ms);
+            }
+        },
+
+        authoritativeMultiplier() {
+            if (!this.roundStartedAtMs) return this.multiplier;
+            const elapsed = Math.max(0, Date.now() + this.serverClockOffsetMs - this.roundStartedAtMs) / 1000;
+
+            return Math.floor((1 + elapsed * this.ratePerSecond) * 100) / 100;
         },
 
         animateCrash(startAt = 1) {
@@ -278,7 +310,11 @@ function crashGame() {
                 if (this.fase !== 'subiendo') return;
 
                 const elapsed = (now - startedAt) / 1000;
-                const current = Math.round((base + elapsed * this.ratePerSecond) * 100) / 100;
+                const current = this.roundStartedAtMs
+                    ? this.authoritativeMultiplier()
+                    : Math.round((base + elapsed * this.ratePerSecond) * 100) / 100;
+                this.rocketX = Math.min(88, 12 + Math.log2(Math.max(1, current)) * 18);
+                this.rocketBottom = Math.min(80, 8 + (current - 1) * 8);
 
                 if (now - lastPaint >= 80) {
                     lastPaint = now;
@@ -289,14 +325,14 @@ function crashGame() {
                     this.graphPoints = points.map((y, index) => `${(index / denominator) * 95},${y}`).join(' ');
                 }
 
-                if (!this.autoCashoutTriggered && current >= this.autoCashout) {
+                if (this.autoCashoutEnabled && !this.autoCashoutTriggered && current >= Number(this.autoCashout)) {
                     this.autoCashoutTriggered = true;
                     cancelAnimationFrame(this.animationFrame);
                     this.cashout();
                     return;
                 }
 
-                if (now - lastStatus >= 1000) {
+                if (now - lastStatus >= 400) {
                     lastStatus = now;
                     this.refreshRound();
                 }
@@ -366,10 +402,12 @@ function crashGame() {
         },
 
         applyRound(data, syncActive = true) {
+            this.syncRoundClock(data);
             if (data.saldo !== undefined) this.updateBalance(data.saldo);
             if (data.apuesta !== undefined) this.roundBet = Number(data.apuesta);
             if (data.estado === 'activa') {
                 if (syncActive) this.multiplier = Math.max(this.multiplier, Number(data.multiplier));
+                if (!this.animationFrame) this.animateCrash();
                 return;
             }
 

@@ -185,12 +185,15 @@ class CrashController extends Controller
         $data = [
             'round_id' => $round->id,
             'estado' => $round->estado,
+            'apuesta' => (float) $round->apuesta,
             'multiplier' => $round->estado === 'cobrado'
                 ? $round->cashout_at
                 : ($round->estado === 'crashed' ? $round->crash_point : $this->currentMultiplier($round)),
             'crash_point' => $finished ? $round->crash_point : null,
             'ganancia' => $round->ganancia,
             'rate_per_second' => self::MULTIPLIER_PER_SECOND,
+            'started_at_ms' => $round->iniciada_at->getTimestampMs(),
+            'server_now_ms' => now()->getTimestampMs(),
         ];
 
         if ($includeBalance) {

@@ -21,15 +21,17 @@ class SlotsController extends Controller
             'provider' => 'Lootra',
             'symbols' => ['🍒', '🍋', '🍊', '🍇', '💎', '⭐', '7️⃣', '🔔'],
             'weights' => ['🍒' => 25, '🍋' => 25, '🍊' => 20, '🍇' => 15, '💎' => 8, '⭐' => 5, '7️⃣' => 1, '🔔' => 1],
-            'raw_return' => 1.068389,
-            'target_return' => 0.96,
+            'raw_return' => 0.969089,
+            'target_return' => 0.969089,
+            'fallback_payout' => 8,
+            'pair_payout' => 2,
             'paytable' => [
-                ['symbols' => '7️⃣7️⃣7️⃣', 'label' => 'x50'],
-                ['symbols' => '💎💎💎', 'label' => 'x25'],
-                ['symbols' => '🔔🔔🔔', 'label' => 'x20'],
-                ['symbols' => '⭐⭐⭐', 'label' => 'x15'],
-                ['symbols' => '🍒🍒🍒', 'label' => 'x10'],
-                ['symbols' => 'X X X', 'label' => 'x2 (pareja)'],
+                ['symbols' => '7️⃣7️⃣7️⃣', 'label' => 'x50', 'multiplier' => 50],
+                ['symbols' => '💎💎💎', 'label' => 'x25', 'multiplier' => 25],
+                ['symbols' => '🔔🔔🔔', 'label' => 'x20', 'multiplier' => 20],
+                ['symbols' => '⭐⭐⭐', 'label' => 'x15', 'multiplier' => 15],
+                ['symbols' => '🍒🍒🍒', 'label' => 'x8', 'multiplier' => 8],
+                ['symbols' => 'X X X', 'label' => 'x2 (pareja)', 'multiplier' => 2],
             ],
         ],
         'gates-of-olympus' => [
@@ -41,15 +43,17 @@ class SlotsController extends Controller
             'hero' => '/images/lootra_visual_pack/01_heroes/hero_slots_olympus_1920x900.webp',
             'symbols' => ['👑', '⚡', '💎', '🏆', '🏺', '🪙', '🔴', '🔵'],
             'weights' => ['👑' => 5, '⚡' => 8, '💎' => 10, '🏆' => 12, '🏺' => 18, '🪙' => 20, '🔴' => 25, '🔵' => 25],
-            'raw_return' => 1.441084182803,
-            'target_return' => 0.965,
+            'raw_return' => 0.951731639069,
+            'target_return' => 0.951731639069,
+            'fallback_payout' => 18,
+            'pair_payout' => 2,
             'paytable' => [
-                ['symbols' => '👑👑👑', 'label' => 'x50'],
-                ['symbols' => '⚡⚡⚡', 'label' => 'x25'],
-                ['symbols' => '💎💎💎', 'label' => 'x20'],
-                ['symbols' => '🏆🏆🏆', 'label' => 'x15'],
-                ['symbols' => '🏺🏺🏺', 'label' => 'x10'],
-                ['symbols' => 'X X X', 'label' => 'x2 (pareja)'],
+                ['symbols' => '👑👑👑', 'label' => 'x50', 'multiplier' => 50],
+                ['symbols' => '⚡⚡⚡', 'label' => 'x25', 'multiplier' => 25],
+                ['symbols' => '💎💎💎', 'label' => 'x20', 'multiplier' => 20],
+                ['symbols' => '🏆🏆🏆', 'label' => 'x15', 'multiplier' => 15],
+                ['symbols' => '🏺🏺🏺', 'label' => 'x10', 'multiplier' => 10],
+                ['symbols' => 'X X X', 'label' => 'x2 (pareja)', 'multiplier' => 2],
             ],
         ],
         'sweet-bonanza' => [
@@ -61,15 +65,17 @@ class SlotsController extends Controller
             'hero' => '/images/lootra_visual_pack/01_heroes/hero_slots_sweet_1920x900.webp',
             'symbols' => ['🍭', '🍫', '🍬', '🍰', '🍩', '🍒', '🫐', '🟣'],
             'weights' => ['🍭' => 8, '🍫' => 10, '🍬' => 15, '🍰' => 15, '🍩' => 20, '🍒' => 22, '🫐' => 25, '🟣' => 25],
-            'raw_return' => 1.025536078717,
-            'target_return' => 0.9648,
+            'raw_return' => 0.94840196793,
+            'target_return' => 0.94840196793,
+            'fallback_payout' => 25,
+            'pair_payout' => 2,
             'paytable' => [
-                ['symbols' => '🍭🍭🍭', 'label' => 'x50'],
-                ['symbols' => '🍫🍫🍫', 'label' => 'x25'],
-                ['symbols' => '🍬🍬🍬', 'label' => 'x20'],
-                ['symbols' => '🍰🍰🍰', 'label' => 'x15'],
-                ['symbols' => '🍩🍩🍩', 'label' => 'x10'],
-                ['symbols' => 'X X X', 'label' => 'x2 (pareja)'],
+                ['symbols' => '🍭🍭🍭', 'label' => 'x50', 'multiplier' => 50],
+                ['symbols' => '🍫🍫🍫', 'label' => 'x25', 'multiplier' => 25],
+                ['symbols' => '🍬🍬🍬', 'label' => 'x20', 'multiplier' => 20],
+                ['symbols' => '🍰🍰🍰', 'label' => 'x15', 'multiplier' => 15],
+                ['symbols' => '🍩🍩🍩', 'label' => 'x10', 'multiplier' => 10],
+                ['symbols' => 'X X X', 'label' => 'x2 (pareja)', 'multiplier' => 2],
             ],
         ],
         'book-of-dead' => [
@@ -81,15 +87,17 @@ class SlotsController extends Controller
             'hero' => '/images/lootra_visual_pack/03_game_covers/game_book_of_dead_800x1000.webp',
             'symbols' => ['📖', '💀', '🧔', '🦅', '🏛️', '🃏', '🔟', '👑'],
             'weights' => ['📖' => 5, '💀' => 8, '🧔' => 10, '🦅' => 15, '🏛️' => 18, '🃏' => 20, '🔟' => 25, '👑' => 25],
-            'raw_return' => 1.130148032170,
-            'target_return' => 0.9621,
+            'raw_return' => 0.967903534136,
+            'target_return' => 0.967903534136,
+            'fallback_payout' => 20,
+            'pair_payout' => 2,
             'paytable' => [
-                ['symbols' => '📖📖📖', 'label' => 'x50'],
-                ['symbols' => '💀💀💀', 'label' => 'x25'],
-                ['symbols' => '🧔🧔🧔', 'label' => 'x20'],
-                ['symbols' => '🦅🦅🦅', 'label' => 'x15'],
-                ['symbols' => '🏛️🏛️🏛️', 'label' => 'x10'],
-                ['symbols' => 'X X X', 'label' => 'x2 (pareja)'],
+                ['symbols' => '📖📖📖', 'label' => 'x50', 'multiplier' => 50],
+                ['symbols' => '💀💀💀', 'label' => 'x25', 'multiplier' => 25],
+                ['symbols' => '🧔🧔🧔', 'label' => 'x20', 'multiplier' => 20],
+                ['symbols' => '🦅🦅🦅', 'label' => 'x15', 'multiplier' => 15],
+                ['symbols' => '🏛️🏛️🏛️', 'label' => 'x10', 'multiplier' => 10],
+                ['symbols' => 'X X X', 'label' => 'x2 (pareja)', 'multiplier' => 2],
             ],
         ],
         'starburst' => [
@@ -101,15 +109,17 @@ class SlotsController extends Controller
             'hero' => '/images/lootra_visual_pack/03_game_covers/game_starburst_800x1000.webp',
             'symbols' => ['💎', '⭐', '🌟', '✨', '🔵', '🟢', '🔴', '🟠'],
             'weights' => ['💎' => 5, '⭐' => 8, '🌟' => 12, '✨' => 15, '🔵' => 20, '🟢' => 22, '🔴' => 25, '🟠' => 25],
-            'raw_return' => 1.298208931603,
-            'target_return' => 0.9609,
+            'raw_return' => 0.960933804296,
+            'target_return' => 0.960933804296,
+            'fallback_payout' => 21,
+            'pair_payout' => 2,
             'paytable' => [
-                ['symbols' => '💎💎💎', 'label' => 'x50'],
-                ['symbols' => '⭐⭐⭐', 'label' => 'x25'],
-                ['symbols' => '🌟🌟🌟', 'label' => 'x20'],
-                ['symbols' => '✨✨✨', 'label' => 'x15'],
-                ['symbols' => '🔵🔵🔵', 'label' => 'x10'],
-                ['symbols' => 'X X X', 'label' => 'x2 (pareja)'],
+                ['symbols' => '💎💎💎', 'label' => 'x50', 'multiplier' => 50],
+                ['symbols' => '⭐⭐⭐', 'label' => 'x25', 'multiplier' => 25],
+                ['symbols' => '🌟🌟🌟', 'label' => 'x20', 'multiplier' => 20],
+                ['symbols' => '✨✨✨', 'label' => 'x15', 'multiplier' => 15],
+                ['symbols' => '🔵🔵🔵', 'label' => 'x10', 'multiplier' => 10],
+                ['symbols' => 'X X X', 'label' => 'x2 (pareja)', 'multiplier' => 2],
             ],
         ],
         'big-bass-bonanza' => [
@@ -121,15 +131,17 @@ class SlotsController extends Controller
             'hero' => '/images/lootra_visual_pack/03_game_covers/game_big_bass_bonanza_800x1000.webp',
             'symbols' => ['🐟', '🎣', '🪣', '🦞', '🐡', '🌊', '⚓', '🐠'],
             'weights' => ['🐟' => 5, '🎣' => 8, '🪣' => 12, '🦞' => 15, '🐡' => 20, '🌊' => 22, '⚓' => 25, '🐠' => 25],
-            'raw_return' => 0.890603260567,
-            'target_return' => 0.9671,
+            'raw_return' => 0.960933804296,
+            'target_return' => 0.960933804296,
+            'fallback_payout' => 21,
+            'pair_payout' => 2,
             'paytable' => [
-                ['symbols' => '🐟🐟🐟', 'label' => 'x50'],
-                ['symbols' => '🎣🎣🎣', 'label' => 'x25'],
-                ['symbols' => '🪣🪣🪣', 'label' => 'x20'],
-                ['symbols' => '🦞🦞🦞', 'label' => 'x15'],
-                ['symbols' => '🐡🐡🐡', 'label' => 'x10'],
-                ['symbols' => 'X X X', 'label' => 'x2 (pareja)'],
+                ['symbols' => '🐟🐟🐟', 'label' => 'x50', 'multiplier' => 50],
+                ['symbols' => '🎣🎣🎣', 'label' => 'x25', 'multiplier' => 25],
+                ['symbols' => '🪣🪣🪣', 'label' => 'x20', 'multiplier' => 20],
+                ['symbols' => '🦞🦞🦞', 'label' => 'x15', 'multiplier' => 15],
+                ['symbols' => '🐡🐡🐡', 'label' => 'x10', 'multiplier' => 10],
+                ['symbols' => 'X X X', 'label' => 'x2 (pareja)', 'multiplier' => 2],
             ],
         ],
     ];
@@ -144,6 +156,25 @@ class SlotsController extends Controller
 
         $gameSlug = $slug ?? request()->query('game', 'default');
         $theme = $this->themes[$gameSlug] ?? $this->themes['default'];
+        $triplePaytable = collect($theme['paytable'])
+            ->reject(fn (array $row) => $row['symbols'] === 'X X X')
+            ->map(fn (array $row) => [
+                ...$row,
+                'icon' => collect($theme['symbols'])->first(fn (string $symbol) => str_repeat($symbol, 3) === $row['symbols']) ?? $theme['symbols'][0],
+            ]);
+        $pairPaytable = collect($theme['paytable'])->firstWhere('symbols', 'X X X');
+        $paytable = $triplePaytable
+            ->push([
+                'symbols' => 'OTHER TRIPLE',
+                'label' => 'x'.rtrim(rtrim(number_format($theme['fallback_payout'], 2, '.', ''), '0'), '.'),
+                'icon' => $theme['symbols'][0],
+            ])
+            ->push([
+                ...$pairPaytable,
+                'icon' => $theme['symbols'][0],
+            ])
+            ->values()
+            ->all();
 
         return view('games.slots', [
             'partidas' => $partidas,
@@ -152,11 +183,9 @@ class SlotsController extends Controller
             'gameEmoji' => $theme['emoji'],
             'gameTagline' => $theme['tagline'],
             'gameProvider' => $theme['provider'],
+            'rtp' => number_format($theme['target_return'] * 100, 1, ',', '.'),
             'symbols' => $theme['symbols'],
-            'paytable' => collect($theme['paytable'])->map(fn (array $row, int $index) => [
-                ...$row,
-                'icon' => $theme['symbols'][min($index, 4)],
-            ])->all(),
+            'paytable' => $paytable,
             'symbolAtlas' => asset($theme['atlas'] ?? 'images/slots/olympus-symbols-v2.webp'),
             'gameHero' => $theme['hero'] ?? null,
             'saldo' => $this->balances->balance(Auth::user(), 'slots'),
@@ -189,9 +218,9 @@ class SlotsController extends Controller
                 $this->spin($theme['symbols'], $theme['weights']),
                 $this->spin($theme['symbols'], $theme['weights']),
             ];
-            $rawWin = $this->calculateWin($reels, $apuesta, $gameSlug);
-            $payoutScale = $theme['target_return'] / $theme['raw_return'];
-            $ganancia = floor($rawWin * $payoutScale * 100) / 100;
+            $multiplicador = $this->winningMultiplier($reels, $gameSlug);
+            $combinacion = $this->winningType($reels);
+            $ganancia = $this->calculateWin($reels, $apuesta, $gameSlug);
             if ($ganancia > 0) {
                 $this->balances->credit($user, 'slots', $ganancia, 'premio_slots', ['juego' => $gameSlug], null, $campaignId);
             }
@@ -199,7 +228,13 @@ class SlotsController extends Controller
             $game = Partida::create([
                 'usuario_id' => $user->id, 'juego' => 'slots', 'request_token' => $request->request_token,
                 'apuesta' => $apuesta, 'ganancia' => $ganancia,
-                'detalles' => ['reels' => $reels, 'resultado' => $ganancia > 0 ? 'win' : 'lose', 'game' => $gameSlug],
+                'detalles' => [
+                    'reels' => $reels,
+                    'resultado' => $ganancia > 0 ? 'win' : 'lose',
+                    'game' => $gameSlug,
+                    'multiplicador' => $multiplicador,
+                    'combinacion' => $combinacion,
+                ],
                 'campaign_challenge_id' => $campaignId,
                 'campaign_key' => $campaignId ? CampaignManager::KEY : null,
             ]);
@@ -212,6 +247,8 @@ class SlotsController extends Controller
             'reels' => $round->detalles['reels'],
             'ganancia' => (float) $round->ganancia,
             'resultado' => $round->detalles['resultado'],
+            'multiplicador' => (float) ($round->detalles['multiplicador'] ?? 0),
+            'combinacion' => $round->detalles['combinacion'] ?? 'none',
             'saldo' => $this->balances->balance($user, 'slots', $round->campaign_challenge_id),
         ]);
     }
@@ -234,43 +271,33 @@ class SlotsController extends Controller
 
     private function calculateWin(array $reels, float $apuesta, string $gameSlug): float
     {
-        if ($gameSlug === 'gates-of-olympus' && in_array('⚡', $reels, true)) {
-            return round($apuesta * count(array_filter($reels, fn ($symbol) => $symbol === '⚡')) * random_int(2, 5), 2);
+        return round($apuesta * $this->winningMultiplier($reels, $gameSlug), 2);
+    }
+
+    private function winningMultiplier(array $reels, string $gameSlug): float
+    {
+        $theme = $this->themes[$gameSlug] ?? $this->themes['default'];
+
+        if ($this->winningType($reels) === 'triple') {
+            $symbols = implode('', $reels);
+            $row = collect($theme['paytable'])->firstWhere('symbols', $symbols);
+
+            return (float) ($row['multiplier'] ?? $theme['fallback_payout']);
         }
 
-        if ($gameSlug === 'sweet-bonanza' && count(array_intersect($reels, ['🍭', '🍫', '🍬'])) >= 2) {
-            return round($apuesta * 3, 2);
-        }
+        return $this->winningType($reels) === 'pair' ? (float) $theme['pair_payout'] : 0.0;
+    }
 
-        if ($gameSlug === 'book-of-dead' && count(array_filter($reels, fn ($symbol) => $symbol === '📖')) >= 2) {
-            return round($apuesta * 12, 2);
-        }
-
-        if ($gameSlug === 'starburst' && in_array('✨', $reels, true)) {
-            $nonWild = array_values(array_filter($reels, fn ($symbol) => $symbol !== '✨'));
-            if (count(array_unique($nonWild)) === 1) {
-                return round($apuesta * 8, 2);
-            }
-        }
-
-        if ($gameSlug === 'big-bass-bonanza' && in_array('🐟', $reels, true) && in_array('🎣', $reels, true)) {
-            return round($apuesta * 10, 2);
-        }
-
+    private function winningType(array $reels): string
+    {
         if ($reels[0] === $reels[1] && $reels[1] === $reels[2]) {
-            return match ($reels[0]) {
-                '7️⃣', '👑', '📖', '💎', '🐟', '🍭' => $apuesta * 50,
-                '💎', '⚡', '💀', '⭐', '🎣', '🍫' => $apuesta * 25,
-                '🔔', '🏆', '🧔', '🌟', '🪣', '🍬' => $apuesta * 20,
-                '⭐', '🏺', '🦅', '✨', '🦞', '🍰' => $apuesta * 15,
-                default => $apuesta * 10,
-            };
+            return 'triple';
         }
 
         if ($reels[0] === $reels[1] || $reels[1] === $reels[2]) {
-            return $apuesta * 2;
+            return 'pair';
         }
 
-        return 0;
+        return 'none';
     }
 }
