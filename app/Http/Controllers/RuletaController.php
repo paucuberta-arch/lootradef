@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Partida;
 use App\Services\CampaignManager;
 use App\Services\GameBalanceService;
+use App\Services\SecureRandom;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -12,7 +13,17 @@ use Illuminate\Support\Str;
 
 class RuletaController extends Controller
 {
-    public function __construct(private readonly GameBalanceService $balances) {}
+    private const LIGHTNING_BASE_MULTIPLIER = 28.6;
+
+    private const LIGHTNING_BOOST_MULTIPLIERS = [
+        50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+        100, 100, 200, 500,
+    ];
+
+    public function __construct(
+        private readonly GameBalanceService $balances,
+        private readonly SecureRandom $random,
+    ) {}
 
     public function index(string $variant = 'european')
     {
@@ -62,7 +73,14 @@ class RuletaController extends Controller
             $numero = random_int(0, 36);
             $color = $numero === 0 ? 'verde' : (in_array($numero, config('roulette.red_numbers'), true) ? 'rojo' : 'negro');
             $multipliers = $variant === 'lightning' ? $this->lightningNumbers() : [];
-            $ganancia = $this->calculateWin($request->tipo, $request->valor, $numero, $color, $apuesta);
+            $ganancia = $this->calculateWin(
+                $request->tipo,
+                $request->valor,
+                $numero,
+                $color,
+                $apuesta,
+                $variant === 'lightning' ? self::LIGHTNING_BASE_MULTIPLIER : 36,
+            );
             if ($variant === 'lightning' && $request->tipo === 'numero' && $request->valor === $numero && isset($multipliers[$numero])) {
                 $ganancia = round($apuesta * $multipliers[$numero], 2);
             }
@@ -97,19 +115,19 @@ class RuletaController extends Controller
     private function lightningNumbers(): array
     {
         $numbers = range(0, 36);
-        shuffle($numbers);
+        $numbers = $this->random->shuffle($numbers);
         $boosts = [];
         foreach (array_slice($numbers, 0, 5) as $number) {
-            $boosts[$number] = [50, 100, 200, 500][array_rand([50, 100, 200, 500])];
+            $boosts[$number] = $this->random->pick(self::LIGHTNING_BOOST_MULTIPLIERS);
         }
 
         return $boosts;
     }
 
-    private function calculateWin(string $tipo, ?int $valor, int $numero, string $color, float $apuesta): float
+    private function calculateWin(string $tipo, ?int $valor, int $numero, string $color, float $apuesta, float $numberMultiplier): float
     {
         $ganado = match ($tipo) {
-            'numero' => $numero === $valor ? $apuesta * 35 : 0,
+            'numero' => $numero === $valor ? $apuesta * $numberMultiplier : 0,
             'rojo' => $color === 'rojo' ? $apuesta * 2 : 0,
             'negro' => $color === 'negro' ? $apuesta * 2 : 0,
             'par' => $numero !== 0 && $numero % 2 === 0 ? $apuesta * 2 : 0,

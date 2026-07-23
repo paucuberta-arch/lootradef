@@ -22,10 +22,14 @@ class WalletService
             $locked = Cartera::whereKey($wallet->id)->lockForUpdate()->firstOrFail();
             $amount = $this->normalizeAmount($amount);
 
-            if ($idempotencyKey && WalletMovement::where('idempotency_key', $idempotencyKey)->exists()) {
-                $wallet->refresh();
+            if ($idempotencyKey) {
+                $existing = WalletMovement::where('idempotency_key', $idempotencyKey)->first();
+                if ($existing) {
+                    $this->assertIdempotentReplay($existing, $locked, $amount, $type, 'debito');
+                    $wallet->refresh();
 
-                return true;
+                    return true;
+                }
             }
             if ($locked->saldo < $amount) {
                 return false;
@@ -48,18 +52,23 @@ class WalletService
         array $metadata = [],
         ?Model $reference = null,
         ?string $idempotencyKey = null,
+        ?float $maxBalance = null,
     ): WalletMovement {
-        return DB::transaction(function () use ($wallet, $amount, $type, $metadata, $reference, $idempotencyKey) {
+        return DB::transaction(function () use ($wallet, $amount, $type, $metadata, $reference, $idempotencyKey, $maxBalance) {
             $locked = Cartera::whereKey($wallet->id)->lockForUpdate()->firstOrFail();
+            $amount = $this->normalizeAmount($amount);
             if ($idempotencyKey && $existing = WalletMovement::where('idempotency_key', $idempotencyKey)->first()) {
+                $this->assertIdempotentReplay($existing, $locked, $amount, $type, 'credito');
                 $wallet->refresh();
 
                 return $existing;
             }
 
-            $amount = $this->normalizeAmount($amount);
             $before = (float) $locked->saldo;
             $after = round($before + $amount, 2);
+            if ($maxBalance !== null && $after > round($maxBalance, 2)) {
+                abort(422, 'El depósito supera el saldo máximo permitido para una cuenta demo.');
+            }
             $locked->update(['saldo' => $after]);
             $movement = $this->record($locked, $type, 'credito', $amount, $before, $after, $metadata, $reference, $idempotencyKey);
             $wallet->setRawAttributes($locked->getAttributes(), true);
@@ -96,6 +105,23 @@ class WalletService
         }
 
         return $amount;
+    }
+
+    private function assertIdempotentReplay(
+        WalletMovement $movement,
+        Cartera $wallet,
+        float $amount,
+        string $type,
+        string $direction,
+    ): void {
+        abort_unless(
+            $movement->cartera_id === $wallet->id
+            && $movement->direccion === $direction
+            && $movement->tipo === $type
+            && (float) $movement->importe === $amount,
+            409,
+            'La clave de idempotencia ya fue usada para otra operación.'
+        );
     }
 
     private function record(

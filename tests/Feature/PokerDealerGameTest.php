@@ -104,6 +104,23 @@ class PokerDealerGameTest extends TestCase
         $this->assertSame(4, count(PokerDealerHand::first()->comunitarias));
     }
 
+    public function test_manipulated_street_bet_cannot_exceed_twice_the_ante(): void
+    {
+        $usuario = $this->player();
+        $this->actingAs($usuario)->postJson(route('games.poker.dealer.start'), ['ante' => 10])->assertCreated();
+        $this->actingAs($usuario)->postJson(route('games.poker.dealer.action'), [
+            'accion' => 'jugar', 'fase' => 'preflop',
+        ])->assertOk();
+        $balance = (float) $usuario->cartera()->value('saldo');
+
+        $this->actingAs($usuario)->postJson(route('games.poker.dealer.action'), [
+            'accion' => 'apostar', 'cantidad' => 20.01, 'fase' => 'flop',
+        ])->assertUnprocessable();
+
+        $this->assertSame($balance, (float) $usuario->cartera()->value('saldo'));
+        $this->assertSame('flop', PokerDealerHand::first()->fase);
+    }
+
     public function test_poker_screens_expose_all_in_token_and_dealer_decisions(): void
     {
         $usuario = $this->player();

@@ -8,7 +8,11 @@ class PokerDealerHand extends Model
 {
     protected $table = 'poker_dealer_hands';
 
-    protected $guarded = [];
+    protected $fillable = [
+        'usuario_id', 'request_token', 'campaign_challenge_id', 'campaign_key', 'ante', 'apostado', 'baraja',
+        'mano_jugador', 'mano_dealer', 'comunitarias', 'fase', 'resultado',
+        'ganancia', 'finalizada_at',
+    ];
 
     protected $casts = [
         'ante' => 'float', 'apostado' => 'float', 'ganancia' => 'float',

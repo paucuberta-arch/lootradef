@@ -6,6 +6,7 @@ use App\Models\CampaignChallenge;
 use App\Models\Partida;
 use App\Models\Usuario;
 use Illuminate\Database\Eloquent\Model;
+use Ramsey\Uuid\Uuid;
 
 class GameBalanceService
 {
@@ -27,12 +28,22 @@ class GameBalanceService
     {
         $challenge = $this->challenge($user, $game, $campaignId);
         if ($challenge) {
-            return $this->challenges->debit($challenge, $amount, $type, $metadata, $reference, $idempotencyKey);
+            $scopedIdempotencyKey = $idempotencyKey
+                ? Uuid::uuid5(Uuid::NAMESPACE_URL, implode('|', [
+                    'lootra-campaign-debit-v1',
+                    (string) $challenge->id,
+                    $game,
+                    $type,
+                    $idempotencyKey,
+                ]))->toString()
+                : null;
+
+            return $this->challenges->debit($challenge, $amount, $type, $metadata, $reference, $scopedIdempotencyKey);
         }
 
         $wallet = $user->cartera()->first();
 
-        return $wallet?->apostar($amount, $type, $metadata, $reference) ?? false;
+        return $wallet?->apostar($amount, $type, $metadata, $reference, $idempotencyKey) ?? false;
     }
 
     public function credit(Usuario $user, string $game, float $amount, string $type, array $metadata = [], ?Model $reference = null, ?int $campaignId = null): void

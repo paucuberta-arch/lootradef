@@ -7,6 +7,7 @@ use App\Models\PokerDealerHand;
 use App\Models\Usuario;
 use App\Services\CampaignManager;
 use App\Services\GameBalanceService;
+use App\Services\SecureRandom;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,10 @@ use Illuminate\View\View;
 
 class PokerDealerController extends Controller
 {
-    public function __construct(private readonly GameBalanceService $balances) {}
+    public function __construct(
+        private readonly GameBalanceService $balances,
+        private readonly SecureRandom $random,
+    ) {}
 
     public function index(Request $request): View
     {
@@ -51,7 +55,7 @@ class PokerDealerController extends Controller
             }
             $ante = round((float) $validated['ante'], 2);
             $deck = $this->deck();
-            shuffle($deck);
+            $deck = $this->random->shuffle($deck);
 
             $hand = PokerDealerHand::create([
                 'usuario_id' => $request->user()->id, 'request_token' => $validated['request_token'], 'ante' => $ante, 'apostado' => $ante,
@@ -72,7 +76,7 @@ class PokerDealerController extends Controller
     {
         $validated = $request->validate([
             'accion' => ['required', 'in:jugar,pasar,apostar,continuar,retirarse'],
-            'cantidad' => ['nullable', 'numeric', 'min:1', 'max:1000'],
+            'cantidad' => ['nullable', 'numeric', 'min:1', 'max:2000'],
             'fase' => ['nullable', 'in:preflop,flop,turn,river'],
         ]);
         $action = $validated['accion'] === 'continuar' ? 'pasar' : $validated['accion'];
@@ -104,6 +108,7 @@ class PokerDealerController extends Controller
                 if ($action === 'apostar') {
                     $amount = round((float) ($validated['cantidad'] ?? 0), 2);
                     abort_if($amount < 1, 422, 'Indica una apuesta válida para esta calle.');
+                    abort_if($amount > round($hand->ante * 2, 2), 422, 'La apuesta de una calle no puede superar dos veces el ante.');
                     abort_unless(
                         $this->balances->debit($request->user(), 'poker_dealer', $amount, 'apuesta_poker_dealer', ['fase' => $hand->fase], $hand, null, $hand->campaign_challenge_id),
                         422,

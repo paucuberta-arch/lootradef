@@ -21,6 +21,8 @@ class SlotsController extends Controller
             'provider' => 'Lootra',
             'symbols' => ['🍒', '🍋', '🍊', '🍇', '💎', '⭐', '7️⃣', '🔔'],
             'weights' => ['🍒' => 25, '🍋' => 25, '🍊' => 20, '🍇' => 15, '💎' => 8, '⭐' => 5, '7️⃣' => 1, '🔔' => 1],
+            'raw_return' => 1.068389,
+            'target_return' => 0.96,
             'paytable' => [
                 ['symbols' => '7️⃣7️⃣7️⃣', 'label' => 'x50'],
                 ['symbols' => '💎💎💎', 'label' => 'x25'],
@@ -39,6 +41,8 @@ class SlotsController extends Controller
             'hero' => '/images/lootra_visual_pack/01_heroes/hero_slots_olympus_1920x900.webp',
             'symbols' => ['👑', '⚡', '💎', '🏆', '🏺', '🪙', '🔴', '🔵'],
             'weights' => ['👑' => 5, '⚡' => 8, '💎' => 10, '🏆' => 12, '🏺' => 18, '🪙' => 20, '🔴' => 25, '🔵' => 25],
+            'raw_return' => 1.441084182803,
+            'target_return' => 0.965,
             'paytable' => [
                 ['symbols' => '👑👑👑', 'label' => 'x50'],
                 ['symbols' => '⚡⚡⚡', 'label' => 'x25'],
@@ -57,6 +61,8 @@ class SlotsController extends Controller
             'hero' => '/images/lootra_visual_pack/01_heroes/hero_slots_sweet_1920x900.webp',
             'symbols' => ['🍭', '🍫', '🍬', '🍰', '🍩', '🍒', '🫐', '🟣'],
             'weights' => ['🍭' => 8, '🍫' => 10, '🍬' => 15, '🍰' => 15, '🍩' => 20, '🍒' => 22, '🫐' => 25, '🟣' => 25],
+            'raw_return' => 1.025536078717,
+            'target_return' => 0.9648,
             'paytable' => [
                 ['symbols' => '🍭🍭🍭', 'label' => 'x50'],
                 ['symbols' => '🍫🍫🍫', 'label' => 'x25'],
@@ -75,6 +81,8 @@ class SlotsController extends Controller
             'hero' => '/images/lootra_visual_pack/03_game_covers/game_book_of_dead_800x1000.webp',
             'symbols' => ['📖', '💀', '🧔', '🦅', '🏛️', '🃏', '🔟', '👑'],
             'weights' => ['📖' => 5, '💀' => 8, '🧔' => 10, '🦅' => 15, '🏛️' => 18, '🃏' => 20, '🔟' => 25, '👑' => 25],
+            'raw_return' => 1.130148032170,
+            'target_return' => 0.9621,
             'paytable' => [
                 ['symbols' => '📖📖📖', 'label' => 'x50'],
                 ['symbols' => '💀💀💀', 'label' => 'x25'],
@@ -93,6 +101,8 @@ class SlotsController extends Controller
             'hero' => '/images/lootra_visual_pack/03_game_covers/game_starburst_800x1000.webp',
             'symbols' => ['💎', '⭐', '🌟', '✨', '🔵', '🟢', '🔴', '🟠'],
             'weights' => ['💎' => 5, '⭐' => 8, '🌟' => 12, '✨' => 15, '🔵' => 20, '🟢' => 22, '🔴' => 25, '🟠' => 25],
+            'raw_return' => 1.298208931603,
+            'target_return' => 0.9609,
             'paytable' => [
                 ['symbols' => '💎💎💎', 'label' => 'x50'],
                 ['symbols' => '⭐⭐⭐', 'label' => 'x25'],
@@ -111,6 +121,8 @@ class SlotsController extends Controller
             'hero' => '/images/lootra_visual_pack/03_game_covers/game_big_bass_bonanza_800x1000.webp',
             'symbols' => ['🐟', '🎣', '🪣', '🦞', '🐡', '🌊', '⚓', '🐠'],
             'weights' => ['🐟' => 5, '🎣' => 8, '🪣' => 12, '🦞' => 15, '🐡' => 20, '🌊' => 22, '⚓' => 25, '🐠' => 25],
+            'raw_return' => 0.890603260567,
+            'target_return' => 0.9671,
             'paytable' => [
                 ['symbols' => '🐟🐟🐟', 'label' => 'x50'],
                 ['symbols' => '🎣🎣🎣', 'label' => 'x25'],
@@ -177,7 +189,9 @@ class SlotsController extends Controller
                 $this->spin($theme['symbols'], $theme['weights']),
                 $this->spin($theme['symbols'], $theme['weights']),
             ];
-            $ganancia = $this->calculateWin($reels, $apuesta, $gameSlug);
+            $rawWin = $this->calculateWin($reels, $apuesta, $gameSlug);
+            $payoutScale = $theme['target_return'] / $theme['raw_return'];
+            $ganancia = floor($rawWin * $payoutScale * 100) / 100;
             if ($ganancia > 0) {
                 $this->balances->credit($user, 'slots', $ganancia, 'premio_slots', ['juego' => $gameSlug], null, $campaignId);
             }

@@ -8,7 +8,11 @@ class BlackjackHand extends Model
 {
     protected $table = 'blackjack_hands';
 
-    protected $guarded = [];
+    protected $fillable = [
+        'usuario_id', 'request_token', 'variante', 'apuesta', 'baraja',
+        'mano_jugador', 'mano_dealer', 'estado', 'ganancia', 'finalizada_at',
+        'campaign_challenge_id', 'campaign_key',
+    ];
 
     protected $casts = [
         'apuesta' => 'float',

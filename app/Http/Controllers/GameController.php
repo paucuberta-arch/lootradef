@@ -13,7 +13,9 @@ class GameController extends Controller
         $game = $catalog->find($slug);
         abort_unless($game, 404);
 
-        $reviews = Review::where('juego_slug', $slug)
+        $reviews = Review::query()
+            ->select(['id', 'usuario_id', 'juego_slug', 'titulo', 'contenido', 'tipo', 'estado', 'puntuacion', 'likes', 'dislikes', 'created_at'])
+            ->where('juego_slug', $slug)
             ->where('tipo', 'juego')
             ->where('estado', 'aprobado')
             ->with('usuario')

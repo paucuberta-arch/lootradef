@@ -7,6 +7,7 @@ use App\Models\Partida;
 use App\Models\Usuario;
 use App\Services\CampaignManager;
 use App\Services\GameBalanceService;
+use App\Services\SecureRandom;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,7 +16,10 @@ use Illuminate\View\View;
 
 class BlackjackController extends Controller
 {
-    public function __construct(private readonly GameBalanceService $balances) {}
+    public function __construct(
+        private readonly GameBalanceService $balances,
+        private readonly SecureRandom $random,
+    ) {}
 
     private array $palos = ['♠', '♥', '♦', '♣'];
 
@@ -75,7 +79,7 @@ class BlackjackController extends Controller
 
             $bet = round((float) $validated['apuesta'], 2);
             $deck = $this->crearBaraja($variant === 'classic' ? 6 : 1);
-            shuffle($deck);
+            $deck = $this->random->shuffle($deck);
             $player = [$this->draw($deck), $this->draw($deck)];
             $dealer = [$this->draw($deck), $this->draw($deck)];
             $hand = BlackjackHand::create([

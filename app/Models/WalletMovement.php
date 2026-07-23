@@ -8,7 +8,11 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class WalletMovement extends Model
 {
-    protected $guarded = [];
+    protected $fillable = [
+        'usuario_id', 'cartera_id', 'tipo', 'direccion', 'importe',
+        'saldo_anterior', 'saldo_posterior', 'referencia_type', 'referencia_id',
+        'estado', 'idempotency_key', 'metadatos',
+    ];
 
     protected $casts = [
         'importe' => 'float',

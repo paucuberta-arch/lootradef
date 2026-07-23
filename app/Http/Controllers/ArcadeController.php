@@ -6,6 +6,7 @@ use App\Models\Partida;
 use App\Services\CampaignManager;
 use App\Services\GameBalanceService;
 use App\Services\GameCatalog;
+use App\Services\SecureRandom;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +14,12 @@ use Illuminate\View\View;
 
 class ArcadeController extends Controller
 {
-    public function __construct(private readonly GameBalanceService $balances) {}
+    private const HI_LO_RETURN_TO_PLAYER = 0.96;
+
+    public function __construct(
+        private readonly GameBalanceService $balances,
+        private readonly SecureRandom $random,
+    ) {}
 
     public function index(Request $request, string $game, GameCatalog $catalog): View
     {
@@ -92,7 +98,7 @@ class ArcadeController extends Controller
     private function wheel(): array
     {
         $segments = [0, 0, 0, .5, .5, 1, 1, 1.5, 2, 3];
-        $index = array_rand($segments);
+        $index = $this->random->index($segments);
 
         return ['multiplier' => $segments[$index], 'segment' => $index, 'label' => $segments[$index].'x'];
     }
@@ -101,8 +107,10 @@ class ArcadeController extends Controller
     {
         $mines = max(1, min(8, (int) $choice));
         $safe = random_int(1, 12) > $mines;
+        $safeOutcomes = 12 - $mines;
+        $multiplier = round((self::HI_LO_RETURN_TO_PLAYER * 12) / $safeOutcomes, 4);
 
-        return ['multiplier' => $safe ? round(1 + $mines * .24, 2) : 0, 'safe' => $safe, 'mines' => $mines, 'cell' => random_int(0, 15)];
+        return ['multiplier' => $safe ? $multiplier : 0, 'safe' => $safe, 'mines' => $mines, 'cell' => random_int(0, 15)];
     }
 
     private function dice(string $choice): array
@@ -120,7 +128,12 @@ class ArcadeController extends Controller
         session(['hilo_card_game' => $next]);
         $won = $choice === 'higher' ? $next > $first : $next < $first;
 
-        return ['multiplier' => $won ? 1.9 : ($next === $first ? 1 : 0), 'first' => $first, 'next' => $next, 'choice' => $choice];
+        return [
+            'multiplier' => $won ? $this->hiLoMultiplier($first, $choice) : ($next === $first ? 1 : 0),
+            'first' => $first,
+            'next' => $next,
+            'choice' => $choice,
+        ];
     }
 
     private function plinko(): array
@@ -135,7 +148,7 @@ class ArcadeController extends Controller
     private function keno(array $numbers): array
     {
         $chosen = array_values(array_unique(array_map('intval', $numbers)));
-        $draw = collect(range(1, 30))->shuffle()->take(10)->sort()->values()->all();
+        $draw = collect($this->random->shuffle(range(1, 30)))->take(10)->sort()->values()->all();
         $hits = count(array_intersect($chosen, $draw));
 
         return ['multiplier' => [0, 0, .5, 2, 8, 25][$hits], 'chosen' => $chosen, 'draw' => $draw, 'hits' => $hits];
@@ -165,17 +178,34 @@ class ArcadeController extends Controller
             'gold' => [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 10],
         ];
         $table = $tables[$choice] ?? $tables['violet'];
-        $multiplier = $table[array_rand($table)];
+        $multiplier = $this->random->pick($table);
 
         return ['multiplier' => $multiplier, 'crystal' => $choice];
     }
 
     private function prepareHiLo(): int
     {
+        $current = session('hilo_card_game');
+        if (is_int($current) && $current >= 1 && $current <= 13) {
+            return $current;
+        }
+
         $card = random_int(1, 13);
         session(['hilo_card_game' => $card]);
 
         return $card;
+    }
+
+    private function hiLoMultiplier(int $first, string $choice): float
+    {
+        $winningOutcomes = $choice === 'higher' ? 13 - $first : $first - 1;
+        if ($winningOutcomes === 0) {
+            return 0;
+        }
+
+        // A tie returns the stake. The win multiplier is therefore derived from
+        // the remaining outcomes so every visible card keeps the configured RTP.
+        return round(((self::HI_LO_RETURN_TO_PLAYER * 13) - 1) / $winningOutcomes, 4);
     }
 
     private function poker(): array
@@ -186,7 +216,7 @@ class ArcadeController extends Controller
                 $deck[] = ['rank' => $rank, 'suit' => $suit];
             }
         }
-        shuffle($deck);
+        $deck = $this->random->shuffle($deck);
         $player = [array_pop($deck), array_pop($deck)];
         $dealer = [array_pop($deck), array_pop($deck)];
         $community = array_splice($deck, 0, 5);

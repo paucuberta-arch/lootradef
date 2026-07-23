@@ -6,6 +6,7 @@ use App\Models\CaseRewardSetting;
 use App\Models\InventarioItem;
 use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class CajaInventoryTest extends TestCase
@@ -16,7 +17,7 @@ class CajaInventoryTest extends TestCase
     {
         $usuario = $this->userWithBalance(100);
 
-        $response = $this->actingAs($usuario)->postJson(route('cajas.open', 'starter'));
+        $response = $this->actingAs($usuario)->postJson(route('cajas.open', 'starter'), ['request_token' => (string) Str::uuid()]);
 
         $response->assertOk()->assertJsonStructure([
             'item' => ['id', 'prize_key', 'nombre', 'imagen', 'rareza', 'valor_canje', 'estado', 'created_at'],
@@ -47,7 +48,7 @@ class CajaInventoryTest extends TestCase
         $usuario = $this->userWithBalance(1);
 
         $this->actingAs($usuario)
-            ->postJson(route('cajas.open', 'starter'))
+            ->postJson(route('cajas.open', 'starter'), ['request_token' => (string) Str::uuid()])
             ->assertUnprocessable()
             ->assertJsonPath('message', 'No tienes saldo suficiente para abrir esta caja.');
 
@@ -60,11 +61,25 @@ class CajaInventoryTest extends TestCase
         CaseRewardSetting::where('case_key', 'starter')->delete();
         $usuario = $this->userWithBalance(100);
 
-        $response = $this->actingAs($usuario)->postJson(route('cajas.open', 'starter'))->assertOk();
+        $response = $this->actingAs($usuario)->postJson(route('cajas.open', 'starter'), ['request_token' => (string) Str::uuid()])->assertOk();
 
         $winnerIndex = $response->json('winner_index');
         $this->assertNotEmpty($response->json('item.prize_key'));
         $this->assertSame($response->json('item.prize_key'), $response->json("reel.{$winnerIndex}.prize_key"));
+    }
+
+    public function test_repeated_case_request_token_returns_the_original_prize_without_a_second_charge(): void
+    {
+        $usuario = $this->userWithBalance(100);
+        $token = (string) Str::uuid();
+
+        $first = $this->actingAs($usuario)->postJson(route('cajas.open', 'starter'), ['request_token' => $token])->assertOk();
+        $second = $this->actingAs($usuario)->postJson(route('cajas.open', 'starter'), ['request_token' => $token])->assertOk();
+
+        $this->assertSame($first->json('item.id'), $second->json('item.id'));
+        $this->assertSame(97.01, round($usuario->cartera()->value('saldo'), 2));
+        $this->assertDatabaseCount('inventario_items', 1);
+        $this->assertDatabaseCount('wallet_movements', 1);
     }
 
     public function test_opening_uses_the_prize_configured_by_the_server_instead_of_a_fixed_item(): void
@@ -72,18 +87,32 @@ class CajaInventoryTest extends TestCase
         $usuario = $this->userWithBalance(100);
         $setting = CaseRewardSetting::where('case_key', 'starter')->firstOrFail();
         $rules = $setting->prizeRules()->get();
-        $expected = $rules->get(1);
+        $expected = $rules->firstWhere('name', 'Sticker Pack Neon');
 
         $setting->prizeRules()->update(['probability' => 0]);
         $expected->update(['probability' => 100]);
 
-        $response = $this->actingAs($usuario)->postJson(route('cajas.open', 'starter'));
+        $response = $this->actingAs($usuario)->postJson(route('cajas.open', 'starter'), ['request_token' => (string) Str::uuid()]);
 
         $response->assertOk()->assertJsonPath('item.nombre', $expected->name);
         $this->assertDatabaseHas('inventario_items', [
             'id' => $response->json('item.id'),
             'nombre' => $expected->name,
         ]);
+    }
+
+    public function test_real_opening_is_blocked_before_debit_when_stored_probabilities_have_non_negative_return(): void
+    {
+        $usuario = $this->userWithBalance(100);
+        $setting = CaseRewardSetting::where('case_key', 'gaming')->firstOrFail();
+        $setting->prizeRules()->update(['probability' => 0]);
+        $setting->prizeRules()->where('name', 'Consola Next Gen')->update(['probability' => 100]);
+
+        $this->actingAs($usuario)->postJson(route('cajas.open', 'gaming'), ['request_token' => (string) Str::uuid()])
+            ->assertConflict();
+
+        $this->assertSame(100.0, (float) $usuario->cartera()->value('saldo'));
+        $this->assertDatabaseCount('inventario_items', 0);
     }
 
     public function test_case_page_uses_stable_prize_identity_and_local_case_art(): void

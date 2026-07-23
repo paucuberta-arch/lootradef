@@ -25,7 +25,8 @@ class ApuestasController extends Controller
         $this->simulation->ensureFixtures();
 
         return view('apuestas.index', [
-            'matches' => PartidoDeportivo::latest('inicia_at')->take(18)->get()->map(fn ($match) => $this->matchData($match))->values(),
+            'matches' => PartidoDeportivo::query()
+                ->latest('inicia_at')->take(18)->get()->map(fn ($match) => $this->matchData($match))->values(),
             'bets' => $request->user() ? $this->userBets($request->user()->id) : collect(),
         ]);
     }
@@ -33,9 +34,12 @@ class ApuestasController extends Controller
     public function feed(Request $request): JsonResponse
     {
         return response()->json([
-            'matches' => PartidoDeportivo::latest('inicia_at')->take(18)->get()->map(fn ($match) => $this->matchData($match))->values(),
+            'matches' => PartidoDeportivo::query()
+                ->latest('inicia_at')->take(18)->get()->map(fn ($match) => $this->matchData($match))->values(),
             'bets' => $request->user() ? $this->userBets($request->user()->id) : [],
-            'balance' => $request->user()?->cartera?->fresh()->saldo,
+            'balance' => $request->user()
+                ? (float) ($request->user()->cartera()->value('saldo') ?? 0)
+                : null,
             'server_time' => now()->toIso8601String(),
         ]);
     }
@@ -50,18 +54,37 @@ class ApuestasController extends Controller
         $validated = $request->validate([
             'seleccion' => ['required', 'in:local,empate,visitante'],
             'importe' => ['required', 'numeric', 'min:1', 'max:5000'],
+            'request_token' => ['required', 'uuid'],
         ]);
 
         $this->simulation->syncMatch($partido);
 
         $bet = DB::transaction(function () use ($request, $partido, $validated) {
+            $wallet = Cartera::where('usuario_id', $request->user()->id)->lockForUpdate()->first();
+            abort_unless($wallet, 422, 'No tienes una cartera activa.');
+
+            $existing = ApuestaDeportiva::where('usuario_id', $request->user()->id)
+                ->where('request_token', $validated['request_token'])
+                ->lockForUpdate()
+                ->first();
+            if ($existing) {
+                abort_unless(
+                    $existing->partido_id === $partido->id
+                    && $existing->seleccion === $validated['seleccion']
+                    && (float) $existing->importe === (float) $validated['importe'],
+                    409,
+                    'La clave de idempotencia ya fue usada para otra apuesta.'
+                );
+
+                return $existing;
+            }
+
             $match = PartidoDeportivo::lockForUpdate()->findOrFail($partido->id);
             if (! in_array($match->estado, ['programado', 'en_vivo'], true) || $match->minuto >= 80) {
                 abort(422, 'Las apuestas para este partido ya están cerradas.');
             }
 
-            $wallet = Cartera::where('usuario_id', $request->user()->id)->lockForUpdate()->first();
-            if (! $wallet || $wallet->saldo < $validated['importe']) {
+            if ($wallet->saldo < $validated['importe']) {
                 abort(422, 'No tienes saldo suficiente para realizar esta apuesta.');
             }
 
@@ -73,11 +96,18 @@ class ApuestasController extends Controller
             $bet = ApuestaDeportiva::create([
                 'usuario_id' => $request->user()->id,
                 'partido_id' => $match->id,
+                'request_token' => $validated['request_token'],
                 'seleccion' => $validated['seleccion'],
                 'cuota' => $odds[$validated['seleccion']],
                 'importe' => $validated['importe'],
             ]);
-            abort_unless($wallet->apostar($validated['importe'], 'apuesta_deportiva', ['seleccion' => $validated['seleccion']], $bet), 422, 'No tienes saldo suficiente para realizar esta apuesta.');
+            abort_unless($wallet->apostar(
+                $validated['importe'],
+                'apuesta_deportiva',
+                ['seleccion' => $validated['seleccion']],
+                $bet,
+                'sports-bet|'.$request->user()->id.'|'.$validated['request_token'],
+            ), 422, 'No tienes saldo suficiente para realizar esta apuesta.');
 
             return $bet;
         });
@@ -92,7 +122,7 @@ class ApuestasController extends Controller
             'message' => 'Apuesta registrada correctamente.',
             'bet' => $this->betData($bet->load('partido')),
             'balance' => $request->user()->cartera->fresh()->saldo,
-        ], 201);
+        ], $bet->wasRecentlyCreated ? 201 : 200);
     }
 
     private function matchData(PartidoDeportivo $match): array
@@ -119,7 +149,15 @@ class ApuestasController extends Controller
 
     private function userBets(int $userId)
     {
-        return ApuestaDeportiva::with('partido')->where('usuario_id', $userId)->latest()->take(12)->get()->map(fn ($bet) => $this->betData($bet))->values();
+        return ApuestaDeportiva::query()
+            ->select(['id', 'usuario_id', 'partido_id', 'seleccion', 'cuota', 'importe', 'ganancia', 'estado', 'created_at'])
+            ->with('partido')
+            ->where('usuario_id', $userId)
+            ->latest()
+            ->take(12)
+            ->get()
+            ->map(fn ($bet) => $this->betData($bet))
+            ->values();
     }
 
     private function betData(ApuestaDeportiva $bet): array

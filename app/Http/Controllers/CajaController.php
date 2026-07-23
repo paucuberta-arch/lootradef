@@ -44,10 +44,35 @@ class CajaController extends Controller
             return response()->json(['message' => 'La caja seleccionada no existe.'], 404);
         }
 
-        $item = DB::transaction(function () use ($request, $caja, $definition) {
-            $cartera = Cartera::where('usuario_id', $request->user()->id)->lockForUpdate()->first();
+        $validated = $request->validate([
+            'request_token' => ['required', 'uuid'],
+        ]);
 
-            if (! $cartera || $cartera->saldo < $definition['precio']) {
+        $item = DB::transaction(function () use ($request, $caja, $definition, $validated) {
+            $cartera = Cartera::where('usuario_id', $request->user()->id)->lockForUpdate()->first();
+            abort_unless($cartera, 422, 'No tienes una cartera activa.');
+
+            $existing = InventarioItem::where('usuario_id', $request->user()->id)
+                ->where('request_token', $validated['request_token'])
+                ->lockForUpdate()
+                ->first();
+            if ($existing) {
+                abort_unless($existing->caja === $caja, 409, 'La clave de idempotencia ya fue usada para otra caja.');
+                $prize = [
+                    'nombre' => $existing->nombre,
+                    'imagen' => $existing->imagen,
+                    'rareza' => $existing->rareza,
+                    'valor' => (float) $existing->valor_canje,
+                ];
+
+                return [
+                    'item' => $existing,
+                    'saldo' => (float) $cartera->saldo,
+                    'reel' => $this->prizes->buildReel($definition['premios'], $prize),
+                ];
+            }
+
+            if ($cartera->saldo < $definition['precio']) {
                 return null;
             }
 
@@ -56,6 +81,7 @@ class CajaController extends Controller
 
             $item = InventarioItem::create([
                 'usuario_id' => $request->user()->id,
+                'request_token' => $validated['request_token'],
                 'caja' => $caja,
                 'nombre' => $prize['nombre'],
                 'imagen' => $prize['imagen'],
@@ -64,7 +90,13 @@ class CajaController extends Controller
                 'valor_canje' => $prize['valor'],
                 'estado' => 'disponible',
             ]);
-            abort_unless($cartera->apostar($definition['precio'], 'apertura_caja', ['caja' => $caja], $item), 422, 'No tienes saldo suficiente para abrir esta caja.');
+            abort_unless($cartera->apostar(
+                $definition['precio'],
+                'apertura_caja',
+                ['caja' => $caja],
+                $item,
+                'case-open|'.$request->user()->id.'|'.$validated['request_token'],
+            ), 422, 'No tienes saldo suficiente para abrir esta caja.');
 
             ActivityLog::create([
                 'usuario_id' => $request->user()->id,

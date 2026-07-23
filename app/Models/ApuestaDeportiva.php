@@ -9,7 +9,10 @@ class ApuestaDeportiva extends Model
 {
     protected $table = 'apuestas_deportivas';
 
-    protected $guarded = [];
+    protected $fillable = [
+        'usuario_id', 'partido_id', 'request_token', 'seleccion',
+        'cuota', 'importe', 'ganancia', 'estado', 'liquidada_at',
+    ];
 
     protected $casts = [
         'cuota' => 'float',

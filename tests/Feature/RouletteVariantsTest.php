@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\RuletaController;
 use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -36,5 +37,27 @@ class RouletteVariantsTest extends TestCase
         $european->assertSee(route('games.roulette.european'), false);
         $lightning->assertSee(route('games.roulette.lightning'), false);
         $this->assertNotSame(route('games.roulette.european'), route('games.roulette.lightning'));
+    }
+
+    public function test_lightning_number_configuration_stays_below_one_hundred_percent_expected_return(): void
+    {
+        $reflection = new \ReflectionClass(RuletaController::class);
+        $baseMultiplier = (float) $reflection->getConstant('LIGHTNING_BASE_MULTIPLIER');
+        $boosts = $reflection->getConstant('LIGHTNING_BOOST_MULTIPLIERS');
+        $averageBoost = array_sum($boosts) / count($boosts);
+
+        $expectedReturn = ((5 * $averageBoost) + (32 * $baseMultiplier)) / (37 * 37);
+
+        $this->assertGreaterThanOrEqual(0.97, $expectedReturn);
+        $this->assertLessThan(1, $expectedReturn);
+        $this->assertEqualsWithDelta(0.973, $expectedReturn, 0.001);
+    }
+
+    public function test_european_single_number_win_returns_the_stake_plus_thirty_five_to_one(): void
+    {
+        $controller = app(RuletaController::class);
+        $method = new \ReflectionMethod($controller, 'calculateWin');
+
+        $this->assertSame(36.0, $method->invoke($controller, 'numero', 17, 17, 'negro', 1.0, 36.0));
     }
 }

@@ -10,7 +10,7 @@ class InventarioItem extends Model
     protected $table = 'inventario_items';
 
     protected $fillable = [
-        'usuario_id', 'caja', 'nombre', 'imagen', 'rareza',
+        'usuario_id', 'request_token', 'caja', 'nombre', 'imagen', 'rareza',
         'precio_caja', 'valor_canje', 'estado', 'canjeado_at',
     ];
 

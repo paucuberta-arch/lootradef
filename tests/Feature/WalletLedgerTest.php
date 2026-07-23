@@ -8,6 +8,7 @@ use App\Services\WalletService;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class WalletLedgerTest extends TestCase
@@ -50,8 +51,13 @@ class WalletLedgerTest extends TestCase
     {
         Mail::fake();
         $user = $this->player();
+        $user->update(['is_demo' => true, 'data_origin' => 'test']);
+        config(['features.demo_deposits.enabled' => true]);
 
-        $this->actingAs($user)->postJson(route('perfil.deposit'), ['amount' => 25])
+        $this->actingAs($user)->postJson(route('perfil.deposit'), [
+            'amount' => 25,
+            'request_token' => (string) Str::uuid(),
+        ])
             ->assertOk()->assertJsonPath('saldo', 125);
 
         $this->actingAs($user)->get(route('perfil'))
@@ -72,6 +78,7 @@ class WalletLedgerTest extends TestCase
         $user = Usuario::create([
             'name' => 'Wallet Tester',
             'email' => uniqid().'@example.com',
+            'email_verified_at' => now(),
             'password' => bcrypt('password'),
         ]);
         $user->cartera()->create(['saldo' => 100]);

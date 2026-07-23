@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\ApuestaDeportiva;
 use App\Models\Cartera;
 use App\Models\PartidoDeportivo;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class SportsSimulationService
@@ -13,31 +14,35 @@ class SportsSimulationService
 
     public function ensureFixtures(): void
     {
-        if (PartidoDeportivo::where('inicia_at', '>', now()->subMinutes(8))->exists()) {
-            return;
-        }
+        Cache::lock('sports:fixture-generation', 15)->block(3, function (): void {
+            if (PartidoDeportivo::where('inicia_at', '>', now()->subMinutes(8))->exists()) {
+                return;
+            }
 
-        $fixtures = [
-            ['Champions League', 'Real Madrid', 'Manchester City', 'RMA', 'MCI', -150],
-            ['Premier League', 'Liverpool', 'Arsenal', 'LIV', 'ARS', -55],
-            ['La Liga', 'Barcelona', 'Atlético de Madrid', 'FCB', 'ATM', 45],
-            ['Serie A', 'Inter de Milán', 'Juventus', 'INT', 'JUV', 150],
-            ['Bundesliga', 'Bayern Múnich', 'Dortmund', 'BAY', 'BVB', 260],
-            ['Europa League', 'Sevilla', 'Roma', 'SEV', 'ROM', 380],
-        ];
+            $fixtures = [
+                ['Champions League', 'Real Madrid', 'Manchester City', 'RMA', 'MCI', -150],
+                ['Premier League', 'Liverpool', 'Arsenal', 'LIV', 'ARS', -55],
+                ['La Liga', 'Barcelona', 'Atlético de Madrid', 'FCB', 'ATM', 45],
+                ['Serie A', 'Inter de Milán', 'Juventus', 'INT', 'JUV', 150],
+                ['Bundesliga', 'Bayern Múnich', 'Dortmund', 'BAY', 'BVB', 260],
+                ['Europa League', 'Sevilla', 'Roma', 'SEV', 'ROM', 380],
+            ];
+            $batch = intdiv(now()->timestamp, 480);
 
-        foreach ($fixtures as [$league, $home, $away, $homeShort, $awayShort, $offset]) {
-            PartidoDeportivo::create([
-                'liga' => $league, 'local' => $home, 'visitante' => $away,
-                'local_siglas' => $homeShort, 'visitante_siglas' => $awayShort,
-                'imagen' => '/images/lootra_visual_pack/04_backgrounds/bg_emerald_forest_1920x1080.webp',
-                'inicia_at' => now()->addSeconds($offset), 'duracion_segundos' => 360,
-                'cuota_local' => random_int(165, 275) / 100,
-                'cuota_empate' => random_int(280, 390) / 100,
-                'cuota_visitante' => random_int(175, 310) / 100,
-                'simulacion' => $this->makeSimulation($home, $away),
-            ]);
-        }
+            foreach ($fixtures as [$league, $home, $away, $homeShort, $awayShort, $offset]) {
+                $fixtureKey = hash('sha256', implode('|', [$batch, $league, $home, $away]));
+                PartidoDeportivo::firstOrCreate(['fixture_key' => $fixtureKey], [
+                    'liga' => $league, 'local' => $home, 'visitante' => $away,
+                    'local_siglas' => $homeShort, 'visitante_siglas' => $awayShort,
+                    'imagen' => '/images/lootra_visual_pack/04_backgrounds/bg_emerald_forest_1920x1080.webp',
+                    'inicia_at' => now()->addSeconds($offset), 'duracion_segundos' => 360,
+                    'cuota_local' => random_int(165, 275) / 100,
+                    'cuota_empate' => random_int(280, 390) / 100,
+                    'cuota_visitante' => random_int(175, 310) / 100,
+                    'simulacion' => $this->makeSimulation($home, $away),
+                ]);
+            }
+        });
     }
 
     public function syncAll(): int

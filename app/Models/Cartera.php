@@ -35,9 +35,9 @@ class Cartera extends Model
         return $this->saldo >= $cantidad;
     }
 
-    public function apostar(float $cantidad, string $tipo = 'apuesta', array $metadatos = [], ?Model $referencia = null): bool
+    public function apostar(float $cantidad, string $tipo = 'apuesta', array $metadatos = [], ?Model $referencia = null, ?string $idempotencyKey = null): bool
     {
-        return app(WalletService::class)->debit($this, $cantidad, $tipo, $metadatos, $referencia);
+        return app(WalletService::class)->debit($this, $cantidad, $tipo, $metadatos, $referencia, $idempotencyKey);
     }
 
     public function ganar(float $cantidad, string $tipo = 'premio', array $metadatos = [], ?Model $referencia = null): void

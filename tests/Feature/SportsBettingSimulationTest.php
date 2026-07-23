@@ -7,6 +7,7 @@ use App\Models\Cartera;
 use App\Models\PartidoDeportivo;
 use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class SportsBettingSimulationTest extends TestCase
@@ -17,9 +18,11 @@ class SportsBettingSimulationTest extends TestCase
     {
         [$user, $match] = $this->scenario();
 
+        $token = (string) Str::uuid();
         $this->actingAs($user)->postJson(route('apuestas.place', $match), [
             'seleccion' => 'local',
             'importe' => 25,
+            'request_token' => $token,
         ])->assertCreated()->assertJsonPath('balance', 75);
 
         $this->assertDatabaseHas('apuestas_deportivas', ['usuario_id' => $user->id, 'importe' => 25, 'cuota' => 2.0]);
@@ -36,6 +39,39 @@ class SportsBettingSimulationTest extends TestCase
             ->assertJsonPath('matches.0.home_score', 1);
 
         $this->assertGreaterThanOrEqual(44, $match->fresh()->minuto);
+    }
+
+    public function test_repeated_sports_bet_token_returns_the_original_bet_without_a_second_debit(): void
+    {
+        [$user, $match] = $this->scenario();
+        $token = (string) Str::uuid();
+        $payload = ['seleccion' => 'local', 'importe' => 25, 'request_token' => $token];
+
+        $firstResponse = $this->actingAs($user)->postJson(route('apuestas.place', $match), $payload)->assertCreated();
+        $originalBetId = $firstResponse->json('bet.id');
+        $this->actingAs($user)->postJson(route('apuestas.place', $match), $payload)
+            ->assertOk()
+            ->assertJsonPath('bet.id', $originalBetId)
+            ->assertJsonPath('balance', 75);
+
+        $this->assertDatabaseCount('apuestas_deportivas', 1);
+        $this->assertDatabaseCount('wallet_movements', 1);
+    }
+
+    public function test_sports_bet_token_cannot_be_reused_with_different_parameters(): void
+    {
+        [$user, $match] = $this->scenario();
+        $token = (string) Str::uuid();
+        $payload = ['seleccion' => 'local', 'importe' => 25, 'request_token' => $token];
+
+        $this->actingAs($user)->postJson(route('apuestas.place', $match), $payload)->assertCreated();
+        $this->actingAs($user)->postJson(route('apuestas.place', $match), [
+            ...$payload,
+            'importe' => 30,
+        ])->assertConflict();
+
+        $this->assertDatabaseCount('apuestas_deportivas', 1);
+        $this->assertEquals(75, $user->cartera->fresh()->saldo);
     }
 
     public function test_winning_bet_is_paid_only_once(): void
@@ -58,7 +94,7 @@ class SportsBettingSimulationTest extends TestCase
     {
         [$user, $match] = $this->scenario(now()->subSeconds(330));
 
-        $this->actingAs($user)->postJson(route('apuestas.place', $match), ['seleccion' => 'empate', 'importe' => 10])
+        $this->actingAs($user)->postJson(route('apuestas.place', $match), ['seleccion' => 'empate', 'importe' => 10, 'request_token' => (string) Str::uuid()])
             ->assertUnprocessable();
 
         $this->assertEquals(100, $user->cartera->fresh()->saldo);

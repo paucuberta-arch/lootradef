@@ -9,7 +9,13 @@ class PartidoDeportivo extends Model
 {
     protected $table = 'partidos_deportivos';
 
-    protected $guarded = [];
+    protected $fillable = [
+        'fixture_key', 'deporte', 'liga', 'local', 'visitante',
+        'local_siglas', 'visitante_siglas', 'imagen', 'estado',
+        'inicia_at', 'duracion_segundos', 'minuto', 'goles_local',
+        'goles_visitante', 'cuota_local', 'cuota_empate', 'cuota_visitante',
+        'simulacion', 'eventos',
+    ];
 
     protected $casts = [
         'inicia_at' => 'datetime',

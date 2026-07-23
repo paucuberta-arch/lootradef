@@ -9,7 +9,11 @@ class CrashRound extends Model
 {
     protected $table = 'crash_rounds';
 
-    protected $guarded = [];
+    protected $fillable = [
+        'usuario_id', 'request_token', 'apuesta', 'crash_point', 'estado',
+        'cashout_at', 'ganancia', 'iniciada_at', 'finalizada_at',
+        'campaign_challenge_id', 'campaign_key',
+    ];
 
     protected $casts = [
         'apuesta' => 'float',
