@@ -4,8 +4,11 @@
 @source "../js/**/*.js";
 
 @theme {
-    --font-sans: "Inter", system-ui, sans-serif;
-    --font-display: "Space Grotesk", "Inter", sans-serif;
+    --font-sans: "Inter", system-ui, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --font-display: "Space Grotesk", "Avenir Next", "Trebuchet MS", system-ui, sans-serif;
+    --font-editorial: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", "URW Bookman", Georgia, serif;
+    --font-data: "IBM Plex Mono", "SFMono-Regular", "Cascadia Code", "Roboto Mono", Consolas, "Liberation Mono", monospace;
+    --font-mono: var(--font-data);
     --color-brand-50: #fffbeb;
     --color-brand-100: #fef3c7;
     --color-brand-200: #fde68a;
@@ -60,6 +63,8 @@ main, .game-page, input, select, textarea, fieldset { min-width: 0; }
 input, select, textarea { max-width: 100%; }
 ::selection { background: rgba(214, 168, 75, .38); color: white; }
 .font-display, h1, h2, h3 { font-family: var(--font-display); }
+.font-editorial { font-family: var(--font-editorial); }
+.font-data { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
 button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 :where(button, a, input, select, textarea):focus-visible { outline: 2px solid var(--casino-cyan); outline-offset: 3px; }
 img, svg, video, canvas { max-width: 100%; }
@@ -92,7 +97,7 @@ img, svg, video, canvas { max-width: 100%; }
 .game-toolbar__button:hover { border-color:rgba(255,255,255,.13); background:rgba(255,255,255,.07); color:white; transform:translateY(-1px); }
 .game-toolbar__button[aria-pressed="true"] { border-color:color-mix(in srgb,var(--world-accent,var(--casino-cyan)) 32%,transparent); background:color-mix(in srgb,var(--world-accent,var(--casino-cyan)) 10%,transparent); color:var(--world-accent,var(--casino-cyan)); }
 .game-toolbar__button svg { width:1rem; height:1rem; flex:none; }
-.game-page .balance-chip strong,.game-page input[type="number"],.game-page [x-text*="toFixed"],.game-page [x-text*="money"] { font-variant-numeric:tabular-nums; }
+.game-page .game-toolbar__status,.game-page .game-toolbar__button,.game-page .balance-chip strong,.game-page input[type="number"],.game-page [x-text*="toFixed"],.game-page [x-text*="money"] { font-family:var(--font-data); font-variant-numeric:tabular-nums; }
 .game-page:fullscreen { overflow:auto; background:var(--casino-bg); }
 .game-page:fullscreen .game-toolbar { padding-top:1rem; }
 .game-page:fullscreen .game-stage { min-height:min(78vh,820px); }
@@ -249,7 +254,7 @@ img, svg, video, canvas { max-width: 100%; }
 .theme-casino{--world-accent:#22d3ee;--world-accent-2:#a855f7;--world-art:url('/images/lootra_visual_pack/05_top_panels/panel_casino_1920x360.webp');--world-separator:url('/images/lootra_visual_pack/10_decorative/separator_energy_01_1600x260.webp')}
 .theme-game{--world-accent:#c084fc;--world-accent-2:#22d3ee;--world-art:url('/images/lootra_visual_pack/05_top_panels/panel_originals_1920x360.webp');--world-separator:url('/images/lootra_visual_pack/10_decorative/separator_energy_03_1600x260.webp')}
 .theme-live{--world-accent:#34d399;--world-accent-2:#22d3ee;--world-art:url('/images/lootra_visual_pack/05_top_panels/panel_comunidad_1920x360.webp');--world-separator:url('/images/lootra_visual_pack/10_decorative/separator_energy_06_1600x260.webp')}
-.theme-vault{--world-accent:#fbbf24;--world-accent-2:#e879f9;--world-art:url('/images/lootra_visual_pack/05_top_panels/panel_vip_1920x360.webp');--world-separator:url('/images/lootra_visual_pack/10_decorative/separator_energy_05_1600x260.webp')}
+.theme-vault{--world-accent:#fbbf24;--world-accent-2:#e879f9;--world-art:url('/images/lootra_visual_pack/05_top_panels/panel_vip_1920x360.webp');--world-separator:url('/images/lootra_visual_pack/10_decorative/separator_energy_05_1600x260.webp');--font-display:var(--font-editorial)}
 .theme-profile{--world-accent:#a78bfa;--world-accent-2:#67e8f9;--world-art:url('/images/lootra_visual_pack/05_top_panels/panel_perfil_1920x360.webp');--world-separator:url('/images/lootra_visual_pack/10_decorative/separator_energy_08_1600x260.webp')}
 .theme-community{--world-accent:#6ee7b7;--world-accent-2:#67e8f9;--world-art:url('/images/lootra_visual_pack/05_top_panels/panel_comunidad_1920x360.webp');--world-separator:url('/images/lootra_visual_pack/10_decorative/separator_energy_09_1600x260.webp')}
 .theme-campaign{--world-accent:#e879f9;--world-accent-2:#67e8f9;--world-art:url('/images/campaigns/rickyedit/challenge-hero-v2.webp');--world-separator:url('/images/lootra_visual_pack/10_decorative/separator_energy_04_1600x260.webp')}
@@ -270,6 +275,8 @@ img, svg, video, canvas { max-width: 100%; }
 .world-panel{position:relative;isolation:isolate;overflow:hidden;border:1px solid color-mix(in srgb,var(--world-accent) 24%,rgba(255,255,255,.08));background:linear-gradient(145deg,rgba(20,24,42,.92),rgba(7,9,18,.94));box-shadow:inset 0 1px rgba(255,255,255,.08),0 30px 90px rgba(0,0,0,.3)}
 .world-panel::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 90% 0,color-mix(in srgb,var(--world-accent) 15%,transparent),transparent 42%);pointer-events:none}
 .world-kicker{color:var(--world-accent);font-size:.65rem;font-weight:900;line-height:1;text-transform:uppercase;letter-spacing:.23em}
+.theme-vault h1,.theme-vault h2,.theme-vault h3{font-weight:700;letter-spacing:-.025em}
+.theme-vault .world-kicker,.theme-vault .section-kicker{font-family:var(--font-data);letter-spacing:.17em}
 .world-accent{color:var(--world-accent)}
 .visual-float{animation:visual-float 6s ease-in-out infinite;will-change:transform}
 .brand-orbit{position:relative;isolation:isolate}

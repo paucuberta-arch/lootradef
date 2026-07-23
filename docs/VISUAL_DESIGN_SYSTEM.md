@@ -40,7 +40,17 @@ La dirección común es casino premium oscuro: superficies azul-negro, oro para 
 - Plinko: laboratorio Quantum, trazas y partículas limitadas al área de juego.
 - Originals: arcade modular, con un mismo lenguaje de controles y resultados.
 
-## 5. Tokens de movimiento
+## 5. Tipografía por contexto
+
+La interfaz mantiene una base sans legible para navegación, formularios, administración y textos largos. Los titulares conservan `Space Grotesk` como voz principal en inicio, casino, campañas, autenticación y juegos, porque aporta personalidad tecnológica sin perjudicar la lectura.
+
+- `font-editorial`: titulares de Vault/Cajas, con una serif premium para reforzar la sensación de colección y recompensa.
+- `font-data`: cifras, estados y controles compactos de las partidas, con numerales tabulares para comparar saldo, apuesta y resultado rápidamente.
+- `font-sans`: navegación, contenido corrido, formularios y paneles administrativos.
+
+Las familias incluyen alternativas del sistema para evitar una dependencia externa de fuentes y conservar una carga rápida.
+
+## 6. Tokens de movimiento
 
 Los tokens están en `resources/css/app.css`:
 
@@ -61,7 +71,7 @@ Reglas de uso:
 5. `prefers-reduced-motion` elimina bucles decorativos, reduce partículas y convierte las esperas visuales en transiciones breves.
 6. Canvas y temporizadores se pausan o reducen cuando la pestaña queda oculta para evitar consumo innecesario.
 
-## 6. Audio
+## 7. Audio
 
 El sistema compartido no descarga archivos ni añade dependencias: usa Web Audio con tonos cortos. La reproducción comienza únicamente después de una interacción del usuario, respeta el botón global de sonido y persiste la preferencia en `localStorage` bajo una clave no sensible.
 
@@ -69,7 +79,7 @@ Eventos disponibles: `click`, `select`, `spin`, `reel-stop`, `card`, `land`, `wi
 
 No se usa audio para anticipar un premio no confirmado. Las celebraciones distinguen entre premio bruto positivo, empate/devolución y pérdida neta.
 
-## 7. Responsive y accesibilidad
+## 8. Responsive y accesibilidad
 
 - Controles táctiles con separación y tamaño adecuados.
 - `env(safe-area-inset-*)` para navegación móvil y controles flotantes.
@@ -79,7 +89,7 @@ No se usa audio para anticipar un premio no confirmado. Las celebraciones distin
 - La información importante no depende únicamente de color.
 - El modo de movimiento reducido se actualiza si cambia la preferencia del sistema durante la sesión.
 
-## 8. Rendimiento y deuda visual
+## 9. Rendimiento y deuda visual
 
 Ya se aplicó carga local con Vite, carga diferida de Chart.js, atlases WebP, variantes responsive, `requestAnimationFrame` para escenas activas y reducción de trabajo en pestañas ocultas. El build actual produce aproximadamente 171 kB CSS y 54 kB JS principales antes de compresión, además de un chunk automático de Alpine/terceros.
 
@@ -92,7 +102,7 @@ Pendientes de segunda fase:
 - Añadir pruebas de screenshot y una matriz de navegadores.
 - Evaluar una política de calidad baja/equilibrada/alta para Canvas y partículas.
 
-## 9. Criterios de aceptación
+## 10. Criterios de aceptación
 
 Una mejora visual se considera validada cuando:
 
