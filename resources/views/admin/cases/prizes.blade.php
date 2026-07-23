@@ -64,7 +64,7 @@
 
         <div class="mt-6 space-y-2">
             @forelse($boosts as $boost)
-                <div class="flex flex-col gap-3 rounded-xl border border-white/10 bg-black/20 p-4 sm:flex-row sm:items-center sm:justify-between"><div><b>{{ $boost->user?->name }}</b><p class="mt-1 text-xs text-slate-500">×{{ number_format($boost->multiplier, 2, ',', '.') }} · {{ $boost->reason }} · {{ $boost->expires_at ? 'hasta '.$boost->expires_at->format('d/m/Y H:i') : 'sin caducidad' }}</p></div><form method="POST" action="{{ route('admin.case-prizes.boosts.destroy', $boost) }}">@csrf @method('DELETE')<button class="min-h-10 rounded-lg border border-red-400/20 px-3 text-xs font-bold text-red-300">Eliminar</button></form></div>
+                <div class="flex flex-col gap-3 rounded-xl border border-white/10 bg-black/20 p-4 sm:flex-row sm:items-center sm:justify-between"><div class="flex items-center gap-3"><x-ui.user-avatar :user="$boost->user" size="sm" /><div><b>{{ $boost->user?->name }}</b><p class="mt-1 text-xs text-slate-500">×{{ number_format($boost->multiplier, 2, ',', '.') }} · {{ $boost->reason }} · {{ $boost->expires_at ? 'hasta '.$boost->expires_at->format('d/m/Y H:i') : 'sin caducidad' }}</p></div></div><form method="POST" action="{{ route('admin.case-prizes.boosts.destroy', $boost) }}">@csrf @method('DELETE')<button class="min-h-10 rounded-lg border border-red-400/20 px-3 text-xs font-bold text-red-300">Eliminar</button></form></div>
             @empty
                 <p class="rounded-xl border border-dashed border-white/10 p-5 text-sm text-slate-500">No hay multiplicadores de prueba configurados.</p>
             @endforelse

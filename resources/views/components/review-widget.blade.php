@@ -35,9 +35,7 @@
         <div class="space-y-4">
             @foreach($reviews ?? [] as $rev)
                 <div class="flex gap-3">
-                    <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-xs font-bold text-slate-400 shrink-0">
-                        {{ strtoupper(substr($rev->usuario->name ?? '?', 0, 1)) }}
-                    </div>
+                    <x-ui.user-avatar :user="$rev->usuario" size="sm" />
                     <div class="flex-1 min-w-0">
                         <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mb-1">
                             <span class="text-sm font-semibold text-white">{{ $rev->usuario->name ?? 'Anonimo' }}</span>

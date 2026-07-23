@@ -34,9 +34,7 @@
                     <tr class="border-b border-white/[0.03] hover:bg-white/[0.02] transition">
                         <td data-primary class="px-5 py-3">
                             <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-black text-xs font-bold shrink-0">
-                                    {{ strtoupper(substr($u->name, 0, 1)) }}
-                                </div>
+                                <x-ui.user-avatar :user="$u" size="sm" />
                                 <div class="min-w-0">
                                     <p class="font-semibold text-white">{{ $u->name }}</p>
                                     <p class="break-all text-xs text-slate-500">{{ $u->email }}</p>

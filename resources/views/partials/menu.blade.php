@@ -43,7 +43,7 @@
                     @endif
                     <a href="{{ route('wallet.show') }}" class="balance-chip flex min-h-11 items-center rounded-xl px-3 text-sm" aria-label="Abrir cartera"><span class="text-slate-500">{{ ($displayBalanceKind ?? 'wallet') === 'campaign' ? 'Reto' : 'Saldo' }}</span><b class="ml-2 text-brand-300" x-text="$store.wallet.saldo.toLocaleString('es-ES',{maximumFractionDigits:2})">{{ number_format($displayBalance ?? auth()->user()->saldo, 2, ',', '.') }}</b></a>
                     <a href="{{ route('profile.show') }}" class="flex min-h-11 items-center gap-2 rounded-xl border px-2.5 text-sm {{ $navLink(request()->routeIs('profile.*') || request()->routeIs('wallet.*')) }}">
-                        <span class="grid h-7 w-7 place-items-center rounded-lg bg-gradient-to-br from-brand-300 to-brand-500 text-xs font-black text-black">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
+                        <x-ui.user-avatar :user="auth()->user()" size="custom" shape="soft" class="h-7 w-7 ring-0" />
                         <span class="max-w-28 truncate">{{ auth()->user()->name }}</span>
                     </a>
                 @endguest
@@ -74,7 +74,7 @@
                 <a href="{{ route('registro') }}" class="block min-h-11 rounded-xl bg-brand-400 px-3 py-3 text-center text-sm font-bold text-black">Crear cuenta</a>
             @else
                 <a href="{{ route('wallet.show') }}" class="balance-chip mb-2 flex min-h-12 items-center justify-between rounded-xl px-4"><span class="text-sm text-slate-400">Mi saldo</span><b class="text-brand-300" x-text="$store.wallet.saldo.toLocaleString('es-ES',{style:'currency',currency:'EUR'})"></b></a>
-                <a href="{{ route('profile.show') }}" class="block min-h-11 rounded-xl px-3 py-3 text-sm text-slate-300 hover:bg-white/5">Mi perfil</a>
+                <a href="{{ route('profile.show') }}" class="flex min-h-11 items-center gap-3 rounded-xl px-3 py-3 text-sm text-slate-300 hover:bg-white/5"><x-ui.user-avatar :user="auth()->user()" size="custom" shape="soft" class="h-8 w-8 ring-0" /><span>Mi perfil</span></a>
                 @if(auth()->user()->hasAnyRole(['super_admin', 'admin', 'moderator']))<a href="{{ route('admin.dashboard') }}" class="block min-h-11 rounded-xl px-3 py-3 text-sm text-brand-300 hover:bg-brand-400/10">Administración</a>@endif
                 <form action="{{ route('logout') }}" method="POST">@csrf<button class="min-h-11 w-full rounded-xl px-3 py-3 text-left text-sm text-red-300 hover:bg-red-500/10">Cerrar sesión</button></form>
             @endguest

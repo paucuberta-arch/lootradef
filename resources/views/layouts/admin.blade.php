@@ -79,9 +79,7 @@
             {{-- User --}}
             <div class="p-3 border-t border-white/5">
                 <div class="flex items-center gap-3 px-3 py-2">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-black text-xs font-bold">
-                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                    </div>
+                    <x-ui.user-avatar :user="auth()->user()" size="sm" />
                     <div class="min-w-0 flex-1">
                         <p class="text-sm font-semibold text-white truncate">{{ auth()->user()->name }}</p>
                         <p class="text-xs text-slate-500">{{ auth()->user()->role_badge }}</p>

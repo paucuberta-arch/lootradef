@@ -7,7 +7,13 @@
         @csrf @method('PUT')
 
         <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-4 sm:p-6 space-y-5">
-            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Datos del usuario</h3>
+            <div class="flex items-center gap-3 border-b border-white/5 pb-4">
+                <x-ui.user-avatar :user="$usuario" size="md" />
+                <div class="min-w-0">
+                    <h3 class="truncate text-sm font-bold uppercase tracking-wider text-white">Datos del usuario</h3>
+                    <p class="mt-1 truncate text-xs text-slate-500">{{ $usuario->name }}</p>
+                </div>
+            </div>
 
             <div>
                 <label class="text-xs text-slate-500 mb-1 block">Nombre</label>

@@ -189,6 +189,7 @@
             @forelse($ultimasActividades as $log)
                 <div class="flex items-start gap-3 text-xs">
                     <div class="w-2 h-2 rounded-full bg-brand-500 mt-1.5 shrink-0"></div>
+                    @if($log->usuario)<x-ui.user-avatar :user="$log->usuario" size="xs" class="mt-0.5" />@endif
                     <div>
                         <span class="text-slate-400">{{ $log->usuario?->name ?? 'Sistema' }}</span>
                         <span class="text-slate-500">{{ $log->accion }}</span>

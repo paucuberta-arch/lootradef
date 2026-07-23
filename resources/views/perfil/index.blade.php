@@ -46,7 +46,6 @@
             </section>
             @endif
 
-            @php($avatarIndex = (($usuario->id - 1) % 5) + 1)
             <section class="world-panel relative overflow-hidden rounded-3xl">
                 <img src="{{ asset('images/lootra_visual_pack/05_top_panels/panel_perfil_1920x360.webp') }}" alt="" class="absolute inset-x-0 top-0 h-64 w-full object-cover opacity-70" aria-hidden="true" decoding="async">
                 <div class="absolute inset-0 bg-gradient-to-b from-[#070816]/10 via-[#070816]/75 to-[#070816]"></div>
@@ -54,7 +53,7 @@
                     <div class="flex flex-col items-center justify-center text-center lg:items-start lg:text-left">
                         <div class="visual-float relative mb-5 h-32 w-32 sm:h-40 sm:w-40">
                             <div class="absolute inset-3 rounded-[2rem] bg-gradient-to-br from-cyan-300 via-fuchsia-500 to-amber-300 blur-xl opacity-40"></div>
-                            <img src="{{ asset(sprintf('images/lootra_visual_pack/06_avatars/avatar_neon_%02d_512.png', $avatarIndex)) }}" alt="Avatar de {{ $usuario->name }}" class="relative h-full w-full rounded-[2rem] object-cover ring-1 ring-white/20 shadow-2xl shadow-fuchsia-950/60" decoding="async">
+                            <x-ui.user-avatar :user="$usuario" size="custom" shape="custom" class="relative h-full w-full rounded-[2rem] ring-white/20 shadow-2xl shadow-fuchsia-950/60" alt="Foto de perfil de {{ $usuario->name }}" loading="eager" />
                         </div>
                         <span class="world-kicker">Perfil de jugador</span>
                         <h1 class="mt-3 break-words font-display text-3xl font-black text-white sm:text-4xl">{{ $usuario->name }}</h1>

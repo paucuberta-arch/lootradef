@@ -19,7 +19,7 @@
                 @forelse($logs as $log)
                     <tr class="border-b border-white/[0.03] hover:bg-white/[0.02] transition">
                         <td data-label="Fecha" class="px-5 py-3 text-xs text-slate-500">{{ $log->created_at->format('d/m/Y H:i') }}</td>
-                        <td data-label="Usuario" class="px-5 py-3 text-sm text-white font-medium">{{ $log->usuario?->name ?? 'Sistema' }}</td>
+                        <td data-label="Usuario" class="px-5 py-3 text-sm text-white font-medium"><span class="inline-flex items-center gap-2">@if($log->usuario)<x-ui.user-avatar :user="$log->usuario" size="xs" />@endif<span>{{ $log->usuario?->name ?? 'Sistema' }}</span></span></td>
                         <td data-label="Acción" class="px-5 py-3">
                             <span class="px-2 py-1 rounded-lg text-xs font-semibold bg-brand-500/10 text-brand-400">{{ $log->accion }}</span>
                         </td>

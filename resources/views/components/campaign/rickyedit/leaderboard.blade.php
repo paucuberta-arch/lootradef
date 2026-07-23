@@ -5,7 +5,7 @@
         @forelse($leaders->take($limit) as $entry)
             <div class="flex items-center gap-3 rounded-xl bg-black/20 px-3 py-2">
                 <span class="w-6 text-center text-xs font-black text-slate-500">{{ $loop->iteration }}</span>
-                <span class="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-fuchsia-400 to-cyan-300 text-xs font-black text-slate-950">{{ mb_strtoupper(mb_substr($entry->public_alias, 0, 1)) }}</span>
+                <x-ui.user-avatar :user="$entry->user" size="custom" shape="soft" class="h-8 w-8 ring-fuchsia-300/30" />
                 <span class="min-w-0 flex-1 truncate text-sm font-bold">{{ $entry->public_alias }}</span>
                 <b class="text-sm text-fuchsia-300">{{ number_format($entry->score) }}</b>
             </div>

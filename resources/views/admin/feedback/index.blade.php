@@ -28,7 +28,7 @@
                     </div>
                     <p class="text-sm text-slate-400 mb-2">{{ $fb->contenido }}</p>
                     <div class="flex flex-wrap items-center gap-3 text-xs text-slate-600">
-                        <span>{{ $fb->usuario?->name ?? 'Anonimo' }}</span>
+                        <span class="inline-flex items-center gap-2"><x-ui.user-avatar :user="$fb->usuario" size="xs" /><span>{{ $fb->usuario?->name ?? 'Anonimo' }}</span></span>
                         <span>{{ $fb->created_at->diffForHumans() }}</span>
                     </div>
 

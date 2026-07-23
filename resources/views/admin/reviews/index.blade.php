@@ -26,8 +26,13 @@
                 @forelse($reviews as $r)
                     <tr class="border-b border-white/[0.03] hover:bg-white/[0.02] transition">
                         <td data-primary class="px-5 py-3">
-                            <p class="font-semibold text-white">{{ $r->usuario->name ?? 'Eliminado' }}</p>
-                            <p class="text-xs text-slate-500">{{ $r->created_at->diffForHumans() }}</p>
+                            <div class="flex items-center gap-3">
+                                <x-ui.user-avatar :user="$r->usuario" size="sm" />
+                                <div class="min-w-0">
+                                    <p class="font-semibold text-white">{{ $r->usuario->name ?? 'Eliminado' }}</p>
+                                    <p class="text-xs text-slate-500">{{ $r->created_at->diffForHumans() }}</p>
+                                </div>
+                            </div>
                         </td>
                         <td data-label="Tipo" class="px-5 py-3">
                             <span class="px-2 py-1 rounded-lg text-xs font-semibold {{ $r->tipo === 'juego' ? 'bg-blue-500/10 text-blue-400' : 'bg-purple-500/10 text-purple-400' }}">
