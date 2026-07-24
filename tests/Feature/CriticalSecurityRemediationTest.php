@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use RuntimeException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
 class CriticalSecurityRemediationTest extends TestCase
@@ -50,6 +51,35 @@ class CriticalSecurityRemediationTest extends TestCase
         $this->assertTrue($balances->debit($user, 'slots', 10, 'apuesta_test', [], null, $token, $challenge->id));
         $this->assertSame(980.0, (float) $challenge->fresh()->current_balance);
         $this->assertSame(2, CampaignChallengeMovement::where('direction', 'debit')->count());
+    }
+
+    public function test_campaign_credits_are_idempotent_and_cannot_be_replayed_with_different_values(): void
+    {
+        $user = $this->player(100, verified: true);
+        $challenge = app(CampaignChallengeService::class)->start($user);
+        $balances = app(GameBalanceService::class);
+        $token = (string) Str::uuid();
+
+        $balances->credit($user, 'slots', 25, 'premio_test', [], null, $challenge->id, $token);
+        $balances->credit($user, 'slots', 25, 'premio_test', [], null, $challenge->id, $token);
+
+        $this->assertSame(1025.0, (float) $challenge->fresh()->current_balance);
+        $this->assertSame(1, CampaignChallengeMovement::where('direction', 'credit')->where('type', 'premio_test')->count());
+
+        $this->expectException(HttpException::class);
+        $balances->credit($user, 'slots', 26, 'premio_test', [], null, $challenge->id, $token);
+    }
+
+    public function test_wallet_game_tokens_are_scoped_by_game(): void
+    {
+        $user = $this->player(100, verified: true);
+        $balances = app(GameBalanceService::class);
+        $token = (string) Str::uuid();
+
+        $this->assertTrue($balances->debit($user, 'custom_game_a', 10, 'apuesta_test', [], null, $token));
+        $this->assertTrue($balances->debit($user, 'custom_game_b', 10, 'apuesta_test', [], null, $token));
+
+        $this->assertSame(80.0, (float) $user->cartera->fresh()->saldo);
     }
 
     public function test_demo_seeders_refuse_to_run_in_production(): void

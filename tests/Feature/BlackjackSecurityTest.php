@@ -32,9 +32,9 @@ class BlackjackSecurityTest extends TestCase
         $user = $this->player();
         $this->activeHand($user);
 
-        $this->actingAs($user)->postJson(route('blackjack.stand'))->assertOk();
+        $this->actingAs($user)->postJson(route('blackjack.stand'), ['request_token' => Str::uuid()->toString()])->assertOk();
         $balance = $user->cartera->fresh()->saldo;
-        $this->actingAs($user)->postJson(route('blackjack.stand'))->assertConflict();
+        $this->actingAs($user)->postJson(route('blackjack.stand'), ['request_token' => Str::uuid()->toString()])->assertConflict();
 
         $this->assertEquals($balance, $user->cartera->fresh()->saldo);
         $this->assertDatabaseCount('partidas', 1);
@@ -100,7 +100,7 @@ class BlackjackSecurityTest extends TestCase
             ->assertJsonPath('mano_dealer.1.oculta', true)
             ->assertJsonPath('puntos_dealer', 10);
 
-        $this->actingAs($user)->postJson(route('blackjack.stand'))->assertOk();
+        $this->actingAs($user)->postJson(route('blackjack.stand'), ['request_token' => Str::uuid()->toString()])->assertOk();
         $this->actingAs($user)->getJson(route('games.blackjack.vip.status', ['hand_id' => $hand->id]))
             ->assertOk()
             ->assertJsonMissingPath('mano_dealer.1.oculta')

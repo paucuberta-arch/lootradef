@@ -9,7 +9,6 @@ use App\Services\SecureRandom;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class RuletaController extends Controller
 {
@@ -49,9 +48,6 @@ class RuletaController extends Controller
     public function play(Request $request, string $variant = 'european')
     {
         abort_unless(in_array($variant, ['european', 'lightning'], true), 404);
-        if (! $request->filled('request_token')) {
-            $request->merge(['request_token' => (string) Str::uuid()]);
-        }
         $request->validate([
             'apuesta' => 'required|numeric|min:0.10|max:500',
             'tipo' => 'required|string|in:numero,rojo,negro,par,impar,docena1,docena2,docena3',
@@ -86,7 +82,7 @@ class RuletaController extends Controller
                 $ganancia = round($apuesta * $multipliers[$numero], 2);
             }
             if ($ganancia > 0) {
-                $this->balances->credit($user, $gameKey, $ganancia, 'premio_ruleta', ['variante' => $variant], null, $campaignId);
+                $this->balances->credit($user, $gameKey, $ganancia, 'premio_ruleta', ['variante' => $variant], null, $campaignId, 'game-payout:'.$gameKey.':'.$request->request_token);
             }
             $round = Partida::create([
                 'usuario_id' => $user->id, 'juego' => $gameKey, 'request_token' => $request->request_token,

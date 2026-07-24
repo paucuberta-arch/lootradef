@@ -87,6 +87,10 @@ class WalletAndRoleTest extends TestCase
             'usuario_id' => $usuario->id,
             'saldo' => 350.25,
         ]);
+        $this->assertDatabaseHas('ledger_transactions', [
+            'type' => 'ajuste_administrador',
+            'created_by' => $admin->id,
+        ]);
     }
 
     private function createUsuario(string $email): Usuario

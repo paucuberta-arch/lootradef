@@ -20,6 +20,8 @@ class WalletService
         ?Model $reference = null,
         ?string $idempotencyKey = null,
     ): bool {
+        $this->assertIdempotencyKey($idempotencyKey);
+
         return DB::transaction(function () use ($wallet, $amount, $type, $metadata, $reference, $idempotencyKey) {
             $locked = Cartera::whereKey($wallet->id)->lockForUpdate()->firstOrFail();
             $amount = $this->normalizeAmount($amount);
@@ -57,6 +59,8 @@ class WalletService
         ?string $idempotencyKey = null,
         ?float $maxBalance = null,
     ): WalletMovement {
+        $this->assertIdempotencyKey($idempotencyKey);
+
         return DB::transaction(function () use ($wallet, $amount, $type, $metadata, $reference, $idempotencyKey, $maxBalance) {
             $locked = Cartera::whereKey($wallet->id)->lockForUpdate()->firstOrFail();
             $amount = $this->normalizeAmount($amount);
@@ -95,10 +99,25 @@ class WalletService
                 return null;
             }
 
+            $idempotencyKey = 'wallet-set-balance:'.hash('sha256', implode('|', [
+                $locked->id,
+                $type,
+                number_format($current, 2, '.', ''),
+                number_format($balance, 2, '.', ''),
+                json_encode($metadata, JSON_THROW_ON_ERROR),
+            ]));
+
             return $balance > $current
-                ? $this->credit($locked, $balance - $current, $type, $metadata)
-                : ($this->debit($locked, $current - $balance, $type, $metadata) ? $locked->movimientos()->latest()->first() : null);
+                ? $this->credit($locked, $balance - $current, $type, $metadata, null, $idempotencyKey)
+                : ($this->debit($locked, $current - $balance, $type, $metadata, null, $idempotencyKey) ? $locked->movimientos()->latest()->first() : null);
         });
+    }
+
+    private function assertIdempotencyKey(?string $idempotencyKey): void
+    {
+        if (! is_string($idempotencyKey) || trim($idempotencyKey) === '') {
+            throw new InvalidArgumentException('Las operaciones económicas requieren una clave de idempotencia.');
+        }
     }
 
     private function normalizeAmount(float $amount): float

@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Partida;
 use App\Models\GameActionToken;
+use App\Models\Partida;
 use App\Models\PokerDealerHand;
 use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,27 +18,27 @@ class PokerDealerGameTest extends TestCase
     {
         $usuario = $this->player();
 
-        $start = $this->actingAs($usuario)->postJson(route('poker.dealer.start'), ['ante' => 10]);
+        $start = $this->actingAs($usuario)->postJson(route('poker.dealer.start'), ['ante' => 10, 'request_token' => Str::uuid()->toString()]);
         $start->assertCreated()
             ->assertJsonPath('phase', 'preflop')
             ->assertJsonPath('balance', 90)
             ->assertJsonCount(2, 'player')
             ->assertJsonPath('dealer.0.hidden', true);
 
-        $this->actingAs($usuario)->postJson(route('poker.dealer.start'), ['ante' => 10])->assertConflict();
+        $this->actingAs($usuario)->postJson(route('poker.dealer.start'), ['ante' => 10, 'request_token' => Str::uuid()->toString()])->assertConflict();
         $this->assertSame(90.0, (float) $usuario->cartera()->value('saldo'));
 
-        $this->actingAs($usuario)->postJson(route('poker.dealer.action'), ['accion' => 'jugar'])
+        $this->actingAs($usuario)->postJson(route('poker.dealer.action'), ['accion' => 'jugar', 'request_token' => Str::uuid()->toString()])
             ->assertOk()->assertJsonPath('phase', 'flop')->assertJsonCount(3, 'community')->assertJsonPath('balance', 80);
-        $this->actingAs($usuario)->postJson(route('poker.dealer.action'), ['accion' => 'continuar'])
+        $this->actingAs($usuario)->postJson(route('poker.dealer.action'), ['accion' => 'continuar', 'request_token' => Str::uuid()->toString()])
             ->assertOk()->assertJsonPath('phase', 'turn')->assertJsonCount(4, 'community');
-        $this->actingAs($usuario)->postJson(route('poker.dealer.action'), ['accion' => 'continuar'])
+        $this->actingAs($usuario)->postJson(route('poker.dealer.action'), ['accion' => 'continuar', 'request_token' => Str::uuid()->toString()])
             ->assertOk()->assertJsonPath('phase', 'river')->assertJsonCount(5, 'community');
-        $finish = $this->actingAs($usuario)->postJson(route('poker.dealer.action'), ['accion' => 'continuar']);
+        $finish = $this->actingAs($usuario)->postJson(route('poker.dealer.action'), ['accion' => 'continuar', 'request_token' => Str::uuid()->toString()]);
         $finish->assertOk()->assertJsonPath('phase', 'finalizada')->assertJsonCount(2, 'dealer');
 
         $balance = (float) $usuario->cartera()->value('saldo');
-        $this->actingAs($usuario)->postJson(route('poker.dealer.action'), ['accion' => 'continuar'])->assertConflict();
+        $this->actingAs($usuario)->postJson(route('poker.dealer.action'), ['accion' => 'continuar', 'request_token' => Str::uuid()->toString()])->assertConflict();
         $this->assertSame($balance, (float) $usuario->cartera()->value('saldo'));
         $this->assertDatabaseCount('partidas', 1);
         $this->assertSame('poker_dealer', Partida::first()->juego);
@@ -49,8 +49,8 @@ class PokerDealerGameTest extends TestCase
     {
         $usuario = $this->player();
 
-        $this->actingAs($usuario)->postJson(route('poker.dealer.start'), ['ante' => 10])->assertCreated();
-        $this->actingAs($usuario)->postJson(route('poker.dealer.action'), ['accion' => 'retirarse'])
+        $this->actingAs($usuario)->postJson(route('poker.dealer.start'), ['ante' => 10, 'request_token' => Str::uuid()->toString()])->assertCreated();
+        $this->actingAs($usuario)->postJson(route('poker.dealer.action'), ['accion' => 'retirarse', 'request_token' => Str::uuid()->toString()])
             ->assertOk()->assertJsonPath('phase', 'retirada')->assertJsonPath('balance', 90);
 
         $this->assertDatabaseHas('partidas', ['juego' => 'poker_dealer', 'apuesta' => 10, 'ganancia' => 0]);
@@ -59,7 +59,7 @@ class PokerDealerGameTest extends TestCase
     public function test_retried_dealer_action_with_the_same_token_is_idempotent(): void
     {
         $usuario = $this->player();
-        $this->actingAs($usuario)->postJson(route('poker.dealer.start'), ['ante' => 10])->assertCreated();
+        $this->actingAs($usuario)->postJson(route('poker.dealer.start'), ['ante' => 10, 'request_token' => Str::uuid()->toString()])->assertCreated();
         $token = Str::uuid()->toString();
         $payload = ['accion' => 'jugar', 'fase' => 'preflop', 'request_token' => $token];
 
@@ -75,24 +75,24 @@ class PokerDealerGameTest extends TestCase
     {
         $usuario = $this->player();
 
-        $this->actingAs($usuario)->postJson(route('games.poker.dealer.start'), ['ante' => 10])->assertCreated();
+        $this->actingAs($usuario)->postJson(route('games.poker.dealer.start'), ['ante' => 10, 'request_token' => Str::uuid()->toString()])->assertCreated();
         $this->actingAs($usuario)->postJson(route('games.poker.dealer.action'), [
-            'accion' => 'jugar', 'fase' => 'preflop',
+            'accion' => 'jugar', 'fase' => 'preflop', 'request_token' => Str::uuid()->toString(),
         ])->assertOk()->assertJsonPath('phase', 'flop');
 
         $this->actingAs($usuario)->postJson(route('games.poker.dealer.action'), [
-            'accion' => 'apostar', 'cantidad' => 15, 'fase' => 'flop',
+            'accion' => 'apostar', 'cantidad' => 15, 'fase' => 'flop', 'request_token' => Str::uuid()->toString(),
         ])->assertOk()
             ->assertJsonPath('phase', 'turn')
             ->assertJsonPath('wagered', 35)
             ->assertJsonPath('balance', 65);
 
         $this->actingAs($usuario)->postJson(route('games.poker.dealer.action'), [
-            'accion' => 'pasar', 'fase' => 'turn',
+            'accion' => 'pasar', 'fase' => 'turn', 'request_token' => Str::uuid()->toString(),
         ])->assertOk()->assertJsonPath('phase', 'river')->assertJsonPath('balance', 65);
 
         $this->actingAs($usuario)->postJson(route('games.poker.dealer.action'), [
-            'accion' => 'retirarse', 'fase' => 'river',
+            'accion' => 'retirarse', 'fase' => 'river', 'request_token' => Str::uuid()->toString(),
         ])->assertOk()
             ->assertJsonPath('phase', 'retirada')
             ->assertJsonPath('dealer.0.hidden', true)
@@ -104,17 +104,17 @@ class PokerDealerGameTest extends TestCase
     public function test_stale_street_action_cannot_charge_or_advance_twice(): void
     {
         $usuario = $this->player();
-        $this->actingAs($usuario)->postJson(route('games.poker.dealer.start'), ['ante' => 10])->assertCreated();
+        $this->actingAs($usuario)->postJson(route('games.poker.dealer.start'), ['ante' => 10, 'request_token' => Str::uuid()->toString()])->assertCreated();
         $this->actingAs($usuario)->postJson(route('games.poker.dealer.action'), [
-            'accion' => 'jugar', 'fase' => 'preflop',
+            'accion' => 'jugar', 'fase' => 'preflop', 'request_token' => Str::uuid()->toString(),
         ])->assertOk();
 
-        $payload = ['accion' => 'apostar', 'cantidad' => 10, 'fase' => 'flop'];
+        $payload = ['accion' => 'apostar', 'cantidad' => 10, 'fase' => 'flop', 'request_token' => Str::uuid()->toString()];
         $this->actingAs($usuario)->postJson(route('games.poker.dealer.action'), $payload)
             ->assertOk()->assertJsonPath('phase', 'turn');
         $balance = (float) $usuario->cartera()->value('saldo');
 
-        $this->actingAs($usuario)->postJson(route('games.poker.dealer.action'), $payload)->assertConflict();
+        $this->actingAs($usuario)->postJson(route('games.poker.dealer.action'), [...$payload, 'request_token' => Str::uuid()->toString()])->assertConflict();
         $this->assertSame($balance, (float) $usuario->cartera()->value('saldo'));
         $this->assertSame('turn', PokerDealerHand::first()->fase);
         $this->assertSame(4, count(PokerDealerHand::first()->comunitarias));
@@ -123,14 +123,14 @@ class PokerDealerGameTest extends TestCase
     public function test_manipulated_street_bet_cannot_exceed_twice_the_ante(): void
     {
         $usuario = $this->player();
-        $this->actingAs($usuario)->postJson(route('games.poker.dealer.start'), ['ante' => 10])->assertCreated();
+        $this->actingAs($usuario)->postJson(route('games.poker.dealer.start'), ['ante' => 10, 'request_token' => Str::uuid()->toString()])->assertCreated();
         $this->actingAs($usuario)->postJson(route('games.poker.dealer.action'), [
-            'accion' => 'jugar', 'fase' => 'preflop',
+            'accion' => 'jugar', 'fase' => 'preflop', 'request_token' => Str::uuid()->toString(),
         ])->assertOk();
         $balance = (float) $usuario->cartera()->value('saldo');
 
         $this->actingAs($usuario)->postJson(route('games.poker.dealer.action'), [
-            'accion' => 'apostar', 'cantidad' => 20.01, 'fase' => 'flop',
+            'accion' => 'apostar', 'cantidad' => 20.01, 'fase' => 'flop', 'request_token' => Str::uuid()->toString(),
         ])->assertUnprocessable();
 
         $this->assertSame($balance, (float) $usuario->cartera()->value('saldo'));

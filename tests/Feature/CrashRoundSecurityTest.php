@@ -6,6 +6,7 @@ use App\Models\CrashRound;
 use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class CrashRoundSecurityTest extends TestCase
@@ -23,13 +24,13 @@ class CrashRoundSecurityTest extends TestCase
         Carbon::setTestNow('2026-07-16 10:00:00');
         $user = $this->player();
 
-        $start = $this->actingAs($user)->postJson(route('crash.play'), ['apuesta' => 10]);
+        $start = $this->actingAs($user)->postJson(route('crash.play'), ['apuesta' => 10, 'request_token' => Str::uuid()->toString()]);
         $start->assertCreated()
             ->assertJsonPath('estado', 'activa')
             ->assertJsonPath('crash_point', null)
             ->assertJsonPath('saldo', 90);
 
-        $this->actingAs($user)->postJson(route('crash.play'), ['apuesta' => 10])
+        $this->actingAs($user)->postJson(route('crash.play'), ['apuesta' => 10, 'request_token' => Str::uuid()->toString()])
             ->assertConflict()->assertJsonPath('message', 'Ya tienes una ronda Crash activa.');
 
         $this->assertSame(90.0, (float) $user->cartera()->value('saldo'));
@@ -40,13 +41,14 @@ class CrashRoundSecurityTest extends TestCase
     {
         Carbon::setTestNow('2026-07-16 10:00:00');
         $user = $this->player();
-        $roundId = $this->actingAs($user)->postJson(route('crash.play'), ['apuesta' => 10])->json('round_id');
+        $roundId = $this->actingAs($user)->postJson(route('crash.play'), ['apuesta' => 10, 'request_token' => Str::uuid()->toString()])->json('round_id');
         CrashRound::whereKey($roundId)->update(['crash_point' => 50]);
 
         Carbon::setTestNow('2026-07-16 10:00:01');
         $cashout = $this->actingAs($user)->postJson(route('crash.cashout'), [
             'round_id' => $roundId,
             'multiplier' => 49.99,
+            'request_token' => Str::uuid()->toString(),
         ]);
 
         $cashout->assertOk()
@@ -60,12 +62,12 @@ class CrashRoundSecurityTest extends TestCase
     {
         Carbon::setTestNow('2026-07-16 10:00:00');
         $user = $this->player();
-        $roundId = $this->actingAs($user)->postJson(route('crash.play'), ['apuesta' => 10])->json('round_id');
+        $roundId = $this->actingAs($user)->postJson(route('crash.play'), ['apuesta' => 10, 'request_token' => Str::uuid()->toString()])->json('round_id');
         CrashRound::whereKey($roundId)->update(['crash_point' => 50]);
 
         Carbon::setTestNow('2026-07-16 10:00:01');
-        $first = $this->actingAs($user)->postJson(route('crash.cashout'), ['round_id' => $roundId])->assertOk();
-        $second = $this->actingAs($user)->postJson(route('crash.cashout'), ['round_id' => $roundId])->assertOk();
+        $first = $this->actingAs($user)->postJson(route('crash.cashout'), ['round_id' => $roundId, 'request_token' => Str::uuid()->toString()])->assertOk();
+        $second = $this->actingAs($user)->postJson(route('crash.cashout'), ['round_id' => $roundId, 'request_token' => Str::uuid()->toString()])->assertOk();
 
         $this->assertSame($first->json('ganancia'), $second->json('ganancia'));
         $this->assertSame(103.5, (float) $user->cartera()->value('saldo'));
@@ -76,7 +78,7 @@ class CrashRoundSecurityTest extends TestCase
     {
         Carbon::setTestNow('2026-07-16 10:00:00');
         $user = $this->player();
-        $roundId = $this->actingAs($user)->postJson(route('crash.play'), ['apuesta' => 10])->json('round_id');
+        $roundId = $this->actingAs($user)->postJson(route('crash.play'), ['apuesta' => 10, 'request_token' => Str::uuid()->toString()])->json('round_id');
         CrashRound::whereKey($roundId)->update(['crash_point' => 1.10]);
 
         Carbon::setTestNow('2026-07-16 10:00:00.500');

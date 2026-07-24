@@ -81,7 +81,6 @@ class CampaignChallengeService
     {
         return DB::transaction(function () use ($challenge, $amount, $type, $metadata, $reference, $idempotencyKey) {
             $locked = CampaignChallenge::whereKey($challenge->id)->lockForUpdate()->firstOrFail();
-            $locked = $this->assertPlayable($locked);
             $amount = $this->amount($amount);
             if ($idempotencyKey) {
                 $existing = CampaignChallengeMovement::where('idempotency_key', $idempotencyKey)->first();
@@ -99,6 +98,7 @@ class CampaignChallengeService
                     return true;
                 }
             }
+            $locked = $this->assertPlayable($locked);
             if ($locked->current_balance < $amount) {
                 return false;
             }
@@ -113,16 +113,33 @@ class CampaignChallengeService
         });
     }
 
-    public function credit(CampaignChallenge $challenge, float $amount, string $type, array $metadata = [], ?Model $reference = null): void
+    public function credit(CampaignChallenge $challenge, float $amount, string $type, array $metadata = [], ?Model $reference = null, ?string $idempotencyKey = null): void
     {
-        DB::transaction(function () use ($challenge, $amount, $type, $metadata, $reference) {
+        if (! is_string($idempotencyKey) || trim($idempotencyKey) === '') {
+            throw new InvalidArgumentException('Los créditos de campaña requieren una clave de idempotencia.');
+        }
+
+        DB::transaction(function () use ($challenge, $amount, $type, $metadata, $reference, $idempotencyKey) {
             $locked = CampaignChallenge::whereKey($challenge->id)->lockForUpdate()->firstOrFail();
-            $locked = $this->assertPlayable($locked);
             $amount = $this->amount($amount);
+            $existing = CampaignChallengeMovement::where('idempotency_key', $idempotencyKey)->first();
+            if ($existing) {
+                abort_unless(
+                    $existing->campaign_challenge_id === $locked->id
+                    && $existing->direction === 'credit'
+                    && $existing->type === $type
+                    && (float) $existing->amount === $amount,
+                    409,
+                    'La clave de idempotencia ya fue usada para otra operación.'
+                );
+
+                return;
+            }
+            $locked = $this->assertPlayable($locked);
             $before = (float) $locked->current_balance;
             $after = round($before + $amount, 2);
             $locked->update(['current_balance' => $after]);
-            $movement = $this->movement($locked, $type, 'credit', $amount, $before, $after, $metadata, $reference, null);
+            $movement = $this->movement($locked, $type, 'credit', $amount, $before, $after, $metadata, $reference, $idempotencyKey);
             $this->ledger->campaignMovement($movement);
             $challenge->setRawAttributes($locked->getAttributes(), true);
         });

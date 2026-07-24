@@ -6,6 +6,7 @@ use App\Models\DemoWithdrawal;
 use App\Models\LedgerEntry;
 use App\Models\LedgerTransaction;
 use App\Models\Usuario;
+use App\Services\DemoTreasuryService;
 use Database\Seeders\RolesPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -45,7 +46,7 @@ class LedgerAndDemoWithdrawalTest extends TestCase
         $first = $this->actingAs($user)->postJson(route('wallet.demo-withdrawals.store'), $payload)
             ->assertCreated()->json('withdrawal');
         $this->assertSame(75.0, (float) $user->cartera()->value('saldo'));
-        $this->assertSame(25.0, (float) $this->app->make(\App\Services\DemoTreasuryService::class)->current()->reserved_balance);
+        $this->assertSame(25.0, (float) $this->app->make(DemoTreasuryService::class)->current()->reserved_balance);
 
         $second = $this->actingAs($user)->postJson(route('wallet.demo-withdrawals.store'), $payload)
             ->assertOk()->json('withdrawal');
@@ -54,7 +55,7 @@ class LedgerAndDemoWithdrawalTest extends TestCase
 
         $this->actingAs($user)->postJson(route('wallet.demo-withdrawals.cancel', $first['id']))->assertOk();
         $this->assertSame(100.0, (float) $user->cartera()->first()->fresh()->saldo);
-        $this->assertSame(0.0, (float) $this->app->make(\App\Services\DemoTreasuryService::class)->current()->reserved_balance);
+        $this->assertSame(0.0, (float) $this->app->make(DemoTreasuryService::class)->current()->reserved_balance);
     }
 
     public function test_demo_withdrawal_rejection_releases_reserve_and_restores_balance(): void
@@ -76,6 +77,10 @@ class LedgerAndDemoWithdrawalTest extends TestCase
 
         $this->assertSame(DemoWithdrawal::REJECTED, $withdrawal->fresh()->status);
         $this->assertSame(100.0, (float) $user->cartera()->first()->fresh()->saldo);
+        $this->assertDatabaseHas('ledger_transactions', [
+            'type' => 'retirada_demo_liberada',
+            'created_by' => $admin->id,
+        ]);
     }
 
     public function test_approved_demo_withdrawal_completes_once_and_consumes_the_reserve(): void
@@ -99,7 +104,7 @@ class LedgerAndDemoWithdrawalTest extends TestCase
         ])->assertOk();
 
         $this->assertSame(DemoWithdrawal::COMPLETED, $withdrawal->fresh()->status);
-        $this->assertSame(0.0, (float) $this->app->make(\App\Services\DemoTreasuryService::class)->current()->reserved_balance);
+        $this->assertSame(0.0, (float) $this->app->make(DemoTreasuryService::class)->current()->reserved_balance);
         $this->assertSame(75.0, (float) $user->cartera()->value('saldo'));
         $this->actingAs($admin)->postJson(route('admin.demo-withdrawals.review', $withdrawal), [
             'action' => 'complete',

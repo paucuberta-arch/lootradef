@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Http\Controllers\RuletaController;
 use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class RouletteVariantsTest extends TestCase
@@ -19,8 +20,9 @@ class RouletteVariantsTest extends TestCase
         $this->actingAs($user)->get(route('ruleta'))->assertOk()->assertSee('Ruleta Europea');
         $this->actingAs($user)->get(route('ruleta.lightning'))->assertOk()->assertSee('Lightning Roulette')->assertSee('Números Lightning');
 
-        $payload = ['apuesta' => 1, 'tipo' => 'numero', 'valor' => 7];
+        $payload = ['apuesta' => 1, 'tipo' => 'numero', 'valor' => 7, 'request_token' => Str::uuid()->toString()];
         $this->actingAs($user)->postJson(route('ruleta.play'), $payload)->assertOk()->assertJsonPath('multipliers', []);
+        $payload['request_token'] = Str::uuid()->toString();
         $this->actingAs($user)->postJson(route('ruleta.lightning.play'), $payload)->assertOk()->assertJsonCount(5, 'multipliers');
 
         $this->assertDatabaseHas('partidas', ['usuario_id' => $user->id, 'juego' => 'ruleta_european']);

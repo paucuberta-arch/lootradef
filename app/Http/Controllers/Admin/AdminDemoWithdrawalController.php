@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Cartera;
 use App\Models\DemoWithdrawal;
-use App\Models\ActivityLog;
 use App\Services\DemoTreasuryService;
 use App\Services\WalletService;
 use Illuminate\Http\JsonResponse;
@@ -53,7 +53,11 @@ class AdminDemoWithdrawalController extends Controller
                 abort_unless(in_array($withdrawal->status, [DemoWithdrawal::REQUESTED, DemoWithdrawal::UNDER_REVIEW, DemoWithdrawal::APPROVED], true), 409, 'La retirada ya no se puede rechazar.');
                 $wallet = Cartera::where('usuario_id', $withdrawal->usuario_id)->lockForUpdate()->firstOrFail();
                 $this->treasury->release((float) $withdrawal->amount);
-                $this->wallets->credit($wallet, (float) $withdrawal->amount, 'retirada_demo_liberada', ['withdrawal_id' => $withdrawal->id, 'reason' => $validated['reason'] ?? null], $withdrawal, 'demo-withdrawal-release:'.$withdrawal->id);
+                $this->wallets->credit($wallet, (float) $withdrawal->amount, 'retirada_demo_liberada', [
+                    'withdrawal_id' => $withdrawal->id,
+                    'reason' => $validated['reason'] ?? null,
+                    'administrador_id' => $request->user()->id,
+                ], $withdrawal, 'demo-withdrawal-release:'.$withdrawal->id);
                 $withdrawal->update([
                     'status' => DemoWithdrawal::REJECTED,
                     'rejection_reason' => $validated['reason'] ?? 'Rechazo administrativo demo',

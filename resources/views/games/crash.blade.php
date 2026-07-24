@@ -360,7 +360,7 @@ function crashGame() {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'Accept': 'application/json',
                     },
-                    body: JSON.stringify({ round_id: this.roundId }),
+                    body: JSON.stringify({ round_id: this.roundId, request_token: window.lootraRequestToken() }),
                 });
                 const data = await res.json();
 

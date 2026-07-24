@@ -46,8 +46,8 @@ class Cartera extends Model
         return app(WalletService::class)->debit($this, $cantidad, $tipo, $metadatos, $referencia, $idempotencyKey);
     }
 
-    public function ganar(float $cantidad, string $tipo = 'premio', array $metadatos = [], ?Model $referencia = null): void
+    public function ganar(float $cantidad, string $tipo = 'premio', array $metadatos = [], ?Model $referencia = null, ?string $idempotencyKey = null): void
     {
-        app(WalletService::class)->credit($this, $cantidad, $tipo, $metadatos, $referencia);
+        app(WalletService::class)->credit($this, $cantidad, $tipo, $metadatos, $referencia, $idempotencyKey);
     }
 }

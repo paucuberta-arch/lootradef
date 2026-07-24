@@ -222,7 +222,7 @@ class SlotsController extends Controller
             $combinacion = $this->winningType($reels);
             $ganancia = $this->calculateWin($reels, $apuesta, $gameSlug);
             if ($ganancia > 0) {
-                $this->balances->credit($user, 'slots', $ganancia, 'premio_slots', ['juego' => $gameSlug], null, $campaignId);
+                $this->balances->credit($user, 'slots', $ganancia, 'premio_slots', ['juego' => $gameSlug], null, $campaignId, 'game-payout:slots:'.$request->request_token);
             }
 
             $game = Partida::create([

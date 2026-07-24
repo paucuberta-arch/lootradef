@@ -80,7 +80,7 @@ class AdditionalSecurityRemediationTest extends TestCase
         $admin->forceFill(['admin_mfa_enabled_at' => now()])->save();
 
         $target = $this->user('target@example.test');
-        $target->cartera->apostar(10, 'test_debit');
+        $target->cartera->apostar(10, 'test_debit', [], null, 'admin-deactivation-test-debit');
         $movementId = $target->movimientosCartera()->value('id');
 
         $this->withSession([

@@ -94,7 +94,7 @@ class ArcadeController extends Controller
             };
             $win = round($bet * $result['multiplier'], 2);
             if ($win > 0) {
-                $this->balances->credit($user, $game, $win, 'premio_original', ['juego' => $game], null, $campaignId);
+                $this->balances->credit($user, $game, $win, 'premio_original', ['juego' => $game], null, $campaignId, 'game-payout:'.$game.':'.$data['request_token']);
             }
 
             $round = Partida::create([

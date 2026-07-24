@@ -10,7 +10,6 @@ use App\Services\GameBalanceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class CrashController extends Controller
@@ -45,9 +44,6 @@ class CrashController extends Controller
 
     public function play(Request $request): JsonResponse
     {
-        if (! $request->filled('request_token')) {
-            $request->merge(['request_token' => (string) Str::uuid()]);
-        }
         $validated = $request->validate([
             'apuesta' => ['required', 'numeric', 'min:0.10', 'max:1000'],
             'request_token' => ['required', 'uuid'],
@@ -108,7 +104,10 @@ class CrashController extends Controller
 
     public function cashout(Request $request): JsonResponse
     {
-        $validated = $request->validate(['round_id' => ['required', 'integer']]);
+        $validated = $request->validate([
+            'round_id' => ['required', 'integer'],
+            'request_token' => ['required', 'uuid'],
+        ]);
         $campaignId = $this->balances->campaignId($request->user(), 'crash');
         $round = DB::transaction(function () use ($request, $validated, $campaignId) {
             $round = CrashRound::whereKey($validated['round_id'])
@@ -125,7 +124,10 @@ class CrashController extends Controller
             } else {
                 abort_if($multiplier < 1.01, 422, 'Es demasiado pronto para cobrar.');
                 $payout = round($round->apuesta * $multiplier, 2);
-                $this->balances->credit(Usuario::findOrFail($round->usuario_id), 'crash', $payout, 'premio_crash', [], $round, $round->campaign_challenge_id);
+                $this->balances->credit(
+                    Usuario::findOrFail($round->usuario_id), 'crash', $payout, 'premio_crash', [], $round,
+                    $round->campaign_challenge_id, 'game-payout:crash:'.$round->id.':'.$validated['request_token']
+                );
                 $this->finish($round, 'cobrado', $payout, $multiplier);
             }
 

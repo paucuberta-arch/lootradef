@@ -2,13 +2,13 @@
 
 namespace App\Services;
 
-use App\Models\Cartera;
 use App\Models\CampaignChallengeMovement;
+use App\Models\Cartera;
 use App\Models\LedgerAccount;
 use App\Models\LedgerEntry;
 use App\Models\LedgerTransaction;
+use App\Models\Usuario;
 use App\Models\WalletMovement;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -37,6 +37,7 @@ class LedgerService
                 'idempotency_key' => $idempotencyKey,
                 'reference_type' => $movement->referencia_type,
                 'reference_id' => $movement->referencia_id,
+                'created_by' => $this->createdBy($movement->metadatos ?? []),
                 'metadata' => $movement->metadatos,
                 'occurred_at' => $movement->created_at ?? now(),
             ]);
@@ -45,6 +46,7 @@ class LedgerService
             $counterpartyDirection = $walletDirection === 'credit' ? 'debit' : 'credit';
             $this->entry($transaction, $walletAccount, $walletDirection, (float) $movement->importe, 1);
             $this->entry($transaction, $counterparty, $counterpartyDirection, (float) $movement->importe, 2);
+            $this->assertBalanced($transaction);
 
             return $transaction;
         });
@@ -82,6 +84,7 @@ class LedgerService
             $counterpartyDirection = $challengeDirection === 'credit' ? 'debit' : 'credit';
             $this->entry($transaction, $challengeAccount, $challengeDirection, (float) $movement->amount, 1);
             $this->entry($transaction, $counterparty, $counterpartyDirection, (float) $movement->amount, 2);
+            $this->assertBalanced($transaction);
 
             return $transaction;
         });
@@ -122,6 +125,7 @@ class LedgerService
             );
             $this->entry($opening, $capital, 'debit', $openingBalance, 1);
             $this->entry($opening, $account, 'credit', $openingBalance, 2);
+            $this->assertBalanced($opening);
         }
 
         return $account;
@@ -160,6 +164,18 @@ class LedgerService
     private function counterpartyType(string $type): string
     {
         return $type === 'deposito_demo' ? 'demo_treasury' : (str_starts_with($type, 'premio') ? 'prize_reserve' : 'platform_income');
+    }
+
+    private function createdBy(?array $metadata): ?int
+    {
+        $candidate = $metadata['administrador_id'] ?? $metadata['admin_id'] ?? null;
+        if (! is_numeric($candidate) || (int) $candidate < 1) {
+            return null;
+        }
+
+        $id = (int) $candidate;
+
+        return Usuario::whereKey($id)->exists() ? $id : null;
     }
 
     private function currency(): string

@@ -127,6 +127,10 @@ class CasePrizeAdministrationTest extends TestCase
 
         $first = $this->actingAs($player)->postJson(route('cajas.open', 'starter'), ['request_token' => (string) Str::uuid()])->assertOk();
         $this->assertSame(1, CaseRewardDailyStat::where('case_reward_setting_id', $setting->id)->value('good_awarded'));
+        $public = collect(app(CasePrizeService::class)->publicDefinitions())->firstWhere('case_key', 'starter');
+        $this->assertTrue($public['cap_reached']);
+        $this->assertSame('daily_cap_reached', $public['probability_mode']);
+        $this->assertSame(0.0, (float) collect($public['premios'])->firstWhere('nombre', 'Efecto legendario Fit')['probabilidad']);
         $second = $this->actingAs($player)->postJson(route('cajas.open', 'starter'), ['request_token' => (string) Str::uuid()])->assertOk();
 
         $this->assertSame('legendario', $first->json('item.rareza'));

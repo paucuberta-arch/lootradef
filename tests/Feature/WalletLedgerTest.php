@@ -19,9 +19,9 @@ class WalletLedgerTest extends TestCase
     {
         $user = $this->player();
 
-        $this->assertTrue($user->cartera->apostar(25, 'apuesta_prueba'));
-        $user->cartera->ganar(40, 'premio_prueba');
-        $this->assertFalse($user->cartera->apostar(1000, 'apuesta_rechazada'));
+        $this->assertTrue($user->cartera->apostar(25, 'apuesta_prueba', [], null, 'test-bet-1'));
+        $user->cartera->ganar(40, 'premio_prueba', [], null, 'test-prize-1');
+        $this->assertFalse($user->cartera->apostar(1000, 'apuesta_rechazada', [], null, 'test-bet-2'));
 
         $this->assertSame(115.0, (float) $user->cartera->fresh()->saldo);
         $this->assertDatabaseHas('wallet_movements', [
@@ -45,6 +45,14 @@ class WalletLedgerTest extends TestCase
 
         $this->assertSame(120.0, (float) $user->cartera->fresh()->saldo);
         $this->assertDatabaseCount('wallet_movements', 1);
+    }
+
+    public function test_economic_movements_require_idempotency_keys(): void
+    {
+        $user = $this->player();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $user->cartera->ganar(10, 'premio_sin_clave');
     }
 
     public function test_demo_deposit_is_visible_in_profile_history(): void

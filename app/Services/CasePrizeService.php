@@ -64,23 +64,58 @@ class CasePrizeService
     public function publicDefinitions(): array
     {
         $this->syncDefinitions();
-        $settings = CaseRewardSetting::with('prizeRules')->get()->keyBy('case_key');
+        $settings = CaseRewardSetting::with([
+            'prizeRules',
+            'dailyStats' => fn ($query) => $query->whereDate('award_date', today()),
+        ])->get()->keyBy('case_key');
 
         return collect(config('cajas', []))->map(function (array $definition, string $caseKey) use ($settings) {
-            $rules = $settings->get($caseKey)?->prizeRules?->keyBy('prize_key') ?? collect();
+            $setting = $settings->get($caseKey);
+            $rules = $setting?->prizeRules?->keyBy('prize_key') ?? collect();
             $totalWeight = max(1, array_sum(array_column($definition['premios'], 'peso')));
-            $prizes = collect($definition['premios'])->map(function (array $prize) use ($rules, $totalWeight) {
+            $goodAwardedToday = (int) ($setting?->dailyStats?->first()?->good_awarded ?? 0);
+            $capReached = $setting?->good_daily_cap !== null && $goodAwardedToday >= $setting->good_daily_cap;
+            $configured = collect($definition['premios'])->map(function (array $prize) use ($rules, $totalWeight) {
                 $fallbackProbability = ((float) $prize['peso'] / $totalWeight) * 100;
                 $rule = $rules->get($this->prizeKey($prize));
 
-                return [...$prize, 'probabilidad' => round((float) ($rule?->probability ?? $fallbackProbability), 4)];
+                return [
+                    ...$prize,
+                    'probabilidad_configurada' => round((float) ($rule?->probability ?? $fallbackProbability), 4),
+                    'es_premio_bueno' => (bool) ($rule?->is_good ?? in_array($prize['rareza'], ['epico', 'legendario'], true)),
+                ];
+            })->values();
+            $configuredRegularTotal = $configured->where('es_premio_bueno', false)->sum('probabilidad_configurada');
+            $regularTotal = $configuredRegularTotal;
+            $usingConfiguredProbabilities = $configuredRegularTotal > 0;
+            if ($capReached && ! $usingConfiguredProbabilities) {
+                $regularTotal = $configured->where('es_premio_bueno', false)->sum(fn (array $prize) => (float) $prize['peso']);
+            }
+            $prizes = $configured->map(function (array $prize) use ($capReached, $regularTotal, $usingConfiguredProbabilities) {
+                $probability = (float) $prize['probabilidad_configurada'];
+                if ($capReached) {
+                    $probability = $prize['es_premio_bueno']
+                        ? 0
+                        : ($regularTotal > 0 ? ((float) ($usingConfiguredProbabilities ? $prize['probabilidad_configurada'] : $prize['peso']) / $regularTotal) * 100 : 0);
+                }
+
+                return [...$prize, 'probabilidad' => round($probability, 4)];
+            })->map(function (array $prize) {
+                unset($prize['probabilidad_configurada'], $prize['es_premio_bueno']);
+
+                return $prize;
             })->values()->all();
 
             $expectedValue = collect($prizes)->sum(fn (array $prize) => ((float) $prize['probabilidad'] / 100) * (float) $prize['valor']);
 
             return [
                 ...$definition,
+                'case_key' => $caseKey,
                 'premios' => $prizes,
+                'good_daily_cap' => $setting?->good_daily_cap,
+                'good_awarded_today' => $goodAwardedToday,
+                'probability_mode' => $capReached ? 'daily_cap_reached' : 'configured',
+                'cap_reached' => $capReached,
                 'rtp' => round(($expectedValue / max(.01, (float) $definition['precio'])) * 100, 2),
             ];
         })->all();

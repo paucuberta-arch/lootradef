@@ -33,31 +33,37 @@ class DemoTreasuryService
     public function reserve(float $amount): void
     {
         $amount = $this->amount($amount);
-        $treasury = DemoTreasury::where('code', 'main')->lockForUpdate()->first() ?? $this->current();
-        abort_if((float) $treasury->available_balance < $amount, 422, 'La tesorería demo no tiene liquidez suficiente.');
-        $treasury->update([
-            'available_balance' => round((float) $treasury->available_balance - $amount, 2),
-            'reserved_balance' => round((float) $treasury->reserved_balance + $amount, 2),
-        ]);
+        DB::transaction(function () use ($amount): void {
+            $treasury = DemoTreasury::where('code', 'main')->lockForUpdate()->first() ?? $this->current();
+            abort_if((float) $treasury->available_balance < $amount, 422, 'La tesorería demo no tiene liquidez suficiente.');
+            $treasury->update([
+                'available_balance' => round((float) $treasury->available_balance - $amount, 2),
+                'reserved_balance' => round((float) $treasury->reserved_balance + $amount, 2),
+            ]);
+        });
     }
 
     public function release(float $amount): void
     {
         $amount = $this->amount($amount);
-        $treasury = DemoTreasury::where('code', 'main')->lockForUpdate()->firstOrFail();
-        abort_if((float) $treasury->reserved_balance < $amount, 409, 'La reserva demo no es consistente.');
-        $treasury->update([
-            'available_balance' => round((float) $treasury->available_balance + $amount, 2),
-            'reserved_balance' => round((float) $treasury->reserved_balance - $amount, 2),
-        ]);
+        DB::transaction(function () use ($amount): void {
+            $treasury = DemoTreasury::where('code', 'main')->lockForUpdate()->firstOrFail();
+            abort_if((float) $treasury->reserved_balance < $amount, 409, 'La reserva demo no es consistente.');
+            $treasury->update([
+                'available_balance' => round((float) $treasury->available_balance + $amount, 2),
+                'reserved_balance' => round((float) $treasury->reserved_balance - $amount, 2),
+            ]);
+        });
     }
 
     public function consumeReserved(float $amount): void
     {
         $amount = $this->amount($amount);
-        $treasury = DemoTreasury::where('code', 'main')->lockForUpdate()->firstOrFail();
-        abort_if((float) $treasury->reserved_balance < $amount, 409, 'La reserva demo no es consistente.');
-        $treasury->decrement('reserved_balance', $amount);
+        DB::transaction(function () use ($amount): void {
+            $treasury = DemoTreasury::where('code', 'main')->lockForUpdate()->firstOrFail();
+            abort_if((float) $treasury->reserved_balance < $amount, 409, 'La reserva demo no es consistente.');
+            $treasury->decrement('reserved_balance', $amount);
+        });
     }
 
     private function amount(float $amount): float

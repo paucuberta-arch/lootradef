@@ -13,7 +13,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class BlackjackController extends Controller
@@ -103,7 +102,7 @@ class BlackjackController extends Controller
             if ($playerBlackjack || $dealerBlackjack) {
                 $state = $playerBlackjack && $dealerBlackjack ? 'push' : ($playerBlackjack ? 'blackjack' : 'lose');
                 $payout = $state === 'push' ? $bet : ($state === 'blackjack' ? round($bet * self::BLACKJACK_PAYOUT_MULTIPLIER, 2) : 0);
-                $this->finish($hand, $state, $payout);
+                $this->finish($hand, $state, $payout, $validated['request_token']);
             }
 
             return ['hand' => $hand->fresh(), 'conflict' => false];
@@ -122,9 +121,6 @@ class BlackjackController extends Controller
     public function hit(Request $request, string $variant = 'vip'): JsonResponse
     {
         $this->validateVariant($variant);
-        if (! $request->filled('request_token')) {
-            $request->merge(['request_token' => (string) Str::uuid()]);
-        }
         $validated = $request->validate(['request_token' => ['required', 'uuid']]);
         $campaignId = $this->balances->campaignId($request->user(), 'blackjack_'.$variant);
 
@@ -142,9 +138,9 @@ class BlackjackController extends Controller
             $hand->update(['baraja' => $deck, 'mano_jugador' => $player]);
             $points = $this->calcularPuntos($player);
             if ($points > 21) {
-                $this->finish($hand, 'bust', 0);
+                $this->finish($hand, 'bust', 0, $validated['request_token']);
             } elseif ($points === 21) {
-                $this->resolveDealer($hand);
+                $this->resolveDealer($hand, $validated['request_token']);
             }
             GameActionToken::create([
                 'usuario_id' => $request->user()->id,
@@ -163,9 +159,6 @@ class BlackjackController extends Controller
     public function stand(Request $request, string $variant = 'vip'): JsonResponse
     {
         $this->validateVariant($variant);
-        if (! $request->filled('request_token')) {
-            $request->merge(['request_token' => (string) Str::uuid()]);
-        }
         $validated = $request->validate(['request_token' => ['required', 'uuid']]);
         $campaignId = $this->balances->campaignId($request->user(), 'blackjack_'.$variant);
         $hand = DB::transaction(function () use ($request, $variant, $campaignId, $validated) {
@@ -176,7 +169,7 @@ class BlackjackController extends Controller
                 return BlackjackHand::findOrFail($existingAction->hand_id);
             }
             $hand = $this->activeHand($request->user()->id, $variant, $campaignId);
-            $this->resolveDealer($hand);
+            $this->resolveDealer($hand, $validated['request_token']);
             GameActionToken::create([
                 'usuario_id' => $request->user()->id,
                 'game_key' => 'blackjack_'.$variant,
@@ -225,7 +218,7 @@ class BlackjackController extends Controller
         return $hand;
     }
 
-    private function resolveDealer(BlackjackHand $hand): void
+    private function resolveDealer(BlackjackHand $hand, string $requestToken): void
     {
         $deck = $hand->baraja;
         $dealer = $hand->mano_dealer;
@@ -237,16 +230,17 @@ class BlackjackController extends Controller
         $dealerPoints = $this->calcularPuntos($dealer);
         $state = $dealerPoints > 21 || $playerPoints > $dealerPoints ? 'win' : ($playerPoints === $dealerPoints ? 'push' : 'lose');
         $payout = $state === 'win' ? round($hand->apuesta * 2, 2) : ($state === 'push' ? $hand->apuesta : 0);
-        $this->finish($hand, $state, $payout);
+        $this->finish($hand, $state, $payout, $requestToken);
     }
 
-    private function finish(BlackjackHand $hand, string $state, float $payout): void
+    private function finish(BlackjackHand $hand, string $state, float $payout, string $requestToken): void
     {
         abort_unless($hand->estado === 'jugando', 409, 'Esta mano ya está finalizada.');
         if ($payout > 0) {
             $this->balances->credit(
                 Usuario::findOrFail($hand->usuario_id), 'blackjack_'.$hand->variante, $payout,
-                'premio_blackjack', ['resultado' => $state], $hand, $hand->campaign_challenge_id
+                'premio_blackjack', ['resultado' => $state], $hand, $hand->campaign_challenge_id,
+                'game-payout:blackjack:'.$hand->id.':'.$requestToken
             );
         }
         $hand->update(['estado' => $state, 'ganancia' => $payout, 'finalizada_at' => now()]);

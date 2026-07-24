@@ -10,7 +10,10 @@ use Illuminate\Support\Facades\DB;
 
 class SportsSimulationService
 {
-    public function __construct(private readonly AccountMailService $accountMail) {}
+    public function __construct(
+        private readonly AccountMailService $accountMail,
+        private readonly WalletService $wallets,
+    ) {}
 
     public function ensureFixtures(): void
     {
@@ -86,8 +89,15 @@ class SportsSimulationService
                 $won = $bet->seleccion === $result;
                 $payout = $won ? round($bet->importe * $bet->cuota, 2) : 0;
                 if ($won) {
-                    Cartera::where('usuario_id', $bet->usuario_id)->lockForUpdate()->firstOrFail()
-                        ->ganar($payout, 'premio_apuesta_deportiva', ['resultado' => $result], $bet);
+                    $wallet = Cartera::where('usuario_id', $bet->usuario_id)->lockForUpdate()->firstOrFail();
+                    $this->wallets->credit(
+                        $wallet,
+                        $payout,
+                        'premio_apuesta_deportiva',
+                        ['resultado' => $result],
+                        $bet,
+                        'sports-payout:'.$bet->id
+                    );
                 }
                 $bet->update(['estado' => $won ? 'ganada' : 'perdida', 'ganancia' => $payout, 'liquidada_at' => now()]);
             });

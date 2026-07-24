@@ -11,7 +11,7 @@ jobs:
   security:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -21,7 +21,12 @@ jobs:
           coverage: none
 
       - name: Install Composer dependencies
-        run: composer install --no-interaction --prefer-dist
+        run: |
+          cp .env.example .env
+          composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare Laravel application key
+        run: php artisan key:generate --force
 
       - name: Validate Composer metadata
         run: composer validate --strict
@@ -30,7 +35,7 @@ jobs:
         run: composer audit --locked
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22'
           cache: npm
