@@ -114,6 +114,7 @@ class FakeCaseOpeningHistory extends Command
                     'rareza' => $winner['prize']['rareza'],
                     'precio_caja' => $definition['precio'],
                     'valor_canje' => $winner['prize']['valor'],
+                    'valor_virtual' => (int) round((float) $winner['prize']['valor'] * 100),
                     'estado' => $redeemed ? 'canjeado' : 'disponible',
                     'canjeado_at' => $redeemedAt,
                     'created_at' => $openedAt,

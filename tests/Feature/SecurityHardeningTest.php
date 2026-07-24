@@ -82,6 +82,18 @@ class SecurityHardeningTest extends TestCase
         $this->assertSame(6, PartidoDeportivo::whereNotNull('fixture_key')->distinct()->count('fixture_key'));
     }
 
+    public function test_sports_odds_have_a_documented_bookmaker_margin_and_are_not_independent_random_values(): void
+    {
+        $sports = app(SportsSimulationService::class);
+        $sports->ensureFixtures();
+        $match = PartidoDeportivo::firstOrFail();
+        $impliedProbability = (1 / $match->cuota_local) + (1 / $match->cuota_empate) + (1 / $match->cuota_visitante);
+
+        $this->assertGreaterThan(1.02, $impliedProbability);
+        $this->assertLessThan(1.10, $impliedProbability);
+        $this->assertNotSame($match->cuota_local, $match->cuota_visitante);
+    }
+
     public function test_analytics_requires_consent_and_consent_cookie_is_hardened(): void
     {
         config(['services.google_analytics.measurement_id' => 'G-TEST123456']);

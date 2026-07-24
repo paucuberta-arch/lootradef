@@ -190,6 +190,7 @@ function dealerPoker() {
                 accion: action,
                 fase: this.hand.phase,
                 cantidad: action === 'apostar' ? this.streetBet : undefined,
+                request_token: window.lootraRequestToken(),
             });
         },
     };

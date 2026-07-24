@@ -44,6 +44,7 @@ class ArcadeGamesTest extends TestCase
         }
 
         $this->assertSame(10, Partida::where('usuario_id', $usuario->id)->count());
+        $this->assertSame(10, Partida::where('usuario_id', $usuario->id)->whereNotNull('math_version')->count());
     }
 
     public function test_quantum_plinko_uses_its_physics_board_and_server_trajectory(): void
@@ -71,5 +72,32 @@ class ArcadeGamesTest extends TestCase
         $this->assertEquals((float) $multipliers[$slot], (float) $response->json('multiplier'));
         $this->assertSame('96.4%', config('casino_games.quantum-plinko.rtp'));
         $this->assertSame('x12', config('casino_games.quantum-plinko.max_win'));
+    }
+
+    public function test_cosmic_keno_payment_table_has_a_documented_approximately_96_percent_rtp(): void
+    {
+        $reflection = new \ReflectionClass(\App\Http\Controllers\ArcadeController::class);
+        $multipliers = $reflection->getConstant('KENO_MULTIPLIERS');
+        $choose = static function (int $n, int $k): int {
+            if ($k < 0 || $k > $n) {
+                return 0;
+            }
+            $result = 1;
+            for ($i = 1; $i <= $k; $i++) {
+                $result = intdiv($result * ($n - $k + $i), $i);
+            }
+
+            return $result;
+        };
+
+        $total = $choose(30, 10);
+        $rtp = 0.0;
+        for ($hits = 0; $hits <= 5; $hits++) {
+            $probability = ($choose(5, $hits) * $choose(25, 10 - $hits)) / $total;
+            $rtp += $probability * $multipliers[$hits];
+        }
+
+        $this->assertEqualsWithDelta(0.96, $rtp, 0.0001);
+        $this->assertSame('x18.46', config('arcade_games.cosmic-keno.max_win'));
     }
 }

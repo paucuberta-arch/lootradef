@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
-use App\Models\Cartera;
 use App\Models\InventarioItem;
 use App\Services\CampaignChallengeService;
 use App\Services\CasePrizeService;
@@ -49,7 +48,7 @@ class CajaController extends Controller
         ]);
 
         $item = DB::transaction(function () use ($request, $caja, $definition, $validated) {
-            $cartera = Cartera::where('usuario_id', $request->user()->id)->lockForUpdate()->first();
+            $cartera = $request->user()->cartera()->lockForUpdate()->first();
             abort_unless($cartera, 422, 'No tienes una cartera activa.');
 
             $existing = InventarioItem::where('usuario_id', $request->user()->id)
@@ -62,7 +61,7 @@ class CajaController extends Controller
                     'nombre' => $existing->nombre,
                     'imagen' => $existing->imagen,
                     'rareza' => $existing->rareza,
-                    'valor' => (float) $existing->valor_canje,
+                    'valor_virtual' => (int) ($existing->valor_virtual ?: round((float) $existing->valor_canje * 100)),
                 ];
 
                 return [
@@ -88,6 +87,7 @@ class CajaController extends Controller
                 'rareza' => $prize['rareza'],
                 'precio_caja' => $definition['precio'],
                 'valor_canje' => $prize['valor'],
+                'valor_virtual' => (int) round((float) ($prize['valor_virtual'] ?? ((float) $prize['valor'] * 100))),
                 'estado' => 'disponible',
             ]);
             abort_unless($cartera->apostar(
@@ -144,21 +144,23 @@ class CajaController extends Controller
                 return null;
             }
 
-            $cartera = Cartera::where('usuario_id', $request->user()->id)->lockForUpdate()->firstOrFail();
-            $cartera->ganar($lockedItem->valor_canje, 'canje_inventario', ['premio' => $lockedItem->nombre], $lockedItem);
+            $virtualValue = (int) ($lockedItem->valor_virtual ?: round((float) $lockedItem->valor_canje * 100));
 
-            $lockedItem->update(['estado' => 'canjeado', 'canjeado_at' => now()]);
+            $lockedItem->update(['estado' => 'canjeado', 'valor_virtual' => $virtualValue, 'canjeado_at' => now()]);
 
             ActivityLog::create([
                 'usuario_id' => $request->user()->id,
                 'accion' => 'premio_canjeado',
                 'modelo' => 'InventarioItem',
                 'modelo_id' => $lockedItem->id,
-                'detalles' => ['premio' => $lockedItem->nombre, 'valor' => $lockedItem->valor_canje],
+                'detalles' => ['premio' => $lockedItem->nombre, 'valor_virtual' => $virtualValue],
                 'ip' => $request->ip(),
             ]);
 
-            return ['saldo' => (float) $cartera->saldo, 'valor' => (float) $lockedItem->valor_canje];
+            return [
+                'message' => 'Recompensa virtual activada. No se ha creado saldo ni valor monetario.',
+                'valor_virtual' => $virtualValue,
+            ];
         });
 
         if (! $result) {
@@ -176,7 +178,7 @@ class CajaController extends Controller
             'nombre' => $item->nombre,
             'imagen' => $item->imagen,
             'rareza' => $item->rareza,
-            'valor_canje' => $item->valor_canje,
+            'valor_virtual' => (int) ($item->valor_virtual ?: round((float) $item->valor_canje * 100)),
             'estado' => $item->estado,
             'created_at' => $item->created_at->diffForHumans(),
         ];
@@ -189,7 +191,7 @@ class CajaController extends Controller
             'nombre' => $prize['nombre'],
             'imagen' => $prize['imagen'],
             'rareza' => $prize['rareza'],
-            'valor_canje' => (float) $prize['valor'],
+            'valor_virtual' => (int) round((float) ($prize['valor_virtual'] ?? ((float) $prize['valor'] * 100))),
         ];
     }
 
@@ -200,7 +202,7 @@ class CajaController extends Controller
             'nombre' => $item['nombre'],
             'imagen' => $item['imagen'],
             'rareza' => $item['rareza'],
-            'valor_canje' => (float) $item['valor_canje'],
+            'valor_virtual' => (int) $item['valor_virtual'],
         ];
     }
 }

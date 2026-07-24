@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\BlackjackHand;
+use App\Models\GameActionToken;
 use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -60,6 +61,19 @@ class BlackjackSecurityTest extends TestCase
         $this->assertSame($first->json('id'), $second->json('id'));
         $this->assertEquals($balance, $user->cartera->fresh()->saldo);
         $this->assertSame(1, BlackjackHand::where('usuario_id', $user->id)->count());
+    }
+
+    public function test_retried_hit_with_the_same_action_token_does_not_draw_or_finish_twice(): void
+    {
+        $user = $this->player();
+        $this->activeHand($user);
+        $token = Str::uuid()->toString();
+
+        $first = $this->actingAs($user)->postJson(route('blackjack.hit'), ['request_token' => $token])->assertOk();
+        $second = $this->actingAs($user)->postJson(route('blackjack.hit'), ['request_token' => $token])->assertOk();
+
+        $this->assertSame($first->json('mano_jugador'), $second->json('mano_jugador'));
+        $this->assertSame(1, GameActionToken::where('request_token', $token)->count());
     }
 
     public function test_classic_variant_uses_six_decks(): void

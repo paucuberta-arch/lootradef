@@ -16,6 +16,7 @@ class CampaignChallengeService
     public function __construct(
         private readonly CampaignManager $campaigns,
         private readonly CampaignAnalytics $analytics,
+        private readonly LedgerService $ledger,
     ) {}
 
     public function start(Usuario $user): CampaignChallenge
@@ -44,12 +45,13 @@ class CampaignChallengeService
                 'expires_at' => now()->addMinutes((int) $config['duration_minutes']),
                 'data_origin' => app()->environment('testing') ? 'test' : 'real',
             ]);
-            CampaignChallengeMovement::create([
+            $movement = CampaignChallengeMovement::create([
                 'campaign_challenge_id' => $challenge->id,
                 'type' => 'initial_credit', 'direction' => 'credit', 'amount' => $balance,
                 'balance_before' => 0, 'balance_after' => $balance,
                 'metadata' => ['campaign_key' => CampaignManager::KEY],
             ]);
+            $this->ledger->campaignMovement($movement);
             $this->analytics->record('challenge_started', 'challenge-'.$challenge->id, [], $user, $challenge);
 
             return $challenge;
@@ -103,7 +105,8 @@ class CampaignChallengeService
             $before = (float) $locked->current_balance;
             $after = round($before - $amount, 2);
             $locked->update(['current_balance' => $after]);
-            $this->movement($locked, $type, 'debit', $amount, $before, $after, $metadata, $reference, $idempotencyKey);
+            $movement = $this->movement($locked, $type, 'debit', $amount, $before, $after, $metadata, $reference, $idempotencyKey);
+            $this->ledger->campaignMovement($movement);
             $challenge->setRawAttributes($locked->getAttributes(), true);
 
             return true;
@@ -119,7 +122,8 @@ class CampaignChallengeService
             $before = (float) $locked->current_balance;
             $after = round($before + $amount, 2);
             $locked->update(['current_balance' => $after]);
-            $this->movement($locked, $type, 'credit', $amount, $before, $after, $metadata, $reference, null);
+            $movement = $this->movement($locked, $type, 'credit', $amount, $before, $after, $metadata, $reference, null);
+            $this->ledger->campaignMovement($movement);
             $challenge->setRawAttributes($locked->getAttributes(), true);
         });
     }
@@ -187,9 +191,9 @@ class CampaignChallengeService
         $this->analytics->record('challenge_completed', 'challenge-'.$challenge->id, ['status' => $status, 'reason' => $reason], $challenge->user, $challenge);
     }
 
-    private function movement(CampaignChallenge $challenge, string $type, string $direction, float $amount, float $before, float $after, array $metadata, ?Model $reference, ?string $idempotencyKey): void
+    private function movement(CampaignChallenge $challenge, string $type, string $direction, float $amount, float $before, float $after, array $metadata, ?Model $reference, ?string $idempotencyKey): CampaignChallengeMovement
     {
-        CampaignChallengeMovement::create([
+        return CampaignChallengeMovement::create([
             'campaign_challenge_id' => $challenge->id, 'type' => $type, 'direction' => $direction,
             'amount' => $amount, 'balance_before' => $before, 'balance_after' => $after,
             'reference_type' => $reference?->getMorphClass(), 'reference_id' => $reference?->getKey(),

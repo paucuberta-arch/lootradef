@@ -46,9 +46,9 @@ class AdminCaseHistoryController extends Controller
         $summary = (clone $query)->reorder()->selectRaw(
             "COUNT(*) as openings,
             COALESCE(SUM(precio_caja), 0) as revenue,
-            COALESCE(SUM(valor_canje), 0) as awarded_value,
-            COALESCE(SUM(CASE WHEN estado = 'canjeado' THEN valor_canje ELSE 0 END), 0) as redeemed_value,
-            COALESCE(SUM(CASE WHEN estado = 'disponible' THEN valor_canje ELSE 0 END), 0) as pending_value,
+            COALESCE(SUM(valor_virtual), 0) as awarded_value,
+            COALESCE(SUM(CASE WHEN estado = 'canjeado' THEN valor_virtual ELSE 0 END), 0) as redeemed_value,
+            COALESCE(SUM(CASE WHEN estado = 'disponible' THEN valor_virtual ELSE 0 END), 0) as pending_value,
             COALESCE(SUM(CASE WHEN rareza IN ('epico', 'legendario') THEN 1 ELSE 0 END), 0) as good_prizes"
         )->first();
 

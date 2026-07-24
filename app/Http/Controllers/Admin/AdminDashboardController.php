@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\ApuestaDeportiva;
 use App\Models\Cartera;
+use App\Models\DemoTreasury;
+use App\Models\DemoWithdrawal;
 use App\Models\Feedback;
 use App\Models\InventarioItem;
 use App\Models\Partida;
@@ -49,6 +51,18 @@ class AdminDashboardController extends Controller
             $stats['apuesta_media'] = $stats['partidas_periodo'] > 0 ? $stats['apostado_periodo'] / $stats['partidas_periodo'] : 0;
             $stats['saldo_total'] = (float) Cartera::sum('saldo');
             $stats['usuarios_periodo'] = Usuario::where('created_at', '>=', $periodStart)->count();
+            $treasury = DemoTreasury::where('code', 'main')->first();
+            $stats['tesoreria_disponible'] = (float) ($treasury?->available_balance ?? 0);
+            $stats['tesoreria_reservada'] = (float) ($treasury?->reserved_balance ?? 0);
+            $stats['retiradas_pendientes'] = (float) DemoWithdrawal::whereIn('status', [
+                DemoWithdrawal::REQUESTED,
+                DemoWithdrawal::UNDER_REVIEW,
+                DemoWithdrawal::APPROVED,
+                DemoWithdrawal::PROCESSING,
+            ])->sum('amount');
+            $stats['cobertura_pasivo'] = $stats['saldo_total'] > 0
+                ? (($stats['tesoreria_disponible'] + $stats['tesoreria_reservada']) / $stats['saldo_total']) * 100
+                : 0;
 
             $sportsBets = ApuestaDeportiva::where('created_at', '>=', $periodStart);
             $stats['apuestas_deportivas'] = (clone $sportsBets)->count();
@@ -61,9 +75,12 @@ class AdminDashboardController extends Controller
             $stats['cajas_abiertas'] = (clone $boxes)->count();
             $stats['ingresos_cajas'] = (float) (clone $boxes)->sum('precio_caja');
             $stats['cajas_canjeadas'] = (clone $boxes)->where('estado', 'canjeado')->count();
-            $stats['pagado_canje'] = (float) (clone $boxes)->where('estado', 'canjeado')->sum('valor_canje');
-            $stats['valor_inventario'] = (float) (clone $boxes)->where('estado', 'disponible')->sum('valor_canje');
-            $stats['beneficio_cajas'] = $stats['ingresos_cajas'] - $stats['pagado_canje'];
+            // Cosmetic rewards never create wallet balance or a financial
+            // liability. Keep their virtual score separate from demo-credit
+            // revenue so the dashboard cannot mistake them for cash payouts.
+            $stats['pagado_canje'] = 0.0;
+            $stats['valor_inventario'] = (float) (clone $boxes)->where('estado', 'disponible')->sum('valor_virtual');
+            $stats['beneficio_cajas'] = $stats['ingresos_cajas'];
 
             $previousBets = (float) (clone $previousGames)->sum('apuesta');
             $previousPlayers = (clone $previousGames)->distinct('usuario_id')->count('usuario_id');

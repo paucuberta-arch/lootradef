@@ -10,6 +10,8 @@ use InvalidArgumentException;
 
 class WalletService
 {
+    public function __construct(private readonly LedgerService $ledger) {}
+
     public function debit(
         Cartera $wallet,
         float $amount,
@@ -38,7 +40,8 @@ class WalletService
             $before = (float) $locked->saldo;
             $after = round($before - $amount, 2);
             $locked->update(['saldo' => $after]);
-            $this->record($locked, $type, 'debito', $amount, $before, $after, $metadata, $reference, $idempotencyKey);
+            $movement = $this->record($locked, $type, 'debito', $amount, $before, $after, $metadata, $reference, $idempotencyKey);
+            $this->ledger->walletMovement($movement);
             $wallet->setRawAttributes($locked->getAttributes(), true);
 
             return true;
@@ -71,6 +74,7 @@ class WalletService
             }
             $locked->update(['saldo' => $after]);
             $movement = $this->record($locked, $type, 'credito', $amount, $before, $after, $metadata, $reference, $idempotencyKey);
+            $this->ledger->walletMovement($movement);
             $wallet->setRawAttributes($locked->getAttributes(), true);
 
             return $movement;

@@ -6,6 +6,7 @@ use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\CaptureCampaignAttribution;
 use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\EnsureAdminMfa;
+use App\Http\Middleware\EnsureDemoEconomyEnabled;
 use App\Http\Middleware\EnsureVerifiedForRealPlay;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use App\Http\Middleware\RedirectIfAuthenticated;
@@ -103,6 +104,7 @@ class Kernel extends HttpKernel
         'verified' => EnsureEmailIsVerified::class,
         'verified.real' => EnsureVerifiedForRealPlay::class,
         'admin.mfa' => EnsureAdminMfa::class,
+        'demo.economy' => EnsureDemoEconomyEnabled::class,
         'role' => RoleMiddleware::class,
         'permission' => PermissionMiddleware::class,
         'role_or_permission' => RoleOrPermissionMiddleware::class,

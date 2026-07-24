@@ -97,7 +97,10 @@ class CasePrizeService
         $daily = $this->dailyStat($setting);
         $capReached = $setting->good_daily_cap !== null
             && $daily->good_awarded >= $setting->good_daily_cap;
-        $multiplier = $this->boostMultiplierFor($user);
+        // Per-user boosts are retained as QA metadata only. They must never
+        // alter a production/demo draw because outcomes are global and equal
+        // for every player.
+        $multiplier = 1.0;
 
         $candidates = collect($definition['premios'])->map(function (array $prize) use ($rules, $multiplier) {
             $rule = $rules->get($this->prizeKey($prize));

@@ -1,8 +1,8 @@
 import {test, expect} from '@playwright/test';
 
 const credentials = {
-    email: process.env.E2E_EMAIL || 'e2e@example.test',
-    password: process.env.E2E_PASSWORD || 'LootraE2E#2026',
+    email: process.env.E2E_EMAIL,
+    password: process.env.E2E_PASSWORD,
 };
 
 const games = [
@@ -30,6 +30,9 @@ const games = [
 ];
 
 async function login(page) {
+    if (!credentials.email || !credentials.password) {
+        throw new Error('Define E2E_EMAIL y E2E_PASSWORD para ejecutar las pruebas E2E.');
+    }
     await page.goto('/iniciar-sesion', {waitUntil: 'domcontentloaded'});
     await page.getByLabel('Correo electrónico').fill(credentials.email);
     await page.locator('input[name="password"]').fill(credentials.password);

@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AdminCaseHistoryController;
 use App\Http\Controllers\Admin\AdminCasePrizeController;
 use App\Http\Controllers\Admin\AdminChartsController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminDemoWithdrawalController;
 use App\Http\Controllers\Admin\AdminFeedbackController;
 use App\Http\Controllers\Admin\AdminLogController;
 use App\Http\Controllers\Admin\AdminMfaController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlackjackController;
 use App\Http\Controllers\CajaController;
 use App\Http\Controllers\CrashController;
+use App\Http\Controllers\DemoWithdrawalController;
 use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\GameController;
@@ -71,7 +73,7 @@ Route::middleware(['auth', 'auth.session', 'throttle:authenticated-actions'])->g
         ->middleware('throttle:3,1')->name('verification.send');
 });
 
-Route::middleware(['auth', 'auth.session', 'verified.real', 'throttle:authenticated-actions'])->group(function () {
+Route::middleware(['auth', 'auth.session', 'verified.real', 'demo.economy', 'throttle:authenticated-actions'])->group(function () {
     Route::get('/rickyedit/reto', [RickyEditCampaignController::class, 'intro'])->name('rickyedit.intro');
     Route::post('/rickyedit/reto/iniciar', [RickyEditCampaignController::class, 'start'])->middleware(['verified', 'throttle:5,1'])->name('rickyedit.start');
     Route::post('/rickyedit/reto/finalizar', [RickyEditCampaignController::class, 'finish'])->middleware('throttle:5,1')->name('rickyedit.finish');
@@ -115,6 +117,9 @@ Route::middleware(['auth', 'auth.session', 'verified.real', 'throttle:authentica
     Route::get('/wallet/history', [PerfilController::class, 'index'])->name('wallet.history');
     Route::get('/wallet/balance', [PerfilController::class, 'saldo'])->name('wallet.balance');
     Route::post('/wallet/demo-deposit', [PerfilController::class, 'deposit'])->middleware('throttle:demo-deposit')->name('wallet.demo-deposit');
+    Route::get('/wallet/demo-withdrawals', [DemoWithdrawalController::class, 'index'])->middleware('demo.economy')->name('wallet.demo-withdrawals');
+    Route::post('/wallet/demo-withdrawals', [DemoWithdrawalController::class, 'store'])->middleware(['demo.economy', 'throttle:authenticated-actions'])->name('wallet.demo-withdrawals.store');
+    Route::post('/wallet/demo-withdrawals/{withdrawal}/cancel', [DemoWithdrawalController::class, 'cancel'])->middleware('demo.economy')->name('wallet.demo-withdrawals.cancel');
 
     Route::get('/jugar/poker/dealer', [PokerDealerController::class, 'index'])->name('poker.dealer');
     Route::post('/jugar/poker/dealer/iniciar', [PokerDealerController::class, 'start'])->name('poker.dealer.start');
@@ -201,4 +206,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'auth.session', 'rol
     Route::delete('/roles/{role}', [AdminRoleController::class, 'destroy'])->middleware('permission:roles.manage')->name('roles.destroy');
 
     Route::get('/logs', [AdminLogController::class, 'index'])->middleware('permission:logs.view')->name('logs');
+    Route::get('/retiradas-demo', [AdminDemoWithdrawalController::class, 'index'])->middleware(['permission:withdrawals.manage', 'demo.economy'])->name('demo-withdrawals');
+    Route::post('/retiradas-demo/{withdrawal}/review', [AdminDemoWithdrawalController::class, 'review'])->middleware(['permission:withdrawals.manage', 'demo.economy'])->name('demo-withdrawals.review');
 });

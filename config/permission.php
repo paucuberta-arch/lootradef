@@ -23,7 +23,7 @@ return [
     'register_octane_reset_listener' => false,
 
     'cache' => [
-        'store' => 'file',
+        'store' => env('PERMISSION_CACHE_STORE', 'default'),
         'key' => 'spatie.permission.cache',
         'prefix' => 'spatie.permission.cache.',
     ],

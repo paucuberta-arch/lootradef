@@ -24,7 +24,7 @@ class AdminChartsController extends Controller
         $sportsDaily = $this->daily(ApuestaDeportiva::where('created_at', '>=', $start)
             ->selectRaw('date(created_at) as dia, count(*) as total, sum(importe) as volumen, sum(ganancia) as pagos')->groupBy('dia')->get());
         $boxesDaily = $this->daily(InventarioItem::where('created_at', '>=', $start)
-            ->selectRaw("date(created_at) as dia, count(*) as total, sum(precio_caja) as volumen, sum(case when estado = 'canjeado' then valor_canje else 0 end) as pagos")->groupBy('dia')->get());
+            ->selectRaw("date(created_at) as dia, count(*) as total, sum(precio_caja) as volumen, sum(case when estado = 'canjeado' then valor_virtual else 0 end) as pagos")->groupBy('dia')->get());
         $usersDaily = Usuario::where('created_at', '>=', $start)->selectRaw('date(created_at) as dia, count(*) as total')->groupBy('dia')->get()->keyBy('dia');
 
         $series = [

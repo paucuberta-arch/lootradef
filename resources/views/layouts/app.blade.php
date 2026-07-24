@@ -39,6 +39,8 @@
       data-wallet-kind="{{ $displayBalanceKind ?? 'wallet' }}"
       @auth data-wallet-url="{{ route('wallet.balance') }}" @endauth>
 
+    <x-demo-banner />
+
     <div class="ambient-bg" aria-hidden="true">
         <span class="ambient-orb ambient-orb--one"></span>
         <span class="ambient-orb ambient-orb--two"></span>

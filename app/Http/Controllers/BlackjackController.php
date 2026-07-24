@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BlackjackHand;
+use App\Models\GameActionToken;
 use App\Models\Partida;
 use App\Models\Usuario;
 use App\Services\CampaignManager;
@@ -12,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class BlackjackController extends Controller
@@ -45,7 +47,9 @@ class BlackjackController extends Controller
             'statusRoute' => $variant === 'vip' ? route('games.blackjack.vip.status') : route('games.blackjack.classic.status'),
             'activeHand' => $active ? $this->handData($active) : null,
             'blackjackPayout' => self::BLACKJACK_PAYOUT_MULTIPLIER,
-            'blackjackRtp' => $variant === 'classic' ? '≈99.4%' : '≈98.8%',
+            // This implementation does not yet have a complete strategy/RTP
+            // enumerator, so showing a precise percentage would be misleading.
+            'blackjackRtp' => 'Variable según estrategia',
             'gameBalance' => $this->balances->balance(Auth::user(), 'blackjack_'.$variant, $campaignId),
         ]);
     }
@@ -118,9 +122,19 @@ class BlackjackController extends Controller
     public function hit(Request $request, string $variant = 'vip'): JsonResponse
     {
         $this->validateVariant($variant);
+        if (! $request->filled('request_token')) {
+            $request->merge(['request_token' => (string) Str::uuid()]);
+        }
+        $validated = $request->validate(['request_token' => ['required', 'uuid']]);
         $campaignId = $this->balances->campaignId($request->user(), 'blackjack_'.$variant);
 
-        $hand = DB::transaction(function () use ($request, $variant, $campaignId) {
+        $hand = DB::transaction(function () use ($request, $variant, $campaignId, $validated) {
+            $existingAction = GameActionToken::where('request_token', $validated['request_token'])->lockForUpdate()->first();
+            if ($existingAction) {
+                abort_unless($existingAction->usuario_id === $request->user()->id && $existingAction->game_key === 'blackjack_'.$variant, 409, 'La clave de acción ya fue usada en otra partida.');
+
+                return BlackjackHand::findOrFail($existingAction->hand_id);
+            }
             $hand = $this->activeHand($request->user()->id, $variant, $campaignId);
             $deck = $hand->baraja;
             $player = $hand->mano_jugador;
@@ -132,6 +146,13 @@ class BlackjackController extends Controller
             } elseif ($points === 21) {
                 $this->resolveDealer($hand);
             }
+            GameActionToken::create([
+                'usuario_id' => $request->user()->id,
+                'game_key' => 'blackjack_'.$variant,
+                'hand_id' => $hand->id,
+                'request_token' => $validated['request_token'],
+                'action' => 'hit',
+            ]);
 
             return $hand->fresh();
         });
@@ -142,10 +163,27 @@ class BlackjackController extends Controller
     public function stand(Request $request, string $variant = 'vip'): JsonResponse
     {
         $this->validateVariant($variant);
+        if (! $request->filled('request_token')) {
+            $request->merge(['request_token' => (string) Str::uuid()]);
+        }
+        $validated = $request->validate(['request_token' => ['required', 'uuid']]);
         $campaignId = $this->balances->campaignId($request->user(), 'blackjack_'.$variant);
-        $hand = DB::transaction(function () use ($request, $variant, $campaignId) {
+        $hand = DB::transaction(function () use ($request, $variant, $campaignId, $validated) {
+            $existingAction = GameActionToken::where('request_token', $validated['request_token'])->lockForUpdate()->first();
+            if ($existingAction) {
+                abort_unless($existingAction->usuario_id === $request->user()->id && $existingAction->game_key === 'blackjack_'.$variant, 409, 'La clave de acción ya fue usada en otra partida.');
+
+                return BlackjackHand::findOrFail($existingAction->hand_id);
+            }
             $hand = $this->activeHand($request->user()->id, $variant, $campaignId);
             $this->resolveDealer($hand);
+            GameActionToken::create([
+                'usuario_id' => $request->user()->id,
+                'game_key' => 'blackjack_'.$variant,
+                'hand_id' => $hand->id,
+                'request_token' => $validated['request_token'],
+                'action' => 'stand',
+            ]);
 
             return $hand->fresh();
         });

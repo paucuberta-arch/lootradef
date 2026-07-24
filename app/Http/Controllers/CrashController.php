@@ -63,10 +63,9 @@ class CrashController extends Controller
 
             $active = CrashRound::where('usuario_id', $request->user()->id)
                 ->where('campaign_challenge_id', $campaignId)->where('estado', 'activa')->lockForUpdate()->latest()->first();
-            if ($active && $this->currentMultiplier($active) >= $active->crash_point) {
-                $this->finish($active, 'crashed', 0, null);
-                $active = null;
-            }
+            // A second start must never mutate or settle the existing round.
+            // The status endpoint owns crash settlement and will report the
+            // persisted result to the client.
             abort_if($active, 409, 'Ya tienes una ronda Crash activa.');
 
             $bet = round((float) $validated['apuesta'], 2);
@@ -209,7 +208,8 @@ class CrashController extends Controller
 
     private function generateCrashPoint(): float
     {
-        $houseEdge = 0.03;
+        $houseEdge = (float) config('game_math.crash.house_edge', 0.03);
+        $maxMultiplier = max(1.0, (float) config('game_math.crash.max_multiplier', 1000));
         $e = 2 ** 32;
         $h = $e * (1 - $houseEdge);
 
@@ -223,6 +223,6 @@ class CrashController extends Controller
             return 1.0;
         }
 
-        return round($e / ($e - $r), 2);
+        return min($maxMultiplier, round($e / ($e - $r), 2));
     }
 }

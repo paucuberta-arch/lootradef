@@ -60,6 +60,8 @@ class WalletMovement extends Model
             'apuesta_deportiva' => 'Apuesta deportiva',
             'premio_apuesta_deportiva' => 'Premio de apuesta deportiva',
             'ajuste_administrador' => 'Ajuste de administración',
+            'retirada_demo_reserva' => 'Reserva de retirada demo',
+            'retirada_demo_liberada' => 'Liberación de retirada demo',
         ][$this->tipo] ?? str($this->tipo)->replace('_', ' ')->title()->toString();
     }
 }

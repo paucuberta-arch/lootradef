@@ -40,8 +40,8 @@ class CasePrizeAdministrationTest extends TestCase
         $admin->assignRole('admin');
         $payload = $this->configurationPayload();
         $starter = CaseRewardSetting::where('case_key', 'starter')->with('prizeRules')->firstOrFail();
-        $first = $starter->prizeRules->firstWhere('name', 'Sticker Pack Neon');
-        $second = $starter->prizeRules->firstWhere('name', 'Llavero Lootra');
+        $first = $starter->prizeRules->firstWhere('name', 'Marco de perfil Neon');
+        $second = $starter->prizeRules->firstWhere('name', 'Insignia Lootra');
         $payload['rules'][$first->id]['probability'] = 99;
         $payload['rules'][$second->id]['probability'] = 0;
 
@@ -81,7 +81,7 @@ class CasePrizeAdministrationTest extends TestCase
         $gaming = CaseRewardSetting::where('case_key', 'gaming')->with('prizeRules')->firstOrFail();
 
         foreach ($gaming->prizeRules as $rule) {
-            $payload['rules'][$rule->id]['probability'] = $rule->name === 'Consola Next Gen' ? 100 : 0;
+            $payload['rules'][$rule->id]['probability'] = $rule->name === 'Avatar legendario Next Gen' ? 100 : 0;
             $payload['rules'][$rule->id]['is_good'] = 0;
         }
 
@@ -93,12 +93,12 @@ class CasePrizeAdministrationTest extends TestCase
     {
         $starter = CaseRewardSetting::where('case_key', 'starter')->with('prizeRules')->firstOrFail();
         $legacy = [
-            'Sticker Pack Neon' => 30,
-            'Llavero Lootra' => 26,
-            'Tarjeta digital €3' => 22,
-            'Auriculares compactos' => 14,
-            'Altavoz Mini' => 7,
-            'Smartwatch Fit' => 1,
+            'Marco de perfil Neon' => 30,
+            'Insignia Lootra' => 26,
+            'Pack de emotes Neon' => 22,
+            'Tema de interfaz Aurora' => 14,
+            'Animación de victoria Mini' => 7,
+            'Efecto legendario Fit' => 1,
         ];
         foreach ($starter->prizeRules as $rule) {
             $rule->update(['probability' => $legacy[$rule->name]]);
@@ -108,12 +108,12 @@ class CasePrizeAdministrationTest extends TestCase
         $migration->up();
 
         $probabilities = $starter->prizeRules()->pluck('probability', 'name')->map(fn ($value) => (float) $value);
-        $this->assertSame(38.0, $probabilities['Sticker Pack Neon']);
-        $this->assertSame(27.0, $probabilities['Llavero Lootra']);
-        $this->assertSame(18.0, $probabilities['Tarjeta digital €3']);
-        $this->assertSame(11.0, $probabilities['Auriculares compactos']);
-        $this->assertSame(5.5, $probabilities['Altavoz Mini']);
-        $this->assertSame(0.5, $probabilities['Smartwatch Fit']);
+        $this->assertSame(38.0, $probabilities['Marco de perfil Neon']);
+        $this->assertSame(27.0, $probabilities['Insignia Lootra']);
+        $this->assertSame(18.0, $probabilities['Pack de emotes Neon']);
+        $this->assertSame(11.0, $probabilities['Tema de interfaz Aurora']);
+        $this->assertSame(5.5, $probabilities['Animación de victoria Mini']);
+        $this->assertSame(0.5, $probabilities['Efecto legendario Fit']);
     }
 
     public function test_daily_cap_prevents_a_second_good_prize(): void
@@ -121,7 +121,7 @@ class CasePrizeAdministrationTest extends TestCase
         $setting = CaseRewardSetting::where('case_key', 'starter')->with('prizeRules')->firstOrFail();
         $setting->update(['good_daily_cap' => 1]);
         $setting->prizeRules()->update(['probability' => 0, 'is_good' => false]);
-        $setting->prizeRules()->where('name', 'Smartwatch Fit')->update(['probability' => 100, 'is_good' => true]);
+        $setting->prizeRules()->where('name', 'Efecto legendario Fit')->update(['probability' => 100, 'is_good' => true]);
         $player = $this->user(100);
         $player->update(['is_demo' => true, 'data_origin' => 'test']);
 

@@ -61,7 +61,7 @@ class WalletLedgerTest extends TestCase
             ->assertOk()->assertJsonPath('saldo', 125);
 
         $this->actingAs($user)->get(route('perfil'))
-            ->assertOk()->assertSee('Depósito demo')->assertSee('25,00 €');
+            ->assertOk()->assertSee('Depósito demo')->assertSee('25,00 EUR Demo');
         $this->assertDatabaseHas('wallet_movements', ['tipo' => 'deposito_demo', 'importe' => 25]);
     }
 

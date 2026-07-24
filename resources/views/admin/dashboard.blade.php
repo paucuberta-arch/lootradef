@@ -98,6 +98,26 @@
 </div>
 @endif
 
+{{-- Tesorería demo: separada de ingresos y saldos de jugadores --}}
+@if($user->hasAnyRole(['super_admin', 'admin']))
+<section class="mb-8 rounded-2xl border border-amber-400/20 bg-gradient-to-br from-amber-400/[.08] to-white/[.02] p-5">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        <div><p class="text-[10px] font-black uppercase tracking-[.2em] text-amber-300">Tesorería demo</p><h3 class="mt-1 text-lg font-extrabold text-white">Liquidez y pasivo virtual</h3><p class="mt-1 text-xs text-slate-500">Los saldos de jugadores no son beneficio y las cifras no representan dinero real.</p></div>
+        <a href="{{ route('admin.demo-withdrawals') }}" class="rounded-xl border border-amber-300/20 bg-amber-300/10 px-3 py-2 text-xs font-bold text-amber-200">Revisar retiradas demo</a>
+    </div>
+    <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        @foreach([
+            ['Tesorería disponible', number_format($stats['tesoreria_disponible'], 2, ',', '.').' EUR Demo'],
+            ['Reservado', number_format($stats['tesoreria_reservada'], 2, ',', '.').' EUR Demo'],
+            ['Retiradas pendientes', number_format($stats['retiradas_pendientes'], 2, ',', '.').' EUR Demo'],
+            ['Cobertura del pasivo', number_format($stats['cobertura_pasivo'], 1, ',', '.').'%'],
+        ] as [$label, $value])
+            <div class="rounded-xl border border-white/5 bg-black/20 p-3"><p class="text-[11px] text-slate-500">{{ $label }}</p><p class="mt-1 font-extrabold text-amber-200">{{ $value }}</p></div>
+        @endforeach
+    </div>
+</section>
+@endif
+
 {{-- Operativa de apuestas deportivas y cajas --}}
 @if($user->hasAnyRole(['super_admin', 'admin']))
 <div class="grid grid-cols-1 xl:grid-cols-2 gap-5 mb-8">
@@ -124,10 +144,10 @@
         </div>
         <div class="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
             @foreach([
-                ['Ingresos', '€'.number_format($stats['ingresos_cajas'], 2), 'text-purple-300'],
-                ['Canjeado', '€'.number_format($stats['pagado_canje'], 2).' · '.$stats['cajas_canjeadas'], 'text-emerald-300'],
+                ['Ingresos demo', number_format($stats['ingresos_cajas'], 2, ',', '.').' EUR Demo', 'text-purple-300'],
+                ['Activado', $stats['cajas_canjeadas'].' recompensas', 'text-emerald-300'],
                 ['Beneficio', '€'.number_format($stats['beneficio_cajas'], 2), $stats['beneficio_cajas'] >= 0 ? 'text-fuchsia-300' : 'text-red-300'],
-                ['Inventario pendiente', '€'.number_format($stats['valor_inventario'], 2), 'text-amber-300'],
+                ['Puntos en inventario', number_format($stats['valor_inventario'], 0, ',', '.'), 'text-amber-300'],
             ] as [$label, $value, $color])
             <div class="rounded-xl border border-white/5 bg-black/20 p-3"><p class="text-[11px] text-slate-500">{{ $label }}</p><p class="mt-1 font-extrabold {{ $color }}">{{ $value }}</p></div>
             @endforeach

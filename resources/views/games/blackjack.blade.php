@@ -53,7 +53,7 @@
                 <div class="flex flex-wrap items-center gap-2"><a href="{{ route('games.blackjack.vip') }}" class="rounded-xl border px-3 py-2 text-xs font-bold {{ $variant === 'vip' ? 'border-amber-400/40 bg-amber-400/10 text-amber-300' : 'border-white/10 text-slate-400' }}">VIP</a><a href="{{ route('games.blackjack.classic') }}" class="rounded-xl border px-3 py-2 text-xs font-bold {{ $variant === 'classic' ? 'border-cyan-400/40 bg-cyan-400/10 text-cyan-300' : 'border-white/10 text-slate-400' }}">Classic</a>
                 <div class="px-3 sm:px-4 py-2 rounded-xl bg-white/5 border border-white/10 whitespace-nowrap">
                     <span class="text-xs text-slate-500">Saldo</span>
-                    <span class="ml-2 text-sm font-bold text-brand-400" x-text="'€' + saldo.toFixed(2)"></span>
+                    <span class="ml-2 text-sm font-bold text-brand-400" x-text="saldo.toFixed(2) + ' EUR Demo'"></span>
                 </div>
                 </div>
             </div>
@@ -117,7 +117,7 @@
                             <span x-show="estado === 'push'">Empate · apuesta devuelta</span>
                             <span x-show="estado === 'bust'">¡Te pasaste!</span>
                             <span x-show="estado === 'lose'">Dealer gana</span>
-                            <span x-show="ganancia > 0 && estado !== 'push'" x-text="' · premio bruto €' + ganancia.toFixed(2)"></span>
+                            <span x-show="ganancia > 0 && estado !== 'push'" x-text="' · premio bruto ' + ganancia.toFixed(2) + ' EUR Demo'"></span>
                             <span x-show="estado !== 'push'" class="block mt-1 text-xs font-semibold opacity-80" x-text="'Resultado neto ' + signedMoney(netResultValue)"></span>
                         </div>
                     </div>
@@ -131,11 +131,11 @@
                 <template x-if="fase === ''">
                     <div class="flex flex-col min-[420px]:flex-row min-[420px]:items-center gap-4">
                         <div class="flex-1">
-                            <label class="text-xs text-slate-500 mb-1 block">Apuesta (€)</label>
+                            <label class="text-xs text-slate-500 mb-1 block">Apuesta (EUR Demo)</label>
                             <input type="number" x-model.number="apuesta" min="{{ $variant === 'vip' ? 5 : 1 }}" max="{{ $variant === 'vip' ? 5000 : 2000 }}" step="1"
                                    :class="canDeal ? 'border-white/10' : 'border-red-400/40'"
                                    class="w-full px-4 py-3 rounded-xl bg-white/5 border text-white text-sm outline-none focus:border-brand-500 transition">
-                            <div class="mt-3 flex gap-2"><template x-for="value in [5,10,25,100]" :key="value"><button type="button" class="bet-chip h-11" @click="apuesta=Math.min(value,maxBet)" x-text="value+'€'"></button></template></div>
+                            <div class="mt-3 flex gap-2"><template x-for="value in [5,10,25,100]" :key="value"><button type="button" class="bet-chip h-11" @click="apuesta=Math.min(value,maxBet)" x-text="value+' EUR Demo'"></button></template></div>
                         </div>
                         <div class="min-[420px]:mt-5">
                             <button @click="deal()" :disabled="busy || !canDeal"
@@ -173,8 +173,8 @@
             <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
                 <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-3">Info</h3>
                 <div class="space-y-3 text-sm">
-                    <div class="flex justify-between"><span class="text-slate-500">Min apuesta</span><span class="text-white font-semibold">€{{ $variant === 'vip' ? '5' : '1' }}</span></div>
-                    <div class="flex justify-between"><span class="text-slate-500">Max apuesta</span><span class="text-white font-semibold">€{{ $variant === 'vip' ? '5,000' : '2,000' }}</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Min apuesta</span><span class="text-white font-semibold">{{ $variant === 'vip' ? '5' : '1' }} EUR Demo</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Max apuesta</span><span class="text-white font-semibold">{{ $variant === 'vip' ? '5.000' : '2.000' }} EUR Demo</span></div>
                     <div class="flex justify-between"><span class="text-slate-500">Blackjack</span><span class="text-brand-400 font-bold">x{{ number_format($blackjackPayout, 1) }}</span></div>
                     <div class="flex justify-between"><span class="text-slate-500">Barajas</span><span class="text-white font-semibold">{{ $variant === 'classic' ? '6' : '1' }}</span></div>
                     <div class="flex justify-between"><span class="text-slate-500">RTP estimado</span><span class="text-emerald-400 font-semibold">{{ $blackjackRtp }}</span></div>
@@ -239,8 +239,8 @@ function blackjackGame() {
         netResult(hand) { return Number(hand.ganancia) - Number(hand.apuesta); },
         signedMoney(value) {
             const amount = Number(value);
-            if (amount === 0) return '±€0.00';
-            return `${amount > 0 ? '+' : '-'}€${Math.abs(amount).toFixed(2)}`;
+            if (amount === 0) return '±0.00 EUR Demo';
+            return `${amount > 0 ? '+' : '-'}${Math.abs(amount).toFixed(2)} EUR Demo`;
         },
         get netResultValue() { return Number((Number(this.ganancia) - Number(this.roundBet)).toFixed(2)); },
         decorateCards(cards, group) {
@@ -325,7 +325,7 @@ function blackjackGame() {
             this.error = '';
             this.notice = '';
             try {
-                const data = await this.request(@js($hitRoute), { body: {} });
+                const data = await this.request(@js($hitRoute), { body: { request_token: window.lootraRequestToken() } });
 
                 const newCards = data.mano_jugador.slice(this.manoJugador.length);
                 this.manoJugador = [...this.manoJugador, ...this.decorateCards(newCards, 'player-hit')];
@@ -350,7 +350,7 @@ function blackjackGame() {
             this.notice = '';
 
             try {
-                const data = await this.request(@js($standRoute), { body: {} });
+                const data = await this.request(@js($standRoute), { body: { request_token: window.lootraRequestToken() } });
                 await this.revealDealer(data.mano_dealer);
                 this.finishClientHand(data);
             } catch (e) {

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Partida;
+use App\Models\GameActionToken;
 use App\Models\PokerDealerHand;
 use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -53,6 +54,21 @@ class PokerDealerGameTest extends TestCase
             ->assertOk()->assertJsonPath('phase', 'retirada')->assertJsonPath('balance', 90);
 
         $this->assertDatabaseHas('partidas', ['juego' => 'poker_dealer', 'apuesta' => 10, 'ganancia' => 0]);
+    }
+
+    public function test_retried_dealer_action_with_the_same_token_is_idempotent(): void
+    {
+        $usuario = $this->player();
+        $this->actingAs($usuario)->postJson(route('poker.dealer.start'), ['ante' => 10])->assertCreated();
+        $token = Str::uuid()->toString();
+        $payload = ['accion' => 'jugar', 'fase' => 'preflop', 'request_token' => $token];
+
+        $first = $this->actingAs($usuario)->postJson(route('poker.dealer.action'), $payload)->assertOk();
+        $second = $this->actingAs($usuario)->postJson(route('poker.dealer.action'), $payload)->assertOk();
+
+        $this->assertSame($first->json('phase'), $second->json('phase'));
+        $this->assertSame($first->json('balance'), $second->json('balance'));
+        $this->assertSame(1, GameActionToken::where('request_token', $token)->count());
     }
 
     public function test_player_can_check_bet_and_fold_on_postflop_streets(): void

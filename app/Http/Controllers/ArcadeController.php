@@ -22,7 +22,10 @@ class ArcadeController extends Controller
 
     private const POKER_TIE_MULTIPLIER = 0.96;
 
-    private const KENO_MULTIPLIERS = [0, 0, 1.5, 31.4, 60, 500];
+    // Hypergeometric probabilities for 5 numbers selected from 30 and a
+    // 10-number draw produce an RTP of approximately 96.00% with this table.
+    // The values are fixed for every player and are not changed at runtime.
+    private const KENO_MULTIPLIERS = [0, 0, 1.5, 1.5, 5, 18.46];
 
     private const BACCARAT_WIN_MULTIPLIER = 2.1333;
 

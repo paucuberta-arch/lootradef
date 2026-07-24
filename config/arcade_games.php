@@ -19,7 +19,7 @@ return [
         $game('quantum-plinko', 'Quantum Plinko', 'arcade', 'plinko', '/images/lootra_visual_pack/03_game_covers/game_quantum_plinko_800x1000.webp', 'Lanza una esfera de energía a través de un tablero de probabilidades.', 'Nuevo'),
         ['rtp' => '96.4%', 'max_win' => 'x12']
     ),
-    'cosmic-keno' => array_replace($game('cosmic-keno', 'Cosmic Keno', 'numeros', 'keno', '/images/lootra_visual_pack/04_backgrounds/bg_cosmic_planet_1920x1080.webp', 'Elige cinco constelaciones y busca coincidencias en el sorteo galáctico.'), ['rtp' => '96.0%', 'max_win' => 'x500']),
+    'cosmic-keno' => array_replace($game('cosmic-keno', 'Cosmic Keno', 'numeros', 'keno', '/images/lootra_visual_pack/04_backgrounds/bg_cosmic_planet_1920x1080.webp', 'Elige cinco constelaciones y busca coincidencias en el sorteo galáctico.'), ['rtp' => '96.0%', 'max_win' => 'x18.46']),
     'coin-duel' => array_replace($game('coin-duel', 'Coin Duel', 'arcade', 'coin', '/images/lootra_visual_pack/04_backgrounds/bg_ember_fortress_1920x1080.webp', 'Un duelo instantáneo de cara o cruz con presentación holográfica.'), ['rtp' => '97.5%', 'max_win' => 'x1.95']),
     'baccarat-royale' => array_replace($game('baccarat-royale', 'Baccarat Royale', 'cartas', 'baccarat', '/images/lootra_visual_pack/03_game_covers/game_blackjack_vip_800x1000.webp', 'Apuesta por jugador, banca o empate en el clásico juego de nueve puntos.'), ['rtp' => '96.0%', 'max_win' => 'x9.6']),
     'nebula-picks' => array_replace($game('nebula-picks', 'Nebula Picks', 'arcade', 'nebula', '/images/lootra_visual_pack/04_backgrounds/bg_neon_city_night_1920x1080.webp', 'Elige un cristal cósmico; cada color oculta una distribución de premios distinta.', 'Original'), ['rtp' => '96.0%', 'max_win' => 'x10']),

@@ -12,6 +12,7 @@ class Partida extends Model
     protected $fillable = [
         'usuario_id',
         'juego',
+        'math_version',
         'request_token',
         'apuesta',
         'ganancia',
@@ -25,6 +26,13 @@ class Partida extends Model
         'ganancia' => 'decimal:2',
         'detalles' => 'array',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $partida): void {
+            $partida->math_version ??= app(\App\Services\GameMathVersionService::class)->forGame($partida->juego);
+        });
+    }
 
     public function usuario(): BelongsTo
     {

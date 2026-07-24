@@ -53,8 +53,8 @@ class AdminCaseHistoryTest extends TestCase
             ->assertSee('Aperturas y premios entregados')
             ->assertSee('Altavoz Mini')
             ->assertSee('case-player@example.com')
-            ->assertSee('2,99 €')
-            ->assertSee('14,00 €')
+            ->assertSee('2,99 EUR Demo')
+            ->assertSee('1.400')
             ->assertDontSee('Ratón Gaming Pro');
 
         $this->actingAs($admin)->get(route('admin.dashboard'))

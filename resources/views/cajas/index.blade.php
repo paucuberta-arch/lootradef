@@ -75,7 +75,7 @@
                     <div class="relative h-52 overflow-hidden bg-[radial-gradient(circle_at_50%_42%,color-mix(in_srgb,var(--accent)_24%,transparent),transparent_62%)]">
                         <img src="{{ $caja['imagen'] }}" alt="{{ $caja['nombre'] }}" class="case-card__image h-full w-full object-contain px-3 pt-2" width="1254" height="1254" loading="lazy" decoding="async">
                         <div class="absolute inset-0 bg-gradient-to-t from-[#090914] via-transparent to-transparent"></div>
-                        <span class="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-black/50 border border-white/10 backdrop-blur text-[10px] uppercase tracking-widest">Hasta €{{ number_format($top['valor'], 0) }}</span>
+                        <span class="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-black/50 border border-white/10 backdrop-blur text-[10px] uppercase tracking-widest">Hasta {{ number_format($top['valor'], 0) }} puntos virtuales</span>
                     </div>
                     <div class="p-5 -mt-7 relative z-10">
                         <div class="w-11 h-11 rounded-xl grid place-items-center mb-3 border border-white/15" style="background:color-mix(in srgb,{{ $accent }},transparent 82%);color:{{ $accent }}">
@@ -84,7 +84,7 @@
                         <h3 class="text-xl font-bold">{{ $caja['nombre'] }}</h3>
                         <p class="text-xs text-slate-500 mt-1 min-h-9">{{ $caja['descripcion'] }}</p>
                         <div class="mt-3 flex items-center justify-between text-[11px]"><span class="text-emerald-300">RTP {{ number_format($caja['rtp'], 2, ',', '.') }}%</span><span class="text-slate-500">{{ count($caja['premios']) }} premios</span></div>
-                        <div class="flex items-center justify-between mt-3 mb-4"><strong class="text-2xl" style="color:{{ $accent }}">€{{ number_format($caja['precio'], 2) }}</strong><span class="text-[11px] text-slate-500">Porcentajes visibles</span></div>
+                        <div class="flex items-center justify-between mt-3 mb-4"><strong class="text-2xl" style="color:{{ $accent }}">{{ number_format($caja['precio'], 2) }} EUR Demo</strong><span class="text-[11px] text-slate-500">Porcentajes visibles</span></div>
                         <button @auth @click="selectCase('{{ $key }}')" @if($rickyeditActiveChallenge ?? null) disabled title="No disponible durante el reto" @endif @else onclick="window.location='{{ route('login') }}'" @endauth
                                 class="cta-shine w-full py-3 rounded-xl text-sm font-extrabold text-black transition hover:scale-[1.02]" style="background:linear-gradient(90deg,{{ $accent }},#fbbf24)">
                             @auth Abrir ahora @else Inicia sesión para abrir @endauth
@@ -99,14 +99,14 @@
     <section id="inventario" class="scroll-mt-24 mb-16">
         <div class="mb-6 flex flex-col items-start justify-between gap-3 min-[480px]:flex-row min-[480px]:items-end">
             <div><p class="text-xs font-bold uppercase tracking-[.2em] text-cyan-400">Tu colección</p><h2 class="text-3xl font-bold mt-1">Inventario</h2></div>
-            <div class="text-right"><p class="text-xs text-slate-500">Valor canjeable</p><p class="font-display text-xl font-bold text-emerald-400" x-text="money(inventoryValue)"></p></div>
+            <div class="text-right"><p class="text-xs text-slate-500">Puntos virtuales</p><p class="font-display text-xl font-bold text-emerald-400" x-text="virtualPoints(inventoryValue)"></p></div>
         </div>
         <div x-show="availableCount===0" class="rounded-2xl border border-dashed border-white/10 p-12 text-center bg-white/[0.02]"><p class="text-slate-400 font-semibold">Tu inventario está vacío</p><p class="text-sm text-slate-600 mt-1">Abre una caja y tu premio aparecerá aquí.</p></div>
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <template x-for="item in inventory.filter(i => i.estado === 'disponible')" :key="item.id">
                 <article class="rounded-2xl bg-white/[0.035] border border-white/10 overflow-hidden prize-reveal">
                     <div class="h-40 relative"><img :src="item.imagen" :alt="item.nombre" class="w-full h-full object-cover" loading="lazy" decoding="async"><span class="absolute top-3 left-3 px-2 py-1 rounded-lg border text-[10px] uppercase font-bold" :class="'rarity-'+item.rareza" x-text="rarityName(item.rareza)"></span></div>
-                    <div class="p-4"><h3 class="font-bold text-white" x-text="item.nombre"></h3><p class="text-xs text-slate-500 mt-1">Obtenido <span x-text="item.created_at"></span></p><button @click="confirming=item" :disabled="redeeming===item.id" class="w-full mt-4 py-2.5 rounded-xl bg-emerald-500/15 border border-emerald-400/25 text-emerald-300 text-sm font-bold hover:bg-emerald-500/25 disabled:opacity-50 transition"><span x-text="redeeming===item.id ? 'Canjeando...' : 'Canjear por '+money(item.valor_canje)"></span></button></div>
+                    <div class="p-4"><h3 class="font-bold text-white" x-text="item.nombre"></h3><p class="text-xs text-slate-500 mt-1">Obtenido <span x-text="item.created_at"></span></p><button @click="confirming=item" :disabled="redeeming===item.id" class="w-full mt-4 py-2.5 rounded-xl bg-emerald-500/15 border border-emerald-400/25 text-emerald-300 text-sm font-bold hover:bg-emerald-500/25 disabled:opacity-50 transition"><span x-text="redeeming===item.id ? 'Activando...' : 'Activar cosmético virtual'"></span></button></div>
                 </article>
             </template>
         </div>
@@ -126,7 +126,7 @@
                     <div class="mt-4 rounded-2xl border border-white/10 bg-black/20 p-3 text-left"><div class="mb-2 flex items-center justify-between"><span class="text-[10px] font-black uppercase tracking-[.18em] text-cyan-300">Tabla de probabilidades</span><span class="text-[10px] text-emerald-300" x-text="'RTP '+Number(selected?.rtp || 0).toFixed(2)+'%'" ></span></div><div class="space-y-1.5"><template x-for="item in (selected?.premios || [])" :key="item.nombre"><div class="flex items-center gap-2 text-xs"><span class="min-w-0 flex-1 truncate text-slate-300" x-text="item.nombre"></span><span class="text-slate-500" x-text="Number(item.probabilidad || 0).toFixed(4)+'%'" ></span></div></template></div><p class="mt-3 text-[10px] leading-relaxed text-slate-600">Porcentajes base del sorteo. Si existe un cupo diario activo, se indica antes de abrir y el resto se recalcula proporcionalmente.</p></div>
                     <p class="text-slate-500 text-sm mt-2" x-text="opening ? 'Generando y guardando tu premio...' : 'El premio se añadirá automáticamente a tu inventario.'"></p>
                     <p x-show="error" class="mt-4 text-sm text-red-400" x-text="error"></p>
-                    <button x-show="!opening" @click="openSelected()" class="cta-shine mt-6 w-full px-5 py-3 rounded-xl bg-gradient-to-r from-fuchsia-500 to-brand-400 text-black font-extrabold sm:w-auto sm:px-8">Confirmar apertura · <span x-text="money(selected?.precio || 0)"></span></button>
+                    <button x-show="!opening" @click="openSelected()" class="cta-shine mt-6 w-full px-5 py-3 rounded-xl bg-gradient-to-r from-fuchsia-500 to-brand-400 text-black font-extrabold sm:w-auto sm:px-8">Confirmar apertura · <span x-text="demoCredits(selected?.precio || 0)"></span></button>
                 </div>
             </template>
             <template x-if="prize">
@@ -135,14 +135,14 @@
                     <div class="relative mx-auto aspect-square w-44 overflow-hidden rounded-3xl border-2 sm:w-56" :class="'rarity-'+prize.rareza"><img :src="prize.imagen" :alt="prize.nombre" class="w-full h-full object-cover" decoding="async"><div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div></div>
                     <span class="inline-block mt-5 px-3 py-1 rounded-full border text-[10px] uppercase font-bold" :class="'rarity-'+prize.rareza" x-text="rarityName(prize.rareza)"></span>
                     <h2 class="text-2xl font-bold mt-3" x-text="prize.nombre"></h2>
-                    <p class="text-sm text-slate-400 mt-2">Valor de canje: <strong class="text-emerald-400" x-text="money(prize.valor_canje)"></strong></p>
+                    <p class="text-sm text-slate-400 mt-2">Recompensa digital sin valor económico · <strong class="text-emerald-400" x-text="virtualPoints(prize.valor_virtual)"></strong></p>
                     <button @click="closeModal(); document.querySelector('#inventario').scrollIntoView({behavior:'smooth'})" class="mt-6 px-7 py-3 rounded-xl bg-white text-slate-950 font-extrabold">Ver en inventario</button>
                 </div>
             </template>
         </div>
     </div>
 
-    <div x-show="confirming" x-cloak class="fixed inset-0 z-[220] grid place-items-center p-4"><div class="absolute inset-0 bg-black/80" @click="confirming=null"></div><div class="relative max-w-sm rounded-2xl border border-white/15 bg-[#111827] p-6 text-center"><h2 class="text-xl font-bold">Confirmar canje</h2><p class="mt-3 text-sm text-slate-400">Convertirás <b class="text-white" x-text="confirming?.nombre"></b> en <b class="text-emerald-300" x-text="money(confirming?.valor_canje)"></b>. No se puede deshacer.</p><div class="mt-6 grid grid-cols-2 gap-3"><button @click="confirming=null" class="rounded-xl bg-white/5 py-3">Cancelar</button><button @click="redeem(confirming)" class="rounded-xl bg-emerald-400 py-3 font-bold text-slate-950">Confirmar</button></div></div></div>
+    <div x-show="confirming" x-cloak class="fixed inset-0 z-[220] grid place-items-center p-4"><div class="absolute inset-0 bg-black/80" @click="confirming=null"></div><div class="relative max-w-sm rounded-2xl border border-white/15 bg-[#111827] p-6 text-center"><h2 class="text-xl font-bold">Activar cosmético</h2><p class="mt-3 text-sm text-slate-400">Marcarás <b class="text-white" x-text="confirming?.nombre"></b> como usado. Es una recompensa virtual y no genera saldo.</p><div class="mt-6 grid grid-cols-2 gap-3"><button @click="confirming=null" class="rounded-xl bg-white/5 py-3">Cancelar</button><button @click="redeem(confirming)" class="rounded-xl bg-emerald-400 py-3 font-bold text-slate-950">Confirmar</button></div></div></div>
     <div x-show="toast" x-transition class="fixed inset-x-4 bottom-4 z-[250] max-w-sm px-5 py-4 rounded-xl bg-emerald-950/95 border border-emerald-400/30 text-emerald-200 shadow-2xl sm:inset-x-auto sm:bottom-5 sm:right-5" x-text="toast"></div>
 </div>
 
@@ -151,11 +151,13 @@
 function caseCenter() {
     return {
         cases: @js($cajas),
-        inventory: @js($inventario->map(fn ($item) => ['id' => $item->id, 'nombre' => $item->nombre, 'imagen' => $item->imagen, 'rareza' => $item->rareza, 'valor_canje' => $item->valor_canje, 'estado' => $item->estado, 'created_at' => $item->created_at->diffForHumans()])),
+        inventory: @js($inventario->map(fn ($item) => ['id' => $item->id, 'nombre' => $item->nombre, 'imagen' => $item->imagen, 'rareza' => $item->rareza, 'valor_virtual' => $item->valor_virtual ?: round($item->valor_canje * 100), 'estado' => $item->estado, 'created_at' => $item->created_at->diffForHumans()])),
         filter: 'all', selectedKey: null, selected: null, requestToken: '', opening: false, prize: null, committedPrize: null, error: '', redeeming: null, confirming: null, toast: '', reelItems: [], spinId: 0, winnerIndex: 0, spinSettled: false,
         get availableCount() { return this.inventory.filter(item => item.estado === 'disponible').length; },
-        get inventoryValue() { return this.inventory.filter(item => item.estado === 'disponible').reduce((sum, item) => sum + Number(item.valor_canje), 0); },
+        get inventoryValue() { return this.inventory.filter(item => item.estado === 'disponible').reduce((sum, item) => sum + Number(item.valor_virtual), 0); },
         money(value) { return new Intl.NumberFormat('es-ES', { style:'currency', currency:'EUR' }).format(Number(value || 0)); },
+        demoCredits(value) { return `${Number(value || 0).toFixed(2)} EUR Demo`; },
+        virtualPoints(value) { return `${Math.round(Number(value || 0))} puntos virtuales`; },
         rarityName(value) { return ({comun:'Común', poco_comun:'Poco común', raro:'Raro', epico:'Épico', legendario:'Legendario'})[value] || value; },
         init(){this.escapeHandler=e=>{if(e.key==='Escape'&&!this.opening){this.confirming=null;this.closeModal()}};document.addEventListener('keydown',this.escapeHandler)},
         destroy(){document.removeEventListener('keydown',this.escapeHandler);document.body.style.overflow=''},
@@ -173,7 +175,7 @@ function caseCenter() {
                 && String(left.nombre) === String(right.nombre)
                 && String(left.imagen) === String(right.imagen)
                 && String(left.rareza) === String(right.rareza)
-                && Math.abs(Number(left.valor_canje)-Number(right.valor_canje)) < .001);
+                && Number(left.valor_virtual) === Number(right.valor_virtual));
         },
         async preloadReel(items) {
             const sources=[...new Set(items.map(item=>item.imagen).filter(Boolean))];
@@ -288,9 +290,8 @@ function caseCenter() {
                 const response=await fetch(url, {method:'POST',headers:{'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content,'Accept':'application/json'}});
                 const data=await response.json();
                 if (!response.ok) throw new Error(data.message || 'No se pudo canjear el premio.');
-                item.estado='canjeado'; Alpine.store('wallet').saldo=Number(data.saldo);
-                window.dispatchEvent(new CustomEvent('saldo-updated',{detail:{saldo:Number(data.saldo)}}));
-                this.toast=`${item.nombre} canjeado por ${this.money(data.valor)}`; setTimeout(()=>this.toast='',3500);
+                item.estado='canjeado';
+                this.toast=`${item.nombre} activado como recompensa virtual.`; setTimeout(()=>this.toast='',3500);
             } catch (error) { this.toast=error.message; setTimeout(()=>this.toast='',3500); }
             this.redeeming=null;
         }

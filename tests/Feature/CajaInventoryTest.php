@@ -20,8 +20,8 @@ class CajaInventoryTest extends TestCase
         $response = $this->actingAs($usuario)->postJson(route('cajas.open', 'starter'), ['request_token' => (string) Str::uuid()]);
 
         $response->assertOk()->assertJsonStructure([
-            'item' => ['id', 'prize_key', 'nombre', 'imagen', 'rareza', 'valor_canje', 'estado', 'created_at'],
-            'winner' => ['prize_key', 'nombre', 'imagen', 'rareza', 'valor_canje'],
+            'item' => ['id', 'prize_key', 'nombre', 'imagen', 'rareza', 'valor_virtual', 'estado', 'created_at'],
+            'winner' => ['prize_key', 'nombre', 'imagen', 'rareza', 'valor_virtual'],
             'saldo',
             'reel',
             'winner_index',
@@ -29,7 +29,7 @@ class CajaInventoryTest extends TestCase
         $response->assertJsonPath('item.estado', 'disponible');
         $winnerIndex = $response->json('winner_index');
         $this->assertSame($response->json('item.nombre'), $response->json("reel.{$winnerIndex}.nombre"));
-        foreach (['prize_key', 'nombre', 'imagen', 'rareza', 'valor_canje'] as $field) {
+        foreach (['prize_key', 'nombre', 'imagen', 'rareza', 'valor_virtual'] as $field) {
             $this->assertSame($response->json("item.{$field}"), $response->json("winner.{$field}"));
             $this->assertSame($response->json("winner.{$field}"), $response->json("reel.{$winnerIndex}.{$field}"));
         }
@@ -87,7 +87,7 @@ class CajaInventoryTest extends TestCase
         $usuario = $this->userWithBalance(100);
         $setting = CaseRewardSetting::where('case_key', 'starter')->firstOrFail();
         $rules = $setting->prizeRules()->get();
-        $expected = $rules->firstWhere('name', 'Sticker Pack Neon');
+        $expected = $rules->firstWhere('name', 'Marco de perfil Neon');
 
         $setting->prizeRules()->update(['probability' => 0]);
         $expected->update(['probability' => 100]);
@@ -106,7 +106,7 @@ class CajaInventoryTest extends TestCase
         $usuario = $this->userWithBalance(100);
         $setting = CaseRewardSetting::where('case_key', 'gaming')->firstOrFail();
         $setting->prizeRules()->update(['probability' => 0]);
-        $setting->prizeRules()->where('name', 'Consola Next Gen')->update(['probability' => 100]);
+        $setting->prizeRules()->where('name', 'Avatar legendario Next Gen')->update(['probability' => 100]);
 
         $this->actingAs($usuario)->postJson(route('cajas.open', 'gaming'), ['request_token' => (string) Str::uuid()])
             ->assertConflict();
@@ -147,10 +147,10 @@ class CajaInventoryTest extends TestCase
         $this->actingAs($owner)
             ->postJson(route('inventario.redeem', $item))
             ->assertOk()
-            ->assertJson(['saldo' => 22.5, 'valor' => 12.5]);
+            ->assertJson(['message' => 'Recompensa virtual activada. No se ha creado saldo ni valor monetario.', 'valor_virtual' => 1250]);
 
         $this->actingAs($owner)->postJson(route('inventario.redeem', $item))->assertConflict();
-        $this->assertSame(22.5, (float) $owner->cartera()->value('saldo'));
+        $this->assertSame(10.0, (float) $owner->cartera()->value('saldo'));
         $this->assertDatabaseHas('inventario_items', ['id' => $item->id, 'estado' => 'canjeado']);
     }
 

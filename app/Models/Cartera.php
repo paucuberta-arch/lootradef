@@ -13,6 +13,7 @@ class Cartera extends Model
 
     protected $fillable = [
         'usuario_id',
+        'ledger_account_id',
         'saldo',
     ];
 
@@ -28,6 +29,11 @@ class Cartera extends Model
     public function movimientos(): HasMany
     {
         return $this->hasMany(WalletMovement::class, 'cartera_id');
+    }
+
+    public function ledgerAccount(): BelongsTo
+    {
+        return $this->belongsTo(LedgerAccount::class, 'ledger_account_id');
     }
 
     public function tieneSaldo(float $cantidad): bool

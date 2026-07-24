@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Partida;
+use App\Models\GameActionToken;
 use App\Models\PokerDealerHand;
 use App\Models\Usuario;
 use App\Services\CampaignManager;
@@ -78,15 +79,25 @@ class PokerDealerController extends Controller
 
     public function action(Request $request): JsonResponse
     {
+        if (! $request->filled('request_token')) {
+            $request->merge(['request_token' => (string) Str::uuid()]);
+        }
         $validated = $request->validate([
             'accion' => ['required', 'in:jugar,pasar,apostar,continuar,retirarse'],
             'cantidad' => ['nullable', 'numeric', 'min:1', 'max:2000'],
             'fase' => ['nullable', 'in:preflop,flop,turn,river'],
+            'request_token' => ['required', 'uuid'],
         ]);
         $action = $validated['accion'] === 'continuar' ? 'pasar' : $validated['accion'];
 
         $campaignId = $this->balances->campaignId($request->user(), 'poker_dealer');
         $hand = DB::transaction(function () use ($request, $validated, $action, $campaignId) {
+            $existingAction = GameActionToken::where('request_token', $validated['request_token'])->lockForUpdate()->first();
+            if ($existingAction) {
+                abort_unless($existingAction->usuario_id === $request->user()->id && $existingAction->game_key === 'poker_dealer', 409, 'La clave de acción ya fue usada en otra partida.');
+
+                return PokerDealerHand::findOrFail($existingAction->hand_id);
+            }
             $hand = PokerDealerHand::where('usuario_id', $request->user()->id)
                 ->where('campaign_challenge_id', $campaignId)->whereNotIn('fase', ['finalizada', 'retirada'])->lockForUpdate()->first();
             abort_unless($hand, 409, 'No tienes una partida activa.');
@@ -98,6 +109,10 @@ class PokerDealerController extends Controller
 
             if ($action === 'retirarse') {
                 $this->finish($hand, 'retirada', 0, 'retirada');
+                GameActionToken::create([
+                    'usuario_id' => $request->user()->id, 'game_key' => 'poker_dealer',
+                    'hand_id' => $hand->id, 'request_token' => $validated['request_token'], 'action' => $action,
+                ]);
 
                 return $hand->fresh();
             }
@@ -129,6 +144,11 @@ class PokerDealerController extends Controller
                     $this->showdown($hand);
                 }
             }
+
+            GameActionToken::create([
+                'usuario_id' => $request->user()->id, 'game_key' => 'poker_dealer',
+                'hand_id' => $hand->id, 'request_token' => $validated['request_token'], 'action' => $action,
+            ]);
 
             return $hand->fresh();
         });

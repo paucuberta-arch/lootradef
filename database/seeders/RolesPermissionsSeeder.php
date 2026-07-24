@@ -41,6 +41,7 @@ class RolesPermissionsSeeder extends Seeder
             'logs.view' => ['label' => 'Ver logs de actividad', 'group' => 'Estadisticas'],
 
             'wallet.manage' => ['label' => 'Gestionar carteras', 'group' => 'Cartera'],
+            'withdrawals.manage' => ['label' => 'Gestionar retiradas demo', 'group' => 'Cartera'],
             'case-prizes.manage' => ['label' => 'Gestionar probabilidades de cajas', 'group' => 'Juegos'],
             'campaigns.stats.view' => ['label' => 'Ver analítica de campañas', 'group' => 'Campañas'],
         ];
@@ -68,6 +69,7 @@ class RolesPermissionsSeeder extends Seeder
                     'feedback.view', 'feedback.respond', 'feedback.close',
                     'stats.view',
                     'wallet.manage',
+                    'withdrawals.manage',
                     'case-prizes.manage',
                     'campaigns.stats.view',
                 ],

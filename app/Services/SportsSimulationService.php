@@ -36,10 +36,10 @@ class SportsSimulationService
                     'local_siglas' => $homeShort, 'visitante_siglas' => $awayShort,
                     'imagen' => '/images/lootra_visual_pack/04_backgrounds/bg_emerald_forest_1920x1080.webp',
                     'inicia_at' => now()->addSeconds($offset), 'duracion_segundos' => 360,
-                    'cuota_local' => random_int(165, 275) / 100,
-                    'cuota_empate' => random_int(280, 390) / 100,
-                    'cuota_visitante' => random_int(175, 310) / 100,
-                    'simulacion' => $this->makeSimulation($home, $away),
+                    'cuota_local' => $this->odds($this->probabilities($offset)['local']),
+                    'cuota_empate' => $this->odds($this->probabilities($offset)['empate']),
+                    'cuota_visitante' => $this->odds($this->probabilities($offset)['visitante']),
+                    'simulacion' => $this->makeSimulation($home, $away, $offset),
                 ]);
             }
         });
@@ -98,11 +98,20 @@ class SportsSimulationService
         $settled->each(fn (ApuestaDeportiva $bet) => $this->accountMail->sportsBetSettled($bet));
     }
 
-    private function makeSimulation(string $home, string $away): array
+    private function makeSimulation(string $home, string $away, int $offset): array
     {
         $events = [];
-        foreach ([['local', $home], ['visitante', $away]] as [$team, $name]) {
-            for ($i = 0, $goals = random_int(0, 3); $i < $goals; $i++) {
+        $probabilities = $this->probabilities($offset);
+        $roll = random_int(1, 10000) / 10000;
+        $result = $roll <= $probabilities['local']
+            ? 'local'
+            : ($roll <= $probabilities['local'] + $probabilities['empate'] ? 'empate' : 'visitante');
+        $goals = $result === 'empate'
+            ? $this->randomScore()
+            : ($result === 'local' ? [random_int(1, 3), random_int(0, 1)] : [random_int(0, 1), random_int(1, 3)]);
+
+        foreach ([['local', $home, $goals[0]], ['visitante', $away, $goals[1]]] as [$team, $name, $goalCount]) {
+            for ($i = 0; $i < $goalCount; $i++) {
                 $events[] = ['minute' => random_int(5, 88), 'type' => 'goal', 'team' => $team, 'text' => "¡Gol de {$name}!"];
             }
         }
@@ -113,5 +122,33 @@ class SportsSimulationService
         usort($events, fn ($a, $b) => $a['minute'] <=> $b['minute']);
 
         return $events;
+    }
+
+    /** @return array{local: float, empate: float, visitante: float} */
+    private function probabilities(int $offset): array
+    {
+        $homeStrength = max(.35, 1.35 - ($offset / 600));
+        $awayStrength = max(.35, 1.15 + ($offset / 600));
+        $drawStrength = .85;
+        $total = $homeStrength + $awayStrength + $drawStrength;
+
+        return [
+            'local' => $homeStrength / $total,
+            'empate' => $drawStrength / $total,
+            'visitante' => $awayStrength / $total,
+        ];
+    }
+
+    private function odds(float $probability): float
+    {
+        return round(1 / max(.01, $probability * 1.06), 2);
+    }
+
+    /** @return array{0: int, 1: int} */
+    private function randomScore(): array
+    {
+        $goals = random_int(0, 3);
+
+        return [$goals, $goals];
     }
 }

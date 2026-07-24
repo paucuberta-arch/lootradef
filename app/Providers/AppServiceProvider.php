@@ -47,6 +47,12 @@ class AppServiceProvider extends ServiceProvider
         if (config('features.demo_deposits.enabled')) {
             $errors[] = 'Los depósitos demo deben permanecer desactivados';
         }
+        if (config('features.economy.enabled') && ! config('features.economy.demo_only_environment')) {
+            $errors[] = 'La economía demo en producción requiere DEMO_ONLY_ENVIRONMENT=true';
+        }
+        if (config('features.economy.real_value_redemption_enabled')) {
+            $errors[] = 'Nunca se permite canjear créditos demo por valor real';
+        }
         if (config('session.driver') === 'file') {
             $errors[] = 'SESSION_DRIVER debe usar un almacenamiento compartido en producción';
         }
@@ -58,6 +64,16 @@ class AppServiceProvider extends ServiceProvider
         }
         if (! config('database.connections.'.config('database.default').'.host')) {
             $errors[] = 'La conexión de base de datos debe definir DB_HOST';
+        }
+        $databaseConnection = config('database.connections.'.config('database.default'));
+        $databaseHost = (string) ($databaseConnection['host'] ?? '');
+        $mysqlSslCa = defined('PDO::MYSQL_ATTR_SSL_CA')
+            ? config('database.connections.mysql.options.'.\PDO::MYSQL_ATTR_SSL_CA)
+            : null;
+        if (($databaseConnection['driver'] ?? null) === 'mysql'
+            && ! in_array($databaseHost, ['127.0.0.1', 'localhost'], true)
+            && ! $mysqlSslCa) {
+            $errors[] = 'MYSQL_ATTR_SSL_CA debe estar configurado para MySQL remoto';
         }
         if (config('mail.default') === 'smtp' && ! config('mail.mailers.smtp.host')) {
             $errors[] = 'MAIL_HOST debe estar configurado en producción';
