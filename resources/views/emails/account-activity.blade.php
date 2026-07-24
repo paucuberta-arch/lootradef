@@ -38,17 +38,17 @@
             <tr><td class="email-pad" style="padding:0 42px 34px">
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:separate;background:#111927;border:1px solid #273044;border-radius:16px;overflow:hidden">
                     @if($event === 'registered')
-                        <tr><td style="padding:20px 22px;color:#8290a5;font-size:12px;text-transform:uppercase;letter-spacing:1px">Saldo inicial</td><td align="right" style="padding:20px 22px;color:#fff;font-size:20px;font-weight:bold">{{ number_format($details['balance'], 2, ',', '.') }} €</td></tr>
+                        <tr><td style="padding:20px 22px;color:#8290a5;font-size:12px;text-transform:uppercase;letter-spacing:1px">Saldo inicial</td><td align="right" style="padding:20px 22px;color:#fff;font-size:20px;font-weight:bold">{{ number_format($details['balance'], 2, ',', '.') }} EUR Demo</td></tr>
                     @elseif($event === 'login')
                         <tr><td style="padding:17px 22px;color:#8290a5;font-size:12px">Fecha y hora</td><td align="right" style="padding:17px 22px;color:#fff;font-size:13px;font-weight:bold">{{ $details['time']->format('d/m/Y · H:i') }} UTC</td></tr>
                         <tr><td style="padding:17px 22px;border-top:1px solid #273044;color:#8290a5;font-size:12px">Dirección IP</td><td align="right" style="padding:17px 22px;border-top:1px solid #273044;color:#fff;font-size:13px;font-weight:bold">{{ $details['ip'] ?: 'No disponible' }}</td></tr>
                     @elseif($event === 'deposit')
-                        <tr><td width="50%" style="padding:20px 22px;color:#8290a5;font-size:12px;text-transform:uppercase;letter-spacing:1px">Ingreso</td><td align="right" style="padding:20px 22px;color:#6ee7b7;font-size:20px;font-weight:bold">+{{ number_format($details['amount'], 2, ',', '.') }} €</td></tr>
-                        <tr><td style="padding:17px 22px;border-top:1px solid #273044;color:#8290a5;font-size:12px">Saldo disponible</td><td align="right" style="padding:17px 22px;border-top:1px solid #273044;color:#fff;font-size:14px;font-weight:bold">{{ number_format($details['balance'], 2, ',', '.') }} €</td></tr>
+                        <tr><td width="50%" style="padding:20px 22px;color:#8290a5;font-size:12px;text-transform:uppercase;letter-spacing:1px">Ingreso demo</td><td align="right" style="padding:20px 22px;color:#6ee7b7;font-size:20px;font-weight:bold">+{{ number_format($details['amount'], 2, ',', '.') }} EUR Demo</td></tr>
+                        <tr><td style="padding:17px 22px;border-top:1px solid #273044;color:#8290a5;font-size:12px">Saldo disponible</td><td align="right" style="padding:17px 22px;border-top:1px solid #273044;color:#fff;font-size:14px;font-weight:bold">{{ number_format($details['balance'], 2, ',', '.') }} EUR Demo</td></tr>
                     @elseif($event === 'sports_bet_settled')
                         <tr><td colspan="2" style="padding:20px 22px;border-bottom:1px solid #273044"><div style="color:#fff;font-size:16px;font-weight:bold">{{ $details['match'] }}</div><div style="margin-top:6px;color:#8290a5;font-size:12px">Resultado final · {{ $details['score'] }}</div></td></tr>
-                        <tr><td style="padding:16px 22px;color:#8290a5;font-size:12px">Apuesta · {{ ucfirst($details['status']) }}</td><td align="right" style="padding:16px 22px;color:#fff;font-size:14px;font-weight:bold">{{ number_format($details['stake'], 2, ',', '.') }} €</td></tr>
-                        <tr><td style="padding:16px 22px;border-top:1px solid #273044;color:#8290a5;font-size:12px">Ganancia abonada</td><td align="right" style="padding:16px 22px;border-top:1px solid #273044;color:{{ $content['accent'] }};font-size:18px;font-weight:bold">{{ number_format($details['winnings'], 2, ',', '.') }} €</td></tr>
+                        <tr><td style="padding:16px 22px;color:#8290a5;font-size:12px">Apuesta demo · {{ ucfirst($details['status']) }}</td><td align="right" style="padding:16px 22px;color:#fff;font-size:14px;font-weight:bold">{{ number_format($details['stake'], 2, ',', '.') }} EUR Demo</td></tr>
+                        <tr><td style="padding:16px 22px;border-top:1px solid #273044;color:#8290a5;font-size:12px">Premio demo abonado</td><td align="right" style="padding:16px 22px;border-top:1px solid #273044;color:{{ $content['accent'] }};font-size:18px;font-weight:bold">{{ number_format($details['winnings'], 2, ',', '.') }} EUR Demo</td></tr>
                     @endif
                 </table>
 

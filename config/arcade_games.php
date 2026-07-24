@@ -3,8 +3,8 @@
 $game = static fn (string $slug, string $name, string $cat, string $mode, string $image, string $description, string $badge = '') => [
     'slug' => $slug, 'name' => $name, 'provider' => 'Lootra Originals', 'cat' => $cat, 'mode' => $mode,
     'grad' => 'game-gradient-7', 'badge' => $badge, 'badgeColor' => 'bg-fuchsia-500/90 text-white',
-    'rtp' => '96.0%', 'min' => '€0.20', 'max' => '€500', 'image' => $image,
-    'volatilidad' => 'Variable', 'max_win' => 'x25', 'min_bet' => '€0.20', 'max_bet' => '€500',
+    'rtp' => '96.0%', 'min' => '0,20 EUR Demo', 'max' => '500 EUR Demo', 'image' => $image,
+    'volatilidad' => 'Variable', 'max_win' => 'x25', 'min_bet' => '0,20 EUR Demo', 'max_bet' => '500 EUR Demo',
     'lines' => '-', 'reels' => '-', 'description' => $description,
 ];
 

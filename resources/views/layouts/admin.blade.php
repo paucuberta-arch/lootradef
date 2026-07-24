@@ -10,6 +10,7 @@
     @yield('admin-styles')
 </head>
 <body class="min-h-screen bg-[#090D18] text-white font-sans antialiased" x-data="{ sidebar: false, confirmForm: null, confirmMessage: '', toggleSidebar(open) { this.sidebar = open; document.body.style.overflow = open ? 'hidden' : ''; this.$nextTick(() => (open ? this.$refs.sidebarClose : this.$refs.sidebarToggle)?.focus()); }, requestDelete(form, message) { this.confirmForm = form; this.confirmMessage = message; document.body.style.overflow = 'hidden'; this.$nextTick(() => this.$refs.confirmCancel?.focus()); }, closeConfirm() { this.confirmForm = null; document.body.style.overflow = ''; } }" @keydown.escape.window="confirmForm ? closeConfirm() : toggleSidebar(false)">
+    <x-demo-banner />
     <a href="#admin-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-brand-300 focus:px-4 focus:py-2 focus:text-slate-950">Saltar al contenido</a>
 
     <div class="flex min-h-screen overflow-x-clip">

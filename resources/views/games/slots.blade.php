@@ -59,7 +59,7 @@
                 </div>
                 <div class="balance-chip shrink-0 px-3 py-2 sm:px-4 rounded-xl">
                     <span class="text-xs text-slate-500">Saldo</span>
-                    <span class="ml-2 text-sm font-bold text-brand-400" x-text="'€' + saldo.toFixed(2)"></span>
+                    <span class="ml-2 text-sm font-bold text-brand-400" x-text="saldo.toFixed(2) + ' EUR Demo'"></span>
                 </div>
             </div>
 
@@ -70,7 +70,7 @@
                     <div class="slot-cabinet rounded-[1.6rem] border-2 border-fuchsia-400/20 p-3 min-[420px]:p-5 mb-6 relative overflow-hidden"
                          style="--game-art:url('{{ $gameHero }}')"
                          :class="ganancia > 0 && !spinning ? 'win-flash' : ''">
-                        <div class="slot-marquee"><span><i aria-hidden="true"></i> Lootra · 3 reels</span><span x-text="spinning ? 'Spin in progress' : (lastResult ? 'Round complete' : 'Ready')"></span></div>
+                        <div class="slot-marquee"><span><i aria-hidden="true"></i> Lootra · 3 rodillos</span><span x-text="spinning ? 'Giro en curso' : (lastResult ? 'Ronda completada' : 'Lista')"></span></div>
                         <div class="grid grid-cols-3 gap-3">
                             <template x-for="(reel, i) in reels" :key="i">
                                 <div class="reel-container aspect-square rounded-xl border border-white/40 flex items-center justify-center"
@@ -101,7 +101,7 @@
                     <div x-show="lastResult" class="text-center mb-4">
                         <template x-if="ganancia > 0">
                             <div class="text-emerald-400 font-bold text-lg win-bounce">
-                                Premio bruto <span x-text="'€' + ganancia.toFixed(2)"></span><span class="ml-1 text-sm text-emerald-200/70" x-show="payoutMultiplier > 0" x-text="'· x' + payoutMultiplier.toFixed(2)"></span>
+                                Premio bruto <span x-text="ganancia.toFixed(2) + ' EUR Demo'"></span><span class="ml-1 text-sm text-emerald-200/70" x-show="payoutMultiplier > 0" x-text="'· x' + payoutMultiplier.toFixed(2)"></span>
                             </div>
                         </template>
                         <template x-if="ganancia === 0 && lastResult">
@@ -114,7 +114,7 @@
                     {{-- Controles --}}
                     <div class="flex flex-col gap-3 min-[420px]:flex-row min-[420px]:items-end">
                         <div class="flex-1">
-                            <label class="text-xs text-slate-500 mb-1 block">Apuesta (€)</label>
+                            <label class="text-xs text-slate-500 mb-1 block">Apuesta (EUR Demo)</label>
                             <input type="number" x-model.number="apuesta" min="0.10" max="500" step="0.10"
                                    :disabled="spinning"
                                    class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-brand-500 transition disabled:opacity-50">
@@ -132,7 +132,7 @@
                         <template x-for="val in [0.50, 1, 2, 5, 10]" :key="val">
                             <button @click="apuesta = val" :disabled="spinning"
                                     class="py-2 rounded-lg bg-white/5 border border-white/10 text-xs text-slate-400 hover:text-white hover:bg-white/10 transition disabled:opacity-50"
-                                    x-text="'€' + val">
+                                    x-text="val + ' EUR Demo'">
                             </button>
                         </template>
                     </div>
@@ -159,9 +159,9 @@
             <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
                 <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-3">Info</h3>
                 <div class="space-y-3 text-sm">
-                    <div class="flex justify-between"><span class="text-slate-500">Min apuesta</span><span class="text-white font-semibold">€0.10</span></div>
-                    <div class="flex justify-between"><span class="text-slate-500">Max apuesta</span><span class="text-white font-semibold">€500</span></div>
-                    <div class="flex justify-between"><span class="text-slate-500">Max win</span><span class="text-brand-400 font-bold">x50</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Min apuesta</span><span class="text-white font-semibold">0,10 EUR Demo</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Max apuesta</span><span class="text-white font-semibold">500 EUR Demo</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Premio máximo</span><span class="text-brand-400 font-bold">x50</span></div>
                     <div class="flex justify-between"><span class="text-slate-500">Carretes</span><span class="text-white font-semibold">3x3</span></div>
                     <div class="flex justify-between"><span class="text-slate-500">RTP teórico</span><span class="text-emerald-400 font-semibold">{{ $rtp }}%</span></div>
                     <div class="flex justify-between"><span class="text-slate-500">Proveedor</span><span class="text-white font-semibold">{{ $gameProvider }}</span></div>
@@ -180,7 +180,7 @@
                         <div class="flex items-center justify-between text-xs">
                             <span class="flex gap-1"><template x-for="symbol in h.reels"><span class="slot-symbol-frame h-7 w-7 rounded-md"><i class="slot-symbol-art" :style="symbolStyle(symbol)"></i></span></template></span>
                             <span :class="h.ganancia > 0 ? 'text-emerald-400' : 'text-red-400'"
-                                  x-text="Number(h.ganancia) > 0 ? '+€' + Number(h.ganancia).toFixed(2) : '-€' + Number(h.apuesta).toFixed(2)"></span>
+                                  x-text="Number(h.ganancia) > 0 ? '+' + Number(h.ganancia).toFixed(2) + ' EUR Demo' : '-' + Number(h.apuesta).toFixed(2) + ' EUR Demo'"></span>
                         </div>
                     </template>
                 </div>
@@ -215,9 +215,9 @@ function slotsGame() {
         reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
         get netResult() { return Number((Number(this.ganancia) - Number(this.roundBet)).toFixed(2)); },
         get netMessage() {
-            if (this.netResult > 0) return `Ganancia neta +€${this.netResult.toFixed(2)}`;
+            if (this.netResult > 0) return `Ganancia neta +${this.netResult.toFixed(2)} EUR Demo`;
             if (this.netResult === 0) return 'Apuesta devuelta íntegramente';
-            return `Resultado neto -€${Math.abs(this.netResult).toFixed(2)}`;
+            return `Resultado neto -${Math.abs(this.netResult).toFixed(2)} EUR Demo`;
         },
 
         symbolStyle(symbol) {

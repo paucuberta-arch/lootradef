@@ -1,0 +1,5 @@
+@extends('errors.layout')
+@section('title', 'Página no encontrada')
+@section('code', '404')
+@section('heading', 'Página no encontrada')
+@section('message', 'La dirección puede haber cambiado o el recurso ya no está disponible.')

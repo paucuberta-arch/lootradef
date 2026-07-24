@@ -3,7 +3,7 @@
 
 @section('admin-content')
 <div class="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-    <div><p class="text-xs font-black uppercase tracking-[.2em] text-cyan-400">Business intelligence</p><h2 class="mt-1 text-3xl font-black">Toda la plataforma, de un vistazo</h2><p class="mt-2 text-sm text-slate-500">Juegos, apuestas deportivas, cajas y crecimiento de usuarios.</p></div>
+    <div><p class="text-xs font-black uppercase tracking-[.2em] text-cyan-400">Analítica demo</p><h2 class="mt-1 text-3xl font-black">Toda la plataforma, de un vistazo</h2><p class="mt-2 text-sm text-slate-500">Juegos, apuestas deportivas, cajas y crecimiento de usuarios.</p></div>
     <div class="inline-flex self-start rounded-xl border border-white/10 bg-white/[.04] p-1">
         @foreach([7, 30, 90] as $period)<a href="{{ route('admin.charts', ['period' => $period]) }}" class="rounded-lg px-4 py-2 text-xs font-bold {{ $days === $period ? 'bg-cyan-400 text-slate-950' : 'text-slate-400 hover:text-white' }}">{{ $period }} días</a>@endforeach
     </div>
@@ -37,7 +37,7 @@
         {label:'Deportivas',data:series.sports,borderColor:'#22d3ee',backgroundColor:'#22d3ee18',fill:true,tension:.35},
         {label:'Cajas',data:series.boxes,borderColor:'#f472b6',tension:.35},
         {label:'Pagos',data:series.payouts,borderColor:'#34d399',borderDash:[6,5],tension:.35}
-    ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{tooltip},scales:{y:{beginAtZero:true,ticks:{callback:v=>v+' €'}}}}});
+    ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{tooltip},scales:{y:{beginAtZero:true,ticks:{callback:v=>v+' EUR Demo'}}}}});
     new Chart(document.getElementById('activityChart'),{type:'bar',data:{labels:series.labels,datasets:[{label:'Operaciones',data:series.activity,backgroundColor:'#22d3ee99',borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip},scales:{y:{beginAtZero:true}}}});
     const doughnut=(id,labels,data)=>new Chart(document.getElementById(id),{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:palette,borderWidth:0,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,cutout:'66%',plugins:{legend:{position:'bottom',labels:{usePointStyle:true,boxWidth:8,padding:15}},tooltip}}});
     doughnut('gamesChart',@json($games->pluck('label')),@json($games->pluck('total')));

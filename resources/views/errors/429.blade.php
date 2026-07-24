@@ -1,0 +1,5 @@
+@extends('errors.layout')
+@section('title', 'Demasiadas solicitudes')
+@section('code', '429')
+@section('heading', 'Demasiadas solicitudes')
+@section('message', 'Espera unos instantes antes de volver a intentarlo.')

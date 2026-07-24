@@ -155,7 +155,7 @@ function caseCenter() {
         filter: 'all', selectedKey: null, selected: null, requestToken: '', opening: false, prize: null, committedPrize: null, error: '', redeeming: null, confirming: null, toast: '', reelItems: [], spinId: 0, winnerIndex: 0, spinSettled: false,
         get availableCount() { return this.inventory.filter(item => item.estado === 'disponible').length; },
         get inventoryValue() { return this.inventory.filter(item => item.estado === 'disponible').reduce((sum, item) => sum + Number(item.valor_virtual), 0); },
-        money(value) { return new Intl.NumberFormat('es-ES', { style:'currency', currency:'EUR' }).format(Number(value || 0)); },
+        money(value) { return `${Number(value || 0).toFixed(2)} EUR Demo`; },
         demoCredits(value) { return `${Number(value || 0).toFixed(2)} EUR Demo`; },
         virtualPoints(value) { return `${Math.round(Number(value || 0))} puntos virtuales`; },
         rarityName(value) { return ({comun:'Común', poco_comun:'Poco común', raro:'Raro', epico:'Épico', legendario:'Legendario'})[value] || value; },

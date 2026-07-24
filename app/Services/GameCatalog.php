@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Route;
 
 class GameCatalog
 {
@@ -23,7 +24,11 @@ class GameCatalog
 
     public function playUrl(array $game): ?string
     {
-        return isset($game['route_name']) ? route($game['route_name'], $game['route_parameters'] ?? []) : null;
+        if (! isset($game['route_name']) || ! Route::has($game['route_name'])) {
+            return null;
+        }
+
+        return route($game['route_name'], $game['route_parameters'] ?? []);
     }
 
     public function similarTo(array $game, int $limit = 3): Collection

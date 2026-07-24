@@ -56,8 +56,8 @@
 <div class="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
     @php
         $financeCards = [
-            ['label' => "Volumen apostado ({$days}d)", 'value' => '€' . number_format($stats['apostado_periodo'], 2), 'trend' => $stats['tendencia_apuestas'], 'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'color' => 'purple'],
-            ['label' => "Beneficio bruto ({$days}d)", 'value' => '€' . number_format($stats['beneficio_periodo'], 2), 'trend' => null, 'icon' => 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6', 'color' => $stats['beneficio_periodo'] >= 0 ? 'emerald' : 'red'],
+            ['label' => "Volumen apostado ({$days}d)", 'value' => number_format($stats['apostado_periodo'], 2, ',', '.') . ' EUR Demo', 'trend' => $stats['tendencia_apuestas'], 'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'color' => 'purple'],
+            ['label' => "Beneficio bruto ({$days}d)", 'value' => number_format($stats['beneficio_periodo'], 2, ',', '.') . ' EUR Demo', 'trend' => null, 'icon' => 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6', 'color' => $stats['beneficio_periodo'] >= 0 ? 'emerald' : 'red'],
             ['label' => 'Margen de la casa', 'value' => number_format($stats['margen_periodo'], 1) . '%', 'trend' => null, 'icon' => 'M3 3v18h18M7 16l4-5 4 3 5-7', 'color' => 'cyan'],
             ['label' => 'Payout real', 'value' => number_format($stats['payout_periodo'], 1) . '%', 'trend' => null, 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'color' => 'brand'],
         ];
@@ -86,8 +86,8 @@
     @foreach([
         ['label' => 'Jugadores activos', 'value' => number_format($stats['jugadores_periodo']), 'meta' => ($stats['tendencia_jugadores'] >= 0 ? '+' : '') . number_format($stats['tendencia_jugadores'], 1) . '%'],
         ['label' => 'Partidas jugadas', 'value' => number_format($stats['partidas_periodo']), 'meta' => number_format($stats['partidas_periodo'] / max($days, 1), 1) . ' por día'],
-        ['label' => 'Apuesta media', 'value' => '€' . number_format($stats['apuesta_media'], 2), 'meta' => 'por partida'],
-        ['label' => 'Saldo en circulación', 'value' => '€' . number_format($stats['saldo_total'], 2), 'meta' => 'en todas las carteras'],
+        ['label' => 'Apuesta media', 'value' => number_format($stats['apuesta_media'], 2, ',', '.') . ' EUR Demo', 'meta' => 'por partida'],
+        ['label' => 'Saldo en circulación', 'value' => number_format($stats['saldo_total'], 2, ',', '.') . ' EUR Demo', 'meta' => 'en todas las carteras'],
     ] as $metric)
         <div class="rounded-2xl bg-gradient-to-br from-white/[0.055] to-white/[0.015] border border-white/10 p-5">
             <p class="text-xs text-slate-500">{{ $metric['label'] }}</p>
@@ -123,14 +123,14 @@
 <div class="grid grid-cols-1 xl:grid-cols-2 gap-5 mb-8">
     <section class="rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-500/[.09] to-white/[.02] p-5">
         <div class="flex items-center justify-between mb-5">
-            <div><p class="text-[10px] font-black uppercase tracking-[.2em] text-cyan-400">Sportsbook</p><h3 class="text-lg font-extrabold text-white mt-1">Apuestas deportivas</h3></div>
+            <div><p class="text-[10px] font-black uppercase tracking-[.2em] text-cyan-400">Apuestas deportivas</p><h3 class="text-lg font-extrabold text-white mt-1">Apuestas deportivas</h3></div>
             <span class="rounded-xl bg-cyan-400/10 px-3 py-2 text-sm font-black text-cyan-300">{{ number_format($stats['apuestas_deportivas']) }}</span>
         </div>
         <div class="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
             @foreach([
-                ['Volumen', '€'.number_format($stats['volumen_deportivo'], 2), 'text-purple-300'],
-                ['Premios pagados', '€'.number_format($stats['premios_deportivos'], 2), 'text-emerald-300'],
-                ['Beneficio', '€'.number_format($stats['beneficio_deportivo'], 2), $stats['beneficio_deportivo'] >= 0 ? 'text-cyan-300' : 'text-red-300'],
+                ['Volumen', number_format($stats['volumen_deportivo'], 2, ',', '.').' EUR Demo', 'text-purple-300'],
+                ['Premios pagados', number_format($stats['premios_deportivos'], 2, ',', '.').' EUR Demo', 'text-emerald-300'],
+                ['Beneficio', number_format($stats['beneficio_deportivo'], 2, ',', '.').' EUR Demo', $stats['beneficio_deportivo'] >= 0 ? 'text-cyan-300' : 'text-red-300'],
                 ['Pendientes', number_format($stats['apuestas_pendientes']), 'text-amber-300'],
             ] as [$label, $value, $color])
             <div class="rounded-xl border border-white/5 bg-black/20 p-3"><p class="text-[11px] text-slate-500">{{ $label }}</p><p class="mt-1 font-extrabold {{ $color }}">{{ $value }}</p></div>
@@ -139,14 +139,14 @@
     </section>
     <section class="rounded-2xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/[.09] to-white/[.02] p-5">
         <div class="flex items-center justify-between mb-5">
-            <div><p class="text-[10px] font-black uppercase tracking-[.2em] text-fuchsia-400">Loot boxes</p><h3 class="text-lg font-extrabold text-white mt-1">Rendimiento de cajas</h3></div>
+            <div><p class="text-[10px] font-black uppercase tracking-[.2em] text-fuchsia-400">Cajas virtuales</p><h3 class="text-lg font-extrabold text-white mt-1">Rendimiento de cajas</h3></div>
             <span class="rounded-xl bg-fuchsia-400/10 px-3 py-2 text-sm font-black text-fuchsia-300">{{ number_format($stats['cajas_abiertas']) }}</span>
         </div>
         <div class="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
             @foreach([
                 ['Ingresos demo', number_format($stats['ingresos_cajas'], 2, ',', '.').' EUR Demo', 'text-purple-300'],
                 ['Activado', $stats['cajas_canjeadas'].' recompensas', 'text-emerald-300'],
-                ['Beneficio', '€'.number_format($stats['beneficio_cajas'], 2), $stats['beneficio_cajas'] >= 0 ? 'text-fuchsia-300' : 'text-red-300'],
+                ['Beneficio', number_format($stats['beneficio_cajas'], 2, ',', '.').' EUR Demo', $stats['beneficio_cajas'] >= 0 ? 'text-fuchsia-300' : 'text-red-300'],
                 ['Puntos en inventario', number_format($stats['valor_inventario'], 0, ',', '.'), 'text-amber-300'],
             ] as [$label, $value, $color])
             <div class="rounded-xl border border-white/5 bg-black/20 p-3"><p class="text-[11px] text-slate-500">{{ $label }}</p><p class="mt-1 font-extrabold {{ $color }}">{{ $value }}</p></div>
@@ -191,7 +191,7 @@
                     <span class="min-w-0 break-words text-sm text-slate-300 capitalize">{{ $pj->juego }}</span>
                     <div class="flex flex-wrap items-center gap-2 sm:gap-4 text-xs">
                         <span class="text-slate-500">{{ $pj->total }} partidas</span>
-                        <span class="text-emerald-400 font-semibold">€{{ number_format($pj->apuestas, 2) }}</span>
+                        <span class="text-emerald-400 font-semibold">{{ number_format($pj->apuestas, 2, ',', '.') }} EUR Demo</span>
                     </div>
                 </div>
             @empty
@@ -248,10 +248,10 @@
                     <tr class="border-b border-white/[0.03]">
                         <td class="px-4 py-2.5 capitalize font-semibold text-white">{{ $tj->juego }}</td>
                         <td class="px-4 py-2.5 text-right text-slate-400">{{ number_format($tj->total_partidas) }}</td>
-                        <td class="px-4 py-2.5 text-right text-purple-400 font-semibold">€{{ number_format($tj->total_apuestas, 2) }}</td>
-                        <td class="px-4 py-2.5 text-right text-emerald-400">€{{ number_format($tj->total_ganancias, 2) }}</td>
+                        <td class="px-4 py-2.5 text-right text-purple-400 font-semibold">{{ number_format($tj->total_apuestas, 2, ',', '.') }} EUR Demo</td>
+                        <td class="px-4 py-2.5 text-right text-emerald-400">{{ number_format($tj->total_ganancias, 2, ',', '.') }} EUR Demo</td>
                         <td class="px-4 py-2.5 text-right font-bold {{ $beneficio >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
-                            €{{ number_format($beneficio, 2) }}
+                            {{ number_format($beneficio, 2, ',', '.') }} EUR Demo
                         </td>
                     </tr>
                 @endforeach
@@ -305,7 +305,7 @@
                     <div class="h-2 rounded bg-purple-500/40" style="width: {{ $pctApostado }}%"></div>
                     <div class="h-2 rounded bg-emerald-500/40" style="width: {{ $pctGanado }}%"></div>
                 </div>
-                <span class="text-slate-500 w-20 text-right">€{{ number_format($dia->apuestas, 0) }}</span>
+                <span class="text-slate-500 w-20 text-right">{{ number_format($dia->apuestas, 0, ',', '.') }} EUR Demo</span>
             </div>
         @endforeach
     </div>

@@ -49,6 +49,13 @@ class GameCatalogTest extends TestCase
             ->assertSee(route('games.poker.all-in'), false);
     }
 
+    public function test_unknown_play_route_is_handled_as_unavailable(): void
+    {
+        $this->assertNull(app(GameCatalog::class)->playUrl([
+            'route_name' => 'games.route-that-does-not-exist',
+        ]));
+    }
+
     private function createPlayer(string $email): Usuario
     {
         $user = Usuario::create(['name' => 'Catalog Tester', 'email' => $email, 'password' => bcrypt('password')]);

@@ -48,7 +48,7 @@
                             </span>
                         </td>
                         <td data-label="Saldo" class="px-5 py-3 text-sm text-white font-semibold">
-                            €{{ number_format($u->cartera->saldo ?? 0, 2) }}
+                            {{ number_format($u->cartera->saldo ?? 0, 2, ',', '.') }} EUR Demo
                         </td>
                         <td data-label="Registro" class="px-5 py-3 text-xs text-slate-500">{{ $u->created_at->format('d/m/Y') }}</td>
                         <td data-label="Acciones" class="px-5 py-3 text-right">

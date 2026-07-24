@@ -64,10 +64,10 @@
                 <h2 class="mt-1 text-lg font-black">Carga la esfera</h2>
                 <label class="mt-4 block text-xs text-slate-500" for="quantum-bet">Apuesta</label>
                 <div class="mt-2 flex items-center rounded-xl border bg-black/20 px-3" :class="canPlay?'border-white/10':'border-red-400/30'">
-                    <span class="text-slate-500">€</span>
+                    <span class="text-slate-500">EUR Demo</span>
                     <input id="quantum-bet" x-model.number="apuesta" :disabled="playing" type="number" min=".2" max="500" step=".2" class="w-full bg-transparent px-3 py-3 font-bold outline-none disabled:opacity-50">
                 </div>
-                <div class="mt-2 grid grid-cols-4 gap-1"><template x-for="value in [1,5,10,25]" :key="value"><button @click="apuesta=value" :disabled="playing" class="rounded-lg bg-white/5 py-2 text-xs hover:bg-white/10 disabled:opacity-40" x-text="value+'€'"></button></template></div>
+                <div class="mt-2 grid grid-cols-4 gap-1"><template x-for="value in [1,5,10,25]" :key="value"><button @click="apuesta=value" :disabled="playing" class="rounded-lg bg-white/5 py-2 text-xs hover:bg-white/10 disabled:opacity-40" x-text="value+' EUR Demo'"></button></template></div>
                 <button @click="play" :disabled="playing||!canPlay" class="cta-shine mt-4 w-full rounded-xl bg-gradient-to-r from-cyan-300 via-brand-400 to-fuchsia-500 py-3.5 font-black text-slate-950 shadow-lg shadow-cyan-500/10 disabled:opacity-40">
                     <span x-text="playing ? 'Esfera en movimiento…' : 'Liberar esfera'"></span>
                 </button>
@@ -91,7 +91,7 @@
                 <div class="mt-3 space-y-2">
                     @forelse($history as $item)
                         @php($net = (float) $item->ganancia - (float) $item->apuesta)
-                        <div class="flex items-center justify-between text-xs"><span class="text-slate-500">{{ $item->detalles['multiplier'] ?? 0 }}x</span><b class="{{ $net >= 0 ? 'text-emerald-300' : 'text-fuchsia-300' }}">{{ $net >= 0 ? '+' : '-' }}€{{ number_format(abs($net), 2, ',', '.') }}</b></div>
+                        <div class="flex items-center justify-between text-xs"><span class="text-slate-500">{{ $item->detalles['multiplier'] ?? 0 }}x</span><b class="{{ $net >= 0 ? 'text-emerald-300' : 'text-fuchsia-300' }}">{{ $net >= 0 ? '+' : '-' }}{{ number_format(abs($net), 2, ',', '.') }} EUR Demo</b></div>
                     @empty
                         <p class="text-xs text-slate-600">Aún no hay lanzamientos.</p>
                     @endforelse
@@ -182,7 +182,7 @@ function quantumPlinko() {
             this.idleFrame = requestAnimationFrame(idle);
         },
         money(value) {
-            return new Intl.NumberFormat('es-ES', {style: 'currency', currency: 'EUR'}).format(Number(value) || 0);
+            return `${Number(value || 0).toFixed(2)} EUR Demo`;
         },
         requestToken() {
             const webCrypto = globalThis.crypto;

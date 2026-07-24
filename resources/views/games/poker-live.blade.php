@@ -23,7 +23,7 @@
             <div><div class="mb-3 flex justify-center gap-2"><b class="text-sm text-emerald-200">Tu mano</b><span x-show="result" class="rounded-full bg-black/20 px-2 text-xs text-cyan-200" x-text="result?.player_hand"></span></div><div class="flex min-h-[112px] justify-center gap-2"><template x-for="(c,i) in result?.player||[{},{ }]"><div class="poker-card" :class="result?color(c):'back opacity-50'" :style="`animation-delay:${i*.12}s`"><template x-if="result"><div><b x-text="rank(c.rank)"></b><i x-text="suit(c.suit)"></i></div></template></div></template></div></div>
         </div>
     </section>
-    <section class="mx-auto mt-5 max-w-2xl rounded-2xl border border-white/10 bg-[#10101d] p-5"><div x-show="result" class="mb-4 rounded-xl p-3 text-center" :class="result?.outcome==='win'?'bg-emerald-500/10 text-emerald-300':result?.outcome==='tie'?'bg-amber-500/10 text-amber-300':'bg-red-500/10 text-red-300'" aria-live="polite"><b x-text="message"></b><small class="mt-1 block font-bold opacity-80" x-text="netMessage"></small></div><label class="text-xs text-slate-500">Importe del all-in</label><div class="mt-2 flex items-center rounded-xl border bg-black/20 px-3" :class="canDeal?'border-white/10':'border-red-400/30'"><span>€</span><input x-model.number="apuesta" :disabled="playing" type="number" min=".2" max="500" step=".2" class="w-full bg-transparent px-3 py-3 font-bold outline-none"></div><div class="mt-2 grid grid-cols-5 gap-1"><template x-for="v in [2,5,10,25,50]"><button @click="apuesta=v" :disabled="playing" class="rounded-lg bg-white/5 py-2 text-xs hover:bg-white/10 disabled:opacity-40" x-text="v+'€'"></button></template></div><button @click="deal" :disabled="playing||!canDeal" class="mt-4 w-full rounded-xl bg-gradient-to-r from-fuchsia-500 to-brand-400 py-3.5 font-black text-slate-950 disabled:opacity-40" x-text="playing?'Repartiendo…':'Ir All-In'"></button><p x-show="error" role="alert" class="mt-3 rounded-lg bg-red-500/10 p-2 text-center text-xs text-red-300" x-text="error"></p></section>
+    <section class="mx-auto mt-5 max-w-2xl rounded-2xl border border-white/10 bg-[#10101d] p-5"><div x-show="result" class="mb-4 rounded-xl p-3 text-center" :class="result?.outcome==='win'?'bg-emerald-500/10 text-emerald-300':result?.outcome==='tie'?'bg-amber-500/10 text-amber-300':'bg-red-500/10 text-red-300'" aria-live="polite"><b x-text="message"></b><small class="mt-1 block font-bold opacity-80" x-text="netMessage"></small></div><label class="text-xs text-slate-500">Importe del all-in (EUR Demo)</label><div class="mt-2 flex items-center rounded-xl border bg-black/20 px-3" :class="canDeal?'border-white/10':'border-red-400/30'"><span>EUR Demo</span><input x-model.number="apuesta" :disabled="playing" type="number" min=".2" max="500" step=".2" class="w-full bg-transparent px-3 py-3 font-bold outline-none"></div><div class="mt-2 grid grid-cols-5 gap-1"><template x-for="v in [2,5,10,25,50]"><button @click="apuesta=v" :disabled="playing" class="rounded-lg bg-white/5 py-2 text-xs hover:bg-white/10 disabled:opacity-40" x-text="v+' EUR Demo'"></button></template></div><button @click="deal" :disabled="playing||!canDeal" class="mt-4 w-full rounded-xl bg-gradient-to-r from-fuchsia-500 to-brand-400 py-3.5 font-black text-slate-950 disabled:opacity-40" x-text="playing?'Repartiendo…':'Ir All-In'"></button><p x-show="error" role="alert" class="mt-3 rounded-lg bg-red-500/10 p-2 text-center text-xs text-red-300" x-text="error"></p></section>
 </div>
 @push('scripts')
 <script>
@@ -48,11 +48,11 @@ function pokerAllIn() {
         },
         get netResult() { return Number(((Number(this.result?.ganancia) || 0) - Number(this.roundBet)).toFixed(2)); },
         get netMessage() {
-            if (this.netResult > 0) return `Ganancia neta +€${this.netResult.toFixed(2)}`;
+            if (this.netResult > 0) return `Ganancia neta +${this.netResult.toFixed(2)} EUR Demo`;
             if (this.netResult === 0) return 'Apuesta devuelta íntegramente';
-            return `Resultado neto -€${Math.abs(this.netResult).toFixed(2)}`;
+            return `Resultado neto -${Math.abs(this.netResult).toFixed(2)} EUR Demo`;
         },
-        money(value) { return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(Number(value) || 0); },
+        money(value) { return `${Number(value || 0).toFixed(2)} EUR Demo`; },
         rank(value) { return ({11: 'J', 12: 'Q', 13: 'K', 14: 'A'})[value] || value; },
         suit(value) { return ({S: '♠', H: '♥', D: '♦', C: '♣'})[value]; },
         color(card) { return ['H', 'D'].includes(card.suit) ? 'red' : ''; },

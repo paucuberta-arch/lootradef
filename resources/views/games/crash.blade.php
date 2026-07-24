@@ -35,7 +35,7 @@
                 </div>
                 <div class="shrink-0 px-3 sm:px-4 py-2 rounded-xl bg-white/5 border border-white/10 whitespace-nowrap">
                     <span class="text-xs text-slate-500">Saldo</span>
-                    <span class="ml-2 text-sm font-bold text-brand-400" x-text="'€' + saldo.toFixed(2)"></span>
+                    <span class="ml-2 text-sm font-bold text-brand-400" x-text="saldo.toFixed(2) + ' EUR Demo'"></span>
                 </div>
             </div>
 
@@ -91,7 +91,7 @@
                             <div>
                                 <div class="text-4xl sm:text-6xl font-black text-emerald-400" x-text="cashoutAt.toFixed(2) + 'x'"></div>
                                 <p class="text-sm text-emerald-400 mt-2">Cobrado!</p>
-                                <p class="text-lg text-emerald-300 font-bold mt-1" x-text="'Cobro bruto €' + ganancia.toFixed(2)"></p>
+                                <p class="text-lg text-emerald-300 font-bold mt-1" x-text="'Cobro bruto ' + ganancia.toFixed(2) + ' EUR Demo'"></p>
                                 <p class="mt-1 text-xs font-bold text-emerald-100/80" x-text="netMessage"></p>
                             </div>
                         </template>
@@ -108,7 +108,7 @@
                 <div class="border-t border-white/5 p-4 sm:p-6">
                     <div class="flex flex-col sm:flex-row items-center gap-4">
                         <div class="flex-1 w-full">
-                            <label class="text-xs text-slate-500 mb-1 block">Apuesta (€)</label>
+                            <label class="text-xs text-slate-500 mb-1 block">Apuesta (EUR Demo)</label>
                             <input type="number" x-model.number="apuesta" min="0.10" max="1000" step="0.10"
                                    :disabled="fase === 'subiendo' || fase === 'preparando'"
                                    class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-brand-500 transition disabled:opacity-50">
@@ -155,9 +155,9 @@
             <div class="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
                 <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-3">Info</h3>
                 <div class="space-y-3 text-sm">
-                    <div class="flex justify-between"><span class="text-slate-500">Min apuesta</span><span class="text-white font-semibold">€0.10</span></div>
-                    <div class="flex justify-between"><span class="text-slate-500">Max apuesta</span><span class="text-white font-semibold">€1,000</span></div>
-                    <div class="flex justify-between"><span class="text-slate-500">Max win</span><span class="text-brand-400 font-bold">x∞</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Min apuesta</span><span class="text-white font-semibold">0,10 EUR Demo</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Max apuesta</span><span class="text-white font-semibold">1.000 EUR Demo</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Premio máximo</span><span class="text-brand-400 font-bold">x∞</span></div>
                     <div class="flex justify-between"><span class="text-slate-500">RTP</span><span class="text-emerald-400 font-semibold">97%</span></div>
                 </div>
             </div>
@@ -203,9 +203,9 @@ function crashGame() {
         roundStartedAtMs: Number(activeRound?.started_at_ms || 0),
         get netResult() { return Number((Number(this.ganancia) - Number(this.roundBet)).toFixed(2)); },
         get netMessage() {
-            if (this.netResult > 0) return `Resultado neto +€${this.netResult.toFixed(2)}`;
+            if (this.netResult > 0) return `Resultado neto +${this.netResult.toFixed(2)} EUR Demo`;
             if (this.netResult === 0) return 'Apuesta devuelta íntegramente';
-            return `Resultado neto -€${Math.abs(this.netResult).toFixed(2)}`;
+            return `Resultado neto -${Math.abs(this.netResult).toFixed(2)} EUR Demo`;
         },
 
         init() {

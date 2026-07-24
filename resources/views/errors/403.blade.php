@@ -1,0 +1,5 @@
+@extends('errors.layout')
+@section('title', 'Acceso no permitido')
+@section('code', '403')
+@section('heading', 'Acceso no permitido')
+@section('message', 'No tienes permisos para consultar este recurso.')

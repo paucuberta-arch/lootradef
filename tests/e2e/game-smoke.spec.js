@@ -94,7 +94,7 @@ async function clickGameAction(page, game) {
     await page.getByRole('button', {name: game.action}).first().click();
 
     if (game.slug.startsWith('slots-')) {
-        await expect(page.getByText('Round complete').or(page.getByText('Sin suerte esta vez')).first()).toBeVisible({timeout: 8_000});
+        await expect(page.getByText('Ronda completada').or(page.getByText('Sin suerte esta vez')).first()).toBeVisible({timeout: 8_000});
     } else if (game.slug.startsWith('roulette-')) {
         await expect(page.getByText('Número ganador:')).toBeVisible({timeout: 8_000});
     } else if (game.slug.startsWith('blackjack-')) {

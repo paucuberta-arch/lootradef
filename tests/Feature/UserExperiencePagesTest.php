@@ -4,12 +4,44 @@ namespace Tests\Feature;
 
 use App\Models\Partida;
 use App\Models\Usuario;
+use Database\Seeders\RolesPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class UserExperiencePagesTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_demo_banner_is_visible_on_authentication_and_admin_layouts(): void
+    {
+        $this->get(route('login'))->assertOk()
+            ->assertSee('No utiliza dinero real')
+            ->assertSee('no tienen valor económico')
+            ->assertSee('depósitos, premios y retiradas');
+
+        $this->seed(RolesPermissionsSeeder::class);
+        config()->set('security.admin_mfa_required', false);
+        $admin = Usuario::create([
+            'name' => 'Demo Admin',
+            'email' => 'banner-admin@example.test',
+            'password' => bcrypt('password'),
+        ]);
+        $admin->cartera()->create(['saldo' => 100]);
+        $admin->assignRole('admin');
+
+        $this->actingAs($admin)->get(route('admin.dashboard'))->assertOk()
+            ->assertSee('No utiliza dinero real')
+            ->assertSee('no tienen valor económico')
+            ->assertSee('depósitos, premios y retiradas');
+    }
+
+    public function test_missing_pages_use_the_demo_error_state(): void
+    {
+        $this->get('/ruta-que-no-existe')
+            ->assertNotFound()
+            ->assertSee('Página no encontrada')
+            ->assertSee('No utiliza dinero real');
+    }
 
     public function test_navigation_has_canonical_sections_and_a_single_wallet_entry(): void
     {

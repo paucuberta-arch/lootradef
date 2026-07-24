@@ -1,0 +1,5 @@
+@extends('errors.layout')
+@section('title', 'Error interno')
+@section('code', '500')
+@section('heading', 'Algo no ha salido bien')
+@section('message', 'El equipo de Lootra ha recibido el fallo. Inténtalo de nuevo más tarde.')

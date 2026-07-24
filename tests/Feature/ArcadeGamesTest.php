@@ -11,7 +11,7 @@ class ArcadeGamesTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_catalog_contains_twenty_distinct_playable_games(): void
+    public function test_catalog_contains_twenty_one_distinct_playable_games(): void
     {
         $this->assertCount(11, config('arcade_games'));
         $this->assertSame(21, 12 + count(config('arcade_games')) - 2);

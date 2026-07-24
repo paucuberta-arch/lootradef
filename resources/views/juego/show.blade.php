@@ -40,7 +40,7 @@
                             @if($playUrl)
                                 <a href="{{ $playUrl }}" class="cta-shine rounded-xl bg-gradient-to-r from-brand-300 via-brand-400 to-emerald-400 px-6 py-3 font-extrabold text-black shadow-lg shadow-brand-500/20 transition hover:-translate-y-1">Jugar ahora <span class="ml-2">→</span></a>
                             @else
-                                <span class="cursor-not-allowed rounded-xl border border-white/10 bg-white/10 px-6 py-3 font-semibold text-slate-400">Próximamente</span>
+                                <span class="cursor-not-allowed rounded-xl border border-white/10 bg-white/10 px-6 py-3 font-semibold text-slate-400">No disponible en esta demo</span>
                             @endif
                         </div>
                     </div>
@@ -120,7 +120,7 @@
                     </a>
                 @else
                     <div class="block w-full text-center mt-6 rounded-xl bg-white/5 text-slate-500 font-bold py-3 border border-white/5">
-                        Proximamente
+                        No disponible en esta demo
                     </div>
                 @endif
             </div>

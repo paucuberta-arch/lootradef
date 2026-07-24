@@ -1,0 +1,5 @@
+@extends('errors.layout')
+@section('title', 'Sesión caducada')
+@section('code', '419')
+@section('heading', 'La sesión ha caducado')
+@section('message', 'Recarga la página e inténtalo de nuevo. No se ha procesado ninguna operación.')

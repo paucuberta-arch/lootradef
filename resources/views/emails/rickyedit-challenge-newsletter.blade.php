@@ -32,7 +32,7 @@
     </style>
 </head>
 <body style="margin:0;padding:0;background:#05040d;color:#f8fafc;font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent">RickyEdit te ha dejado {{ number_format($initialBalance, 0, ',', '.') }} € de saldo exclusivo y {{ $durationMinutes }} minutos. ¿Hasta dónde puedes llegar? &nbsp;‌&nbsp;‌&nbsp;‌</div>
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent">RickyEdit te ha dejado {{ number_format($initialBalance, 0, ',', '.') }} créditos demo de saldo exclusivo y {{ $durationMinutes }} minutos. ¿Hasta dónde puedes llegar? &nbsp;‌&nbsp;‌&nbsp;‌</div>
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#05040d" style="width:100%;background-color:#05040d">
     <tr><td align="center" class="outer-pad" style="padding:30px 10px">
         <table role="presentation" width="620" cellspacing="0" cellpadding="0" border="0" bgcolor="#0b0815" class="email-shell" style="width:620px;max-width:620px;background-color:#0b0815;border:1px solid #2d2145;border-radius:28px;overflow:hidden">
@@ -53,13 +53,13 @@
             <tr><td class="mobile-pad" bgcolor="#10091b" style="padding:32px 42px 24px;background-color:#10091b">
                 <div style="margin-bottom:15px;color:#67e8f9;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:2.5px">El reto ya está activo · una sola oportunidad</div>
                 <h1 class="hero-title" style="margin:0;color:#fff;font-size:43px;line-height:45px;letter-spacing:-2px">{{ $firstName }}, RickyEdit quiere ver de qué eres capaz.</h1>
-                <p class="hero-copy" style="margin:20px 0 0;color:#b8aec8;font-size:17px;line-height:28px">Entras con un saldo exclusivo de <strong style="color:#f2cd75">{{ number_format($initialBalance, 0, ',', '.') }} €</strong>. Tienes <strong style="color:#fff">{{ $durationMinutes }} minutos</strong> para jugar, tomar decisiones y cerrar con la puntuación más alta posible.</p>
+                <p class="hero-copy" style="margin:20px 0 0;color:#b8aec8;font-size:17px;line-height:28px">Entras con un saldo exclusivo de <strong style="color:#f2cd75">{{ number_format($initialBalance, 0, ',', '.') }} créditos demo</strong>. Tienes <strong style="color:#fff">{{ $durationMinutes }} minutos</strong> para jugar, tomar decisiones y cerrar con la puntuación más alta posible.</p>
             </td></tr>
 
             <tr><td class="mobile-pad" bgcolor="#10091b" style="padding:0 42px 28px;background-color:#10091b">
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#171024" style="background-color:#171024;border:1px solid #392653;border-radius:18px;overflow:hidden">
                     <tr>
-                        <td width="33.33%" align="center" class="challenge-stat" style="padding:20px 10px"><div style="color:#f2cd75;font-size:23px;font-weight:900">{{ number_format($initialBalance, 0, ',', '.') }} €</div><div style="margin-top:5px;color:#8e829e;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px">Saldo del reto</div></td>
+                        <td width="33.33%" align="center" class="challenge-stat" style="padding:20px 10px"><div style="color:#f2cd75;font-size:23px;font-weight:900">{{ number_format($initialBalance, 0, ',', '.') }} créditos demo</div><div style="margin-top:5px;color:#8e829e;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px">Saldo del reto</div></td>
                         <td width="33.33%" align="center" class="challenge-stat" style="padding:20px 10px;border-left:1px solid #392653"><div style="color:#67e8f9;font-size:23px;font-weight:900">{{ $durationMinutes }} min</div><div style="margin-top:5px;color:#8e829e;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px">Contrarreloj</div></td>
                         <td width="33.33%" align="center" class="challenge-stat" style="padding:20px 10px;border-left:1px solid #392653"><div style="color:#e879f9;font-size:23px;font-weight:900">{{ number_format($creatorScore, 0, ',', '.') }}</div><div style="margin-top:5px;color:#8e829e;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px">Marca de Ricky</div></td>
                     </tr>

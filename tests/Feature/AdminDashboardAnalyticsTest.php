@@ -56,7 +56,7 @@ class AdminDashboardAnalyticsTest extends TestCase
             ->assertOk()
             ->assertSee('Visión general del negocio')
             ->assertSee('Volumen apostado (7d)')
-            ->assertSee('100.00')
+            ->assertSee('100,00 EUR Demo')
             ->assertSee('Payout real')
             ->assertSee('70.0%')
             ->assertSee('Apuestas deportivas')

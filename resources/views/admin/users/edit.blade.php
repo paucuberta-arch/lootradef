@@ -42,7 +42,7 @@
 
             @can('wallet.manage')
             <div>
-                <label class="text-xs text-slate-500 mb-1 block">Saldo (€)</label>
+                <label class="text-xs text-slate-500 mb-1 block">Saldo (EUR Demo)</label>
                 <input type="number" name="saldo" value="{{ old('saldo', number_format($usuario->cartera->saldo ?? 0, 2, '.', '')) }}" step="0.01" min="0"
                        class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-brand-500 transition">
             </div>
